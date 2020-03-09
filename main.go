@@ -6,7 +6,10 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/mikanikos/Fork-Accountability/connection"
 
 	"github.com/mikanikos/Fork-Accountability/monitor"
 )
@@ -21,10 +24,18 @@ func main() {
 
 	flag.Parse()
 
-	processesAddresses := resolveAddresses(*processes)
+	processesConn, err := establishConnections(*processes)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// request hvs from all processes
-	hvsMap := requestHVSWithTimeout(processesAddresses, *waitTimeout)
+	hvsMap, err := requestHVSWithTimeout(processesConn, *waitTimeout)
+
+	if err != nil {
+		panic(err)
+	}
 
 	hvsList := make([]*monitor.HeightVoteSet, len(hvsMap))
 	i := 0
@@ -34,7 +45,7 @@ func main() {
 	}
 
 	// run monitor and get faulty processes
-	faultyProcesses := monitor.IdentifyFaultyProcesses(uint64(len(processesAddresses)), *firstDecisionRound, *secondDecisionRound, hvsList)
+	faultyProcesses := monitor.IdentifyFaultyProcesses(uint64(len(processesConn)), *firstDecisionRound, *secondDecisionRound, hvsList)
 
 	printFaultyProcesses(faultyProcesses)
 }
@@ -60,51 +71,107 @@ func printFaultyProcesses(faultyMap map[uint64][]*monitor.FaultinessReason) {
 }
 
 // resolve processes addresses
-func resolveAddresses(validators string) []*net.UDPAddr {
+func establishConnections(validators string) ([]net.Conn, error) {
 
 	// split list of string addresses only if it's not empty in order to avoid problems
 	validatorsList := make([]string, 0)
+
 	if validators != "" {
 		validatorsList = strings.Split(validators, ",")
 	}
 
 	// resolve peers addresses given
-	validatorsAddresses := make([]*net.UDPAddr, 0)
+	validatorsConn := make([]net.Conn, 0)
 	for _, val := range validatorsList {
-		address, err := net.ResolveUDPAddr("udp4", val)
+		conn, err := net.Dial("tcp", val)
 		if err == nil {
-			validatorsAddresses = append(validatorsAddresses, address)
+			validatorsConn = append(validatorsConn, conn)
+		} else {
+			return nil, fmt.Errorf("Error while connecting to one of the validators given: %s", err)
 		}
 	}
 
-	return validatorsAddresses
+	return validatorsConn, nil
 }
 
-func requestHVSWithTimeout(addresses []*net.UDPAddr, timeout uint) map[string]*monitor.HeightVoteSet {
-
-	// prepare data request
-	// packet := &GossipPacket{DataRequest: &DataRequest{Origin: gossiper.name, Destination: peer, HashValue: hash, HopLimit: uint32(hopLimit)}}
-
-	// // send request
-	// go gossiper.sendRequest(packet, &packet.DataRequest.HopLimit, packet.DataRequest.Destination)
+func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[string]*monitor.HeightVoteSet, error) {
 
 	hvsMap := make(map[string]*monitor.HeightVoteSet)
 
-	// start timer for repeating request
-	timer := time.NewTicker(time.Duration(timeout) * time.Second)
-	defer timer.Stop()
+	// prepare and send data request
+	err := broadcastHVSRequest(connections)
 
-	for {
-		select {
-		// incoming reply for this request
-		// case replyPacket := <-replyChan:
-
-		// 	// save data
-		// 	gossiper.fileHandler.hashDataMap.LoadOrStore(hex.EncodeToString(hash), &replyPacket.Data)
-
-		// stop after timeout
-		case <-timer.C:
-			return hvsMap
-		}
+	if err != nil {
+		return nil, err
 	}
+
+	wg := sync.WaitGroup{}
+
+	for _, conn := range connections {
+
+		wg.Add(1)
+
+		// Launch a goroutine to fetch the hvs
+		go func(conn net.Conn) {
+
+			packet, err := connection.Receive(conn)
+
+			if err != nil {
+				fmt.Printf("Error while receiving hvs from validator: %s", err)
+			} else {
+				hvsMap[conn.RemoteAddr().String()] = packet.Hvs
+			}
+
+		}(conn)
+	}
+
+	if waitTimeout(&wg, timeout, connections) {
+		return nil, fmt.Errorf("Timed out waiting for wait group")
+	}
+
+	return hvsMap, nil
+
+}
+
+// waitTimeout waits for the waitgroup for the specified max timeout and returns true if waiting timed out
+func waitTimeout(wg *sync.WaitGroup, timeout uint, connections []net.Conn) bool {
+	closeChannel := make(chan struct{})
+
+	// start timer for repeating request
+	repeatTimer := time.NewTicker(time.Duration(timeout/3) * time.Second)
+	defer repeatTimer.Stop()
+
+	go func() {
+		defer close(closeChannel)
+		wg.Wait()
+	}()
+
+	select {
+
+	case <-closeChannel:
+		// completed normally
+		return false
+
+	case <-repeatTimer.C:
+		// repeat request
+		broadcastHVSRequest(connections)
+
+	case <-time.After(time.Duration(timeout) * time.Second):
+		// timed out
+		return true
+	}
+
+	return false
+}
+
+func broadcastHVSRequest(connections []net.Conn) error {
+
+	packet := &connection.Packet{Code: connection.HvsRequest}
+
+	for _, conn := range connections {
+		err := connection.Send(conn, packet)
+		return fmt.Errorf("Error while sending packet to validator: %s", err)
+	}
+
+	return nil
 }
