@@ -32,12 +32,16 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println("Monitor: Establish connection with validators")
+
 	// request hvs from all processes
 	hvsMap, err := requestHVSWithTimeout(processesConn, *waitTimeout)
 
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("Monitor: Got all hvs from validators")
 
 	hvsList := make([]*common.HeightVoteSet, len(hvsMap))
 	i := 0
@@ -119,8 +123,9 @@ func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[string]*co
 			packet, err := connection.Receive(conn)
 
 			if err != nil {
-				fmt.Printf("Error while receiving hvs from validator: %s", err)
+				fmt.Printf("Monitor: Error while receiving hvs from validator: %s", err)
 			} else {
+				fmt.Println("Monitor: received hvs from " + conn.RemoteAddr().String())
 				hvsMap[conn.RemoteAddr().String()] = packet.Hvs
 			}
 
@@ -172,7 +177,9 @@ func broadcastHVSRequest(connections []net.Conn) error {
 
 	for _, conn := range connections {
 		err := connection.Send(conn, packet)
-		return fmt.Errorf("Error while sending packet to validator: %s", err)
+		if err != nil {
+			return fmt.Errorf("Error while sending packet to validator "+conn.RemoteAddr().String()+": %s", err)
+		}
 	}
 
 	return nil

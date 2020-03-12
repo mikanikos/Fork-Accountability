@@ -10,7 +10,7 @@ func Test_basic_server_client_interaction(t *testing.T) {
 
 	// server
 	go func() {
-		err := Listen("127.0.0.1:7070", "127.0.0.1:48382")
+		err := Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}

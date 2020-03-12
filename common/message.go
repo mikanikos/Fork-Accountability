@@ -10,17 +10,17 @@ type MessageType string
 
 const (
 	// Prevote type
-	prevote MessageType = "PREVOTE"
+	Prevote MessageType = "PREVOTE"
 	// Precommit type
-	precommit MessageType = "PRECOMMIT"
+	Precommit MessageType = "PRECOMMIT"
 )
 
 // Message struct
 type Message struct {
-	Type     MessageType
-	SenderID uint64
-	Round    uint64
-	Value    int
+	Type     MessageType `yaml:"type"`
+	SenderID uint64      `yaml:"sender"`
+	Round    uint64      `yaml:"round"`
+	Value    int         `yaml:"value"`
 }
 
 // NewMessage creates a new message

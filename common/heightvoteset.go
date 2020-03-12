@@ -8,8 +8,8 @@ import (
 
 // HeightVoteSet contains all messages for all the rounds of a specific height
 type HeightVoteSet struct {
-	OwnerID    uint64
-	VoteSetMap map[uint64]*VoteSet
+	OwnerID    uint64              `yaml:"id"`
+	VoteSetMap map[uint64]*VoteSet `yaml:"heightvoteset"`
 }
 
 // NewHeightVoteSet creates a new HeightVoteSet structure
@@ -23,10 +23,10 @@ func NewHeightVoteSet(owner uint64) *HeightVoteSet {
 // AddMessage adds a given message to the right voteSet
 func (hvs *HeightVoteSet) AddMessage(mes *Message) {
 	switch mes.Type {
-	case prevote:
+	case Prevote:
 		hvs.VoteSetMap[mes.Round].addSentPrevoteMessage(mes)
 
-	case precommit:
+	case Precommit:
 		hvs.VoteSetMap[mes.Round].addSentPrecommitMessage(mes)
 
 	default:

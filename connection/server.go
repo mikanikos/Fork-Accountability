@@ -3,10 +3,12 @@ package connection
 import (
 	"fmt"
 	"net"
+
+	"github.com/mikanikos/Fork-Accountability/common"
 )
 
 // Listen starts listening for incoming connections from the client monitor
-func Listen(port string, monitorAddr string) error {
+func Listen(port string, hvs *common.HeightVoteSet) error {
 	listener, err := net.Listen("tcp", port)
 
 	if err != nil {
@@ -23,12 +25,12 @@ func Listen(port string, monitorAddr string) error {
 		}
 
 		// handle connection in a separate goroutine
-		go handleConnection(conn, monitorAddr)
+		go handleConnection(conn, hvs)
 	}
 }
 
 // handle connection
-func handleConnection(conn net.Conn, monitorAddr string) {
+func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 
 	remoteAddr := conn.RemoteAddr().String()
 	fmt.Println("Handling client connection from " + remoteAddr)
@@ -45,13 +47,13 @@ func handleConnection(conn net.Conn, monitorAddr string) {
 
 		switch packet.Code {
 		case HvsRequest:
-			Send(conn, &Packet{Code: HvsResponse})
+			fmt.Println("Validator on " + conn.LocalAddr().String() + ": sending hvs to monitor")
+			Send(conn, &Packet{Code: HvsResponse, Hvs: hvs})
 
 		default:
 			// ignore and just go on
 			fmt.Println("Unknown packet received, just ignore")
 		}
-
 	}
 	//}
 

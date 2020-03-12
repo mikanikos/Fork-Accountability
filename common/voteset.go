@@ -6,11 +6,11 @@ import (
 
 // VoteSet contains all messages for a specific round
 type VoteSet struct {
-	Round                     uint64
-	ReceivedPrevoteMessages   []*Message
-	ReceivedPrecommitMessages []*Message
-	SentPrevoteMessages       []*Message
-	SentPrecommitMessages     []*Message
+	Round                     uint64     `yaml:"round"`
+	ReceivedPrevoteMessages   []*Message `yaml:"received_prevote"`
+	ReceivedPrecommitMessages []*Message `yaml:"received_precommit"`
+	SentPrevoteMessages       []*Message `yaml:"sent_prevote"`
+	SentPrecommitMessages     []*Message `yaml:"sent_precommit"`
 }
 
 // NewVoteSet creates a new VoteSet structure
