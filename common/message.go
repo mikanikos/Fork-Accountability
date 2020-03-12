@@ -1,4 +1,4 @@
-package monitor
+package common
 
 import (
 	"strconv"
@@ -15,36 +15,30 @@ const (
 	precommit MessageType = "PRECOMMIT"
 )
 
-// BlockPublish struct
-type BlockPublish struct {
-	PrevHash    [32]byte
-	Transaction int
-}
-
 // Message struct
 type Message struct {
 	Type     MessageType
 	SenderID uint64
 	Round    uint64
-	TxBlock  *BlockPublish
+	Value    int
 }
 
 // NewMessage creates a new message
-func NewMessage(typeMes MessageType, senderID, round uint64, block *BlockPublish) *Message {
+func NewMessage(typeMes MessageType, senderID, round uint64, value int) *Message {
 	return &Message{
 		Type:     typeMes,
 		SenderID: senderID,
 		Round:    round,
-		TxBlock:  block,
+		Value:    value,
 	}
 }
 
 func (mes *Message) equals(other *Message) bool {
-	return mes.Type == other.Type && mes.SenderID == other.SenderID && mes.Round == other.Round && mes.TxBlock.equals(other.TxBlock)
+	return mes.Type == other.Type && mes.SenderID == other.SenderID && mes.Round == other.Round && mes.Value == other.Value
 }
 
 func (mes *Message) equalsRoundValue(other *Message) bool {
-	return mes.Round == other.Round && mes.TxBlock.equals(other.TxBlock)
+	return mes.Round == other.Round && mes.Value == other.Value
 }
 
 func (mes *Message) String() string {
@@ -55,10 +49,6 @@ func (mes *Message) String() string {
 	sb.WriteString(", ")
 	sb.WriteString(strconv.FormatUint(mes.Round, 10))
 	sb.WriteString(", ")
-	sb.WriteString(strconv.Itoa(mes.TxBlock.Transaction))
+	sb.WriteString(strconv.Itoa(mes.Value))
 	return sb.String()
-}
-
-func (block *BlockPublish) equals(other *BlockPublish) bool {
-	return block.PrevHash == other.PrevHash && block.Transaction == other.Transaction
 }

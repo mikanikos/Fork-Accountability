@@ -12,6 +12,8 @@ import (
 	"github.com/mikanikos/Fork-Accountability/connection"
 
 	"github.com/mikanikos/Fork-Accountability/monitor"
+
+	"github.com/mikanikos/Fork-Accountability/common"
 )
 
 func main() {
@@ -37,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	hvsList := make([]*monitor.HeightVoteSet, len(hvsMap))
+	hvsList := make([]*common.HeightVoteSet, len(hvsMap))
 	i := 0
 	for _, hvs := range hvsMap {
 		hvsList[i] = hvs
@@ -94,9 +96,9 @@ func establishConnections(validators string) ([]net.Conn, error) {
 	return validatorsConn, nil
 }
 
-func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[string]*monitor.HeightVoteSet, error) {
+func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[string]*common.HeightVoteSet, error) {
 
-	hvsMap := make(map[string]*monitor.HeightVoteSet)
+	hvsMap := make(map[string]*common.HeightVoteSet)
 
 	// prepare and send data request
 	err := broadcastHVSRequest(connections)

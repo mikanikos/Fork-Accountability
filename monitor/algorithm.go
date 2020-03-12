@@ -1,9 +1,13 @@
 package monitor
 
+import (
+	"github.com/mikanikos/Fork-Accountability/common"
+)
+
 var faultyProcesses map[uint64][]*FaultinessReason
 
 // IdentifyFaultyProcesses detects which processes caused the fork and finds all processes that have bad behavior
-func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsList []*HeightVoteSet) map[uint64][]*FaultinessReason {
+func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsList []*common.HeightVoteSet) map[uint64][]*FaultinessReason {
 	faultyProcesses = make(map[uint64][]*FaultinessReason)
 	preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound, hvsList)
 	for i := uint64(0); i < numProcesses; i++ {
@@ -12,7 +16,7 @@ func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRou
 	return faultyProcesses
 }
 
-func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsList []*HeightVoteSet) {
+func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsList []*common.HeightVoteSet) {
 	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
 		for processIndex := uint64(0); processIndex < numProcesses; processIndex++ {
 			hvs := hvsList[processIndex]
@@ -22,28 +26,28 @@ func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound ui
 				continue
 			}
 
-			vs, vsLoad := hvs.voteSetMap[round]
+			vs, vsLoad := hvs.VoteSetMap[round]
 			// Maybe some process does not have a voteset for this round
 			if vs == nil || !vsLoad {
 				continue
 			}
 
 			// Processing of the received prevote messages
-			addMissingVotes(hvsList, vs.receivedPrevoteMessages)
+			addMissingVotes(hvsList, vs.ReceivedPrevoteMessages)
 			// Processing of the received precommit messages
-			addMissingVotes(hvsList, vs.receivedPrecommitMessages)
+			addMissingVotes(hvsList, vs.ReceivedPrecommitMessages)
 		}
 	}
 }
 
-func addMissingVotes(hvsList []*HeightVoteSet, receivedMessages []*Message) {
+func addMissingVotes(hvsList []*common.HeightVoteSet, receivedMessages []*common.Message) {
 	for _, mes := range receivedMessages {
 		senderHeightVoteSet := hvsList[mes.SenderID-1]
 		// Sender did not send its voteset -> just ignore it
 		if senderHeightVoteSet == nil {
 			continue
 		}
-		senderHeightVoteSet.addMessage(mes)
+		senderHeightVoteSet.AddMessage(mes)
 	}
 }
 
@@ -57,54 +61,54 @@ func addFaultinessReason(fr *FaultinessReason) {
 	faultyProcesses[fr.processID] = reasons
 }
 
-func checkForFaultiness(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvs *HeightVoteSet) {
+func checkForFaultiness(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvs *common.HeightVoteSet) {
 	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
 	precommitSent := false
-	var precommitValue *BlockPublish
+	var precommitValue int
 	precommitRound := uint64(0)
 
 	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
-		vs, vsLoad := hvs.voteSetMap[round]
+		vs, vsLoad := hvs.VoteSetMap[round]
 		// Maybe some process does not have a voteset for this round
 		if vs == nil || !vsLoad {
 			continue
 		}
 
-		sizeSentPrevotes := len(vs.sentPrevoteMessages)
+		sizeSentPrevotes := len(vs.SentPrevoteMessages)
 		if sizeSentPrevotes != 0 {
 			// Multiple prevote messages have been sent - faulty behaviour
 			if sizeSentPrevotes > 1 {
-				addFaultinessReason(NewFaultinessReason(hvs.ownerID, round, errMultiplePrevote))
+				addFaultinessReason(NewFaultinessReason(hvs.OwnerID, round, errMultiplePrevote))
 			} else {
 				// Only one prevote message has been sent
 				// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
 				if precommitSent {
-					message := vs.sentPrevoteMessages[0]
+					message := vs.SentPrevoteMessages[0]
 					// Only if two values are not the same, we should look for 2f + 1 prevote messages
-					if !message.TxBlock.equals(precommitValue) {
-						if !hvs.thereAreQuorumPrevoteMessagesForPrevote(precommitRound, round, quorum, message) {
-							addFaultinessReason(NewFaultinessReason(hvs.ownerID, round, errNotEnoughPrevotesForPrevote))
+					if message.Value != precommitValue {
+						if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(precommitRound, round, quorum, message) {
+							addFaultinessReason(NewFaultinessReason(hvs.OwnerID, round, errNotEnoughPrevotesForPrevote))
 						}
 					}
 				}
 			}
 		}
 
-		sizeSentPrecommits := len(vs.sentPrecommitMessages)
+		sizeSentPrecommits := len(vs.SentPrecommitMessages)
 		if sizeSentPrecommits != 0 {
 			// Multiple precommit messages have been sent - faulty behaviour
 			if sizeSentPrecommits > 1 {
-				addFaultinessReason(NewFaultinessReason(hvs.ownerID, round, errMultiplePrecommit))
+				addFaultinessReason(NewFaultinessReason(hvs.OwnerID, round, errMultiplePrecommit))
 			} else {
-				message := vs.sentPrecommitMessages[0]
-				if message.TxBlock != nil && !vs.thereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
-					addFaultinessReason(NewFaultinessReason(hvs.ownerID, round, errNotEnoughPrevotesForPreoommit))
+				message := vs.SentPrecommitMessages[0]
+				if message.Value != 0 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
+					addFaultinessReason(NewFaultinessReason(hvs.OwnerID, round, errNotEnoughPrevotesForPreoommit))
 				}
 
 				// If not nil is precommited
-				if message.TxBlock != nil {
+				if message.Value != 0 {
 					precommitSent = true
-					precommitValue = message.TxBlock
+					precommitValue = message.Value
 					precommitRound = round
 				}
 			}

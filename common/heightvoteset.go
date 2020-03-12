@@ -1,4 +1,4 @@
-package monitor
+package common
 
 import (
 	"fmt"
@@ -8,25 +8,26 @@ import (
 
 // HeightVoteSet contains all messages for all the rounds of a specific height
 type HeightVoteSet struct {
-	ownerID    uint64
-	voteSetMap map[uint64]*VoteSet
+	OwnerID    uint64
+	VoteSetMap map[uint64]*VoteSet
 }
 
 // NewHeightVoteSet creates a new HeightVoteSet structure
 func NewHeightVoteSet(owner uint64) *HeightVoteSet {
 	return &HeightVoteSet{
-		ownerID:    owner,
-		voteSetMap: make(map[uint64]*VoteSet),
+		OwnerID:    owner,
+		VoteSetMap: make(map[uint64]*VoteSet),
 	}
 }
 
-func (hvs *HeightVoteSet) addMessage(mes *Message) {
+// AddMessage adds a given message to the right voteSet
+func (hvs *HeightVoteSet) AddMessage(mes *Message) {
 	switch mes.Type {
 	case prevote:
-		hvs.voteSetMap[mes.Round].addSentPrevoteMessage(mes)
+		hvs.VoteSetMap[mes.Round].addSentPrevoteMessage(mes)
 
 	case precommit:
-		hvs.voteSetMap[mes.Round].addSentPrecommitMessage(mes)
+		hvs.VoteSetMap[mes.Round].addSentPrecommitMessage(mes)
 
 	default:
 		//  print error
@@ -34,15 +35,16 @@ func (hvs *HeightVoteSet) addMessage(mes *Message) {
 	}
 }
 
-func (hvs *HeightVoteSet) thereAreQuorumPrevoteMessagesForPrevote(lockedRound, currentRound, quorum uint64, prevoteMessage *Message) bool {
-	for round, voteSet := range hvs.voteSetMap {
+// ThereAreQuorumPrevoteMessagesForPrevote checks if there are enough prevotes to justify another prevote given a quorum
+func (hvs *HeightVoteSet) ThereAreQuorumPrevoteMessagesForPrevote(lockedRound, currentRound, quorum uint64, prevoteMessage *Message) bool {
+	for round, voteSet := range hvs.VoteSetMap {
 		if (round < lockedRound || round >= currentRound) || (voteSet == nil) {
 			continue
 		}
 
 		numOfAppropriateMessages := uint64(0)
-		for _, receivedPrevoteMessage := range voteSet.receivedPrevoteMessages {
-			if receivedPrevoteMessage.TxBlock.equals(prevoteMessage.TxBlock) {
+		for _, receivedPrevoteMessage := range voteSet.ReceivedPrevoteMessages {
+			if receivedPrevoteMessage.Value == prevoteMessage.Value {
 				numOfAppropriateMessages++
 			}
 		}
@@ -58,10 +60,10 @@ func (hvs *HeightVoteSet) thereAreQuorumPrevoteMessagesForPrevote(lockedRound, c
 func (hvs *HeightVoteSet) String() string {
 	var sb strings.Builder
 
-	sb.WriteString("Process " + strconv.FormatUint(hvs.ownerID, 10))
+	sb.WriteString("Process " + strconv.FormatUint(hvs.OwnerID, 10))
 	sb.WriteString("\n")
 
-	for round, voteSet := range hvs.voteSetMap {
+	for round, voteSet := range hvs.VoteSetMap {
 		sb.WriteString("*** ROUND ")
 		sb.WriteString(strconv.FormatUint(round, 10))
 		sb.WriteString(" ***")
