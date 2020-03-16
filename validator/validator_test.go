@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/mikanikos/Fork-Accountability/common"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -124,46 +126,44 @@ func Test_CorrectConfigParsing(t *testing.T) {
 
 	eq := reflect.DeepEqual(heightVoteSet1, hvs1)
 	if !eq {
-		t.Fatal("HVS 1 parsed is not correct")
+		t.Fatal("HVS 1 was not parsed correctly")
 	}
 
 	eq = reflect.DeepEqual(heightVoteSet2, hvs2)
 	if !eq {
-		t.Fatal("HVS 2 parsed is not correct")
+		t.Fatal("HVS 2 was not parsed correctly")
 	}
 
 	eq = reflect.DeepEqual(heightVoteSet3, hvs3)
 	if !eq {
-		t.Fatal("HVS 3 parsed is not correct")
+		t.Fatal("HVS 3 was not parsed correctly")
 	}
 
 	eq = reflect.DeepEqual(heightVoteSet4, hvs4)
 	if !eq {
-		t.Fatal("HVS 4 parsed is not correct")
+		t.Fatal("HVS 4 was not parsed correctly")
 	}
+}
 
-	//if heightVoteSet1.String() != hvs1.String() {
-	//	t.Fatal("HVS 1 parsed is not correct")
-	//}
-	//
-	//if heightVoteSet2.String() != hvs2.String() {
-	//
-	//
-	//	//fmt.Println(heightVoteSet2.String())
-	//	//fmt.Println("---------------------------------------------")
-	//	//fmt.Println(hvs2.String())
-	//
-	//	err = ioutil.WriteFile("boh", []byte(heightVoteSet2.String()), 0644)
-	//	err = ioutil.WriteFile("boh2", []byte(hvs2.String()), 0644)
-	//	t.Fatal("HVS 2 parsed is not correct")
-	//}
-	//
-	////if heightVoteSet3.String() != hvs3.String() {
-	////	t.Fatal("HVS 3 parsed is not correct")
-	////}
-	////
-	////if heightVoteSet4.String() != hvs4.String() {
-	////	t.Fatal("HVS 4 parsed is not correct")
-	////}
+func Test_WrongConfigFilename(t *testing.T) {
+	fileName3 := "config_not_existing.yaml"
 
+	_, err := parseConfigFile(fileName3)
+	if err == nil {
+		t.Fatalf("Should have failed because filename doesn't exist")
+	}
+}
+
+// should run in the same folder of the method called
+func Test_BadFormattedConfig(t *testing.T) {
+
+	badConfig := "bad_config.yaml"
+
+	_ = ioutil.WriteFile(badConfig, []byte("cjdcjdcjd"), 0644)
+
+	_, err := parseConfigFile(badConfig)
+	if err == nil {
+		t.Fatalf("Should have failed because file is bad formatted")
+	}
+	_ = os.Remove(badConfig)
 }

@@ -34,9 +34,6 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 	remoteAddr := conn.RemoteAddr().String()
 	fmt.Println("Handling client connection from " + remoteAddr)
 
-	// verify that client is monitor
-	//if remoteAddr == monitorAddr {
-
 	for {
 		packet, err := Receive(conn)
 
@@ -50,12 +47,8 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 			err := Send(conn, &Packet{Code: HvsResponse, Hvs: hvs})
 			if err != nil {
 				fmt.Println("Error while sending packet back to monitor")
-				return
+				break
 			}
-
-		default:
-			// ignore and just go on
-			fmt.Println("Unknown packet received, just ignore")
 		}
 	}
 	//}

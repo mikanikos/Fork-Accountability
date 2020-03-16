@@ -47,3 +47,13 @@ func Receive(conn net.Conn) (*Packet, error) {
 
 	return packet, nil
 }
+
+func Connect(address string) (net.Conn, error) {
+	connClient, err := net.Dial("tcp", address)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to address %s: %s", address, err)
+	}
+
+	return connClient, nil
+}

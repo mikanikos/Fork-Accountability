@@ -57,11 +57,25 @@ func addFaultinessReason(fr *FaultinessReason) {
 		faultyProcesses[fr.processID] = make([]*FaultinessReason, 0)
 		reasons, _ = faultyProcesses[fr.processID]
 	}
-	reasons = append(reasons, fr)
-	faultyProcesses[fr.processID] = reasons
+	contains := false
+	for _, f := range reasons {
+		if f.equals(fr) {
+			contains = true
+			break
+		}
+	}
+	if !contains {
+		reasons = append(reasons, fr)
+		faultyProcesses[fr.processID] = reasons
+	}
 }
 
 func checkForFaultiness(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvs *common.HeightVoteSet) {
+
+	if hvs == nil {
+		return
+	}
+
 	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
 	precommitSent := false
 	precommitValue := -1
@@ -102,7 +116,7 @@ func checkForFaultiness(numProcesses, firstDecisionRound, secondDecisionRound ui
 			} else {
 				message := vs.SentPrecommitMessages[0]
 				if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
-					addFaultinessReason(NewFaultinessReason(hvs.OwnerID, round, errNotEnoughPrevotesForPreoommit))
+					addFaultinessReason(NewFaultinessReason(hvs.OwnerID, round, errNotEnoughPrevotesForPrecommit))
 				}
 
 				// If not nil is precommited

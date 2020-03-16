@@ -27,7 +27,7 @@ func main() {
 	flag.Parse()
 
 	// wait for validators to start (can be added/removed whether validators are already listening on their port or not)
-	//time.Sleep(time.Second * time.Duration(5))
+	time.Sleep(time.Second * time.Duration(5))
 
 	processesConn, err := establishConnections(*processes)
 
@@ -85,7 +85,7 @@ func establishConnections(validators string) ([]net.Conn, error) {
 	// resolve peers addresses given
 	validatorsConn := make([]net.Conn, 0)
 	for _, val := range validatorsList {
-		conn, err := net.Dial("tcp", val)
+		conn, err := connection.Connect(val)
 		if err == nil {
 			validatorsConn = append(validatorsConn, conn)
 		} else {
