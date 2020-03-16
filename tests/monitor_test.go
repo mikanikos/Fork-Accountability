@@ -98,7 +98,7 @@ func TestBasicScenario(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	heightVoteSets := []*common.HeightVoteSet{heightVoteSet1, heightVoteSet2, heightVoteSet3, heightVoteSet4}
+	heightVoteSets := map[uint64]*common.HeightVoteSet{1 :heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
 	faultyMap := monitor.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
 
 	var sb strings.Builder

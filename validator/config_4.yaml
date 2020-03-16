@@ -23,13 +23,13 @@ heightvoteset:
 
     sent_prevote:
       - type: PREVOTE
-        sender: 3
+        sender: 4
         round: 3
         value: 10
 
     sent_precommit:
       - type: PRECOMMIT
-        sender: 3
+        sender: 4
         round: 3
         value: 10
 

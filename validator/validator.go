@@ -27,27 +27,28 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Validator on " + *address + ": started listening for incomiming requests")
+	fmt.Println("Validator on " + *address + ": started listening for incoming requests")
 
 	// start listening for incoming connection from monitor
-	connection.Listen(*address, hvs)
+	err = connection.Listen(*address, hvs)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func parseConfigFile(fileName string) (*common.HeightVoteSet, error) {
 
 	yamlFile, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return nil, fmt.Errorf("Error while reading file given from input: %s", err)
+		return nil, fmt.Errorf("error while reading file given from input: %s", err)
 	}
 
 	hvs := &common.HeightVoteSet{}
 
 	err = yaml.Unmarshal(yamlFile, hvs)
 	if err != nil {
-		return nil, fmt.Errorf("Error while parsing config yaml file: %s", err)
+		return nil, fmt.Errorf("error while parsing config yaml file: %s", err)
 	}
-
-	fmt.Println(hvs.String())
 
 	return hvs, nil
 }

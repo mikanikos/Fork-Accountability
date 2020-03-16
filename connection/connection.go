@@ -14,7 +14,7 @@ func Send(conn net.Conn, packet *Packet) error {
 	messageEncoded, err := protobuf.Encode(packet)
 
 	if err != nil {
-		return fmt.Errorf("Error while serializing the packet to send: %s", err)
+		return fmt.Errorf("error while serializing the packet to send: %s", err)
 	}
 
 	// send message
@@ -31,18 +31,18 @@ func Receive(conn net.Conn) (*Packet, error) {
 	n, err := conn.Read(packetBytes)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error while reading from socket: %s", err)
+		return nil, fmt.Errorf("error while reading from socket: %s", err)
 	}
 
 	if n > maxBufferSize {
-		return nil, fmt.Errorf("Error while reading from socket: message size too large")
+		return nil, fmt.Errorf("error while reading from socket: message size too large")
 	}
 
 	// decode message
 	err = protobuf.Decode(packetBytes[:n], packet)
 
 	if err != nil {
-		return nil, fmt.Errorf("Error while deserializing packet received: %s", err)
+		return nil, fmt.Errorf("error while deserializing packet received: %s", err)
 	}
 
 	return packet, nil

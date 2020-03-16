@@ -26,6 +26,9 @@ func main() {
 
 	flag.Parse()
 
+	// wait for validators to start (can be added/removed whether validators are already listening on their port or not)
+	//time.Sleep(time.Second * time.Duration(5))
+
 	processesConn, err := establishConnections(*processes)
 
 	if err != nil {
@@ -43,15 +46,8 @@ func main() {
 
 	fmt.Println("Monitor: Got all hvs from validators")
 
-	hvsList := make([]*common.HeightVoteSet, len(hvsMap))
-	i := 0
-	for _, hvs := range hvsMap {
-		hvsList[i] = hvs
-		i++
-	}
-
 	// run monitor and get faulty processes
-	faultyProcesses := monitor.IdentifyFaultyProcesses(uint64(len(processesConn)), *firstDecisionRound, *secondDecisionRound, hvsList)
+	faultyProcesses := monitor.IdentifyFaultyProcesses(uint64(len(processesConn)), *firstDecisionRound, *secondDecisionRound, hvsMap)
 
 	printFaultyProcesses(faultyProcesses)
 }
@@ -93,16 +89,16 @@ func establishConnections(validators string) ([]net.Conn, error) {
 		if err == nil {
 			validatorsConn = append(validatorsConn, conn)
 		} else {
-			return nil, fmt.Errorf("Error while connecting to one of the validators given: %s", err)
+			return nil, fmt.Errorf("error while connecting to one of the validators given: %s", err)
 		}
 	}
 
 	return validatorsConn, nil
 }
 
-func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[string]*common.HeightVoteSet, error) {
+func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[uint64]*common.HeightVoteSet, error) {
 
-	hvsMap := make(map[string]*common.HeightVoteSet)
+	hvsMap := make(map[uint64]*common.HeightVoteSet)
 
 	// prepare and send data request
 	err := broadcastHVSRequest(connections)
@@ -123,17 +119,20 @@ func requestHVSWithTimeout(connections []net.Conn, timeout uint) (map[string]*co
 			packet, err := connection.Receive(conn)
 
 			if err != nil {
-				fmt.Printf("Monitor: Error while receiving hvs from validator: %s", err)
+				fmt.Printf("Monitor: error while receiving hvs from validator: %s", err)
+			} else if packet == nil || packet.Code != connection.HvsResponse || packet.Hvs == nil {
+				fmt.Println("Monitor: invalid packet received from " + conn.RemoteAddr().String())
 			} else {
 				fmt.Println("Monitor: received hvs from " + conn.RemoteAddr().String())
-				hvsMap[conn.RemoteAddr().String()] = packet.Hvs
+				hvsMap[packet.Hvs.OwnerID] = packet.Hvs
 			}
+			wg.Done()
 
 		}(conn)
 	}
 
 	if waitTimeout(&wg, timeout, connections) {
-		return nil, fmt.Errorf("Timed out waiting for wait group")
+		return nil, fmt.Errorf("timed out waiting for wait group")
 	}
 
 	return hvsMap, nil
@@ -161,7 +160,7 @@ func waitTimeout(wg *sync.WaitGroup, timeout uint, connections []net.Conn) bool 
 
 	case <-repeatTimer.C:
 		// repeat request
-		broadcastHVSRequest(connections)
+		_ = broadcastHVSRequest(connections)
 
 	case <-time.After(time.Duration(timeout) * time.Second):
 		// timed out

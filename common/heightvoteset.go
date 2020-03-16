@@ -24,10 +24,20 @@ func NewHeightVoteSet(owner uint64) *HeightVoteSet {
 func (hvs *HeightVoteSet) AddMessage(mes *Message) {
 	switch mes.Type {
 	case Prevote:
-		hvs.VoteSetMap[mes.Round].addSentPrevoteMessage(mes)
+		vs, loaded := hvs.VoteSetMap[mes.Round]
+		if vs == nil || !loaded {
+			vs = NewVoteSet(mes.Round)
+			hvs.VoteSetMap[mes.Round] = vs
+		}
+		vs.addSentPrevoteMessage(mes)
 
 	case Precommit:
-		hvs.VoteSetMap[mes.Round].addSentPrecommitMessage(mes)
+		vs, loaded := hvs.VoteSetMap[mes.Round]
+		if vs == nil || !loaded {
+			vs = NewVoteSet(mes.Round)
+			hvs.VoteSetMap[mes.Round] = vs
+		}
+		vs.addSentPrecommitMessage(mes)
 
 	default:
 		//  print error
@@ -63,7 +73,7 @@ func (hvs *HeightVoteSet) String() string {
 	sb.WriteString("Process " + strconv.FormatUint(hvs.OwnerID, 10))
 	sb.WriteString("\n")
 
-	for round, voteSet := range hvs.VoteSetMap {
+	for round, voteSet := range hvs.VoteSetMap	 {
 		sb.WriteString("*** ROUND ")
 		sb.WriteString(strconv.FormatUint(round, 10))
 		sb.WriteString(" ***")

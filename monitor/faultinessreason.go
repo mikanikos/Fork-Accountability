@@ -34,6 +34,6 @@ func (fr *FaultinessReason) String() string {
 	return sb.String()
 }
 
-func (fr *FaultinessReason) equals(other *FaultinessReason) bool {
-	return fr.processID == other.processID && fr.round == other.round
-}
+//func (fr *FaultinessReason) equals(other *FaultinessReason) bool {
+//	return fr.processID == other.processID && fr.round == other.round
+//}

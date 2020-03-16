@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Test_basic_server_client_interaction(t *testing.T) {
+func Test_ServerClientInteraction(t *testing.T) {
 
 	// server
 	go func() {

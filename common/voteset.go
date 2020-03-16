@@ -53,10 +53,10 @@ func (vs *VoteSet) addSentPrecommitMessage(mes *Message) {
 }
 
 // ThereAreQuorumPrevoteMessagesForPrecommit checks if there are enough prevotes to justify a precommit given a quorum
-func (vs *VoteSet) ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum uint64, precommit *Message) bool {
+func (vs *VoteSet) ThereAreQuorumPrevoteMessagesForPrecommit(round uint64, quorum uint64, precommit *Message) bool {
 	numberOfAppropriateMessages := uint64(0)
 	for _, receivedPrevoteMessage := range vs.ReceivedPrevoteMessages {
-		if receivedPrevoteMessage.equalsRoundValue(precommit) {
+		if receivedPrevoteMessage.Value == precommit.Value && receivedPrevoteMessage.Round == round {
 			numberOfAppropriateMessages++
 		}
 	}

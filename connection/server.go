@@ -12,16 +12,15 @@ func Listen(port string, hvs *common.HeightVoteSet) error {
 	listener, err := net.Listen("tcp", port)
 
 	if err != nil {
-		return fmt.Errorf("Error while trying to listen on given address: %s", err)
+		return fmt.Errorf("error while trying to listen on given address: %s", err)
 	}
-
-	defer listener.Close()
 
 	for {
 		conn, err := listener.Accept()
 
 		if err != nil {
-			return fmt.Errorf("Error while trying to accept incoming connection: %s", err)
+			_ = listener.Close()
+			return fmt.Errorf("error while trying to accept incoming connection: %s", err)
 		}
 
 		// handle connection in a separate goroutine
@@ -48,7 +47,11 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 		switch packet.Code {
 		case HvsRequest:
 			fmt.Println("Validator on " + conn.LocalAddr().String() + ": sending hvs to monitor")
-			Send(conn, &Packet{Code: HvsResponse, Hvs: hvs})
+			err := Send(conn, &Packet{Code: HvsResponse, Hvs: hvs})
+			if err != nil {
+				fmt.Println("Error while sending packet back to monitor")
+				return
+			}
 
 		default:
 			// ignore and just go on
@@ -57,5 +60,5 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 	}
 	//}
 
-	conn.Close()
+	_ = conn.Close()
 }
