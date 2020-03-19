@@ -1,7 +1,7 @@
---- # config file for validator 4
-id: 4
+--- # config file for validator 3
+id: 3
 heightvoteset:
-  3: 
+  3:
     round: 3
     received_prevote:
       - type: PREVOTE
@@ -23,17 +23,17 @@ heightvoteset:
 
     sent_prevote:
       - type: PREVOTE
-        sender: 4
+        sender: 3
         round: 3
         value: 10
 
     sent_precommit:
       - type: PRECOMMIT
-        sender: 4
+        sender: 3
         round: 3
         value: 10
 
-  4: 
+  4:
     round: 4
     received_prevote:
       - type: PREVOTE
@@ -55,13 +55,13 @@ heightvoteset:
 
     sent_prevote:
       - type: PREVOTE
-        sender: 4
+        sender: 3
         round: 4
         value: 20
 
     sent_precommit:
       - type: PRECOMMIT
-        sender: 4
+        sender: 3
         round: 4
         value: 20
 

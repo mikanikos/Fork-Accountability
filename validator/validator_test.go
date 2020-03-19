@@ -96,7 +96,6 @@ func Test_CorrectConfigParsing(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-
 	fileName1 := "config_1.yaml"
 
 	hvs1, err := parseConfigFile(fileName1)

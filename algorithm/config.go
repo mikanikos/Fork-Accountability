@@ -1,4 +1,4 @@
-package monitor
+package algorithm
 
 const (
 	errHVSNotSent                    = "The process did not send its HeightVoteSet"

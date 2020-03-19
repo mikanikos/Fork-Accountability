@@ -42,7 +42,7 @@ func Test_ClientInitialization(t *testing.T) {
 		}
 	}()
 
-	_, err := Connect( "127.0.0.1:7070")
+	_, err := Connect("127.0.0.1:7070")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}
@@ -50,7 +50,7 @@ func Test_ClientInitialization(t *testing.T) {
 
 func Test_ClientFailingToConnect(t *testing.T) {
 
-	_, err := Connect( "127.0.0.1:7070")
+	_, err := Connect("127.0.0.1:7070")
 	if err == nil {
 		t.Fatal("Connection should have not been successful")
 	}
@@ -66,8 +66,7 @@ func Test_ClientSendsMessage(t *testing.T) {
 		}
 	}()
 
-
-	connClient, err := Connect( "127.0.0.1:7070")
+	connClient, err := Connect("127.0.0.1:7070")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}
@@ -90,7 +89,7 @@ func Test_ServerClientInteraction(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(3))
 
-	connClient, err := Connect( "127.0.0.1:7070")
+	connClient, err := Connect("127.0.0.1:7070")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}

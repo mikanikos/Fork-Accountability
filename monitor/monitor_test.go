@@ -1,4 +1,4 @@
-package monitor
+package main
 
 import (
 	"strconv"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/mikanikos/Fork-Accountability/common"
-	"github.com/mikanikos/Fork-Accountability/monitor"
+	"github.com/mikanikos/Fork-Accountability/algorithm"
 )
 
 func TestBasicScenario(t *testing.T) {
@@ -97,8 +97,8 @@ func TestBasicScenario(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	heightVoteSets := map[uint64]*common.HeightVoteSet{1 :heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
-	faultyMap := monitor.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
+	heightVoteSets := map[uint64]*common.HeightVoteSet{1: heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
+	faultyMap := algorithm.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
 
 	var sb strings.Builder
 
@@ -169,8 +169,8 @@ func TestBasicScenarioWithMissingHVS(t *testing.T) {
 	heightVoteSet2.VoteSetMap[3] = voteSet2
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
-	heightVoteSets := map[uint64]*common.HeightVoteSet{1 :heightVoteSet1, 2: heightVoteSet2, 3: nil, 4: nil}
-	faultyMap := monitor.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
+	heightVoteSets := map[uint64]*common.HeightVoteSet{1: heightVoteSet1, 2: heightVoteSet2, 3: nil, 4: nil}
+	faultyMap := algorithm.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
 
 	var sb strings.Builder
 
@@ -284,8 +284,8 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	heightVoteSets := map[uint64]*common.HeightVoteSet{1 :heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
-	faultyMap := monitor.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
+	heightVoteSets := map[uint64]*common.HeightVoteSet{1: heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
+	faultyMap := algorithm.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
 
 	var sb strings.Builder
 
@@ -400,8 +400,8 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	heightVoteSets := map[uint64]*common.HeightVoteSet{1 :heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
-	faultyMap := monitor.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
+	heightVoteSets := map[uint64]*common.HeightVoteSet{1: heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
+	faultyMap := algorithm.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
 
 	var sb strings.Builder
 
@@ -514,8 +514,8 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	heightVoteSets := map[uint64]*common.HeightVoteSet{1 :heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
-	faultyMap := monitor.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
+	heightVoteSets := map[uint64]*common.HeightVoteSet{1: heightVoteSet1, 2: heightVoteSet2, 3: heightVoteSet3, 4: heightVoteSet4}
+	faultyMap := algorithm.IdentifyFaultyProcesses(4, 3, 4, heightVoteSets)
 
 	var sb strings.Builder
 

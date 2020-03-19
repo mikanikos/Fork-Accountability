@@ -37,10 +37,6 @@ func (mes *Message) equals(other *Message) bool {
 	return mes.Type == other.Type && mes.SenderID == other.SenderID && mes.Round == other.Round && mes.Value == other.Value
 }
 
-//func (mes *Message) equalsRoundValue(other *Message) bool {
-//	return mes.Round == other.Round && mes.Value == other.Value
-//}
-
 func (mes *Message) String() string {
 	var sb strings.Builder
 	sb.WriteString(string(mes.Type))

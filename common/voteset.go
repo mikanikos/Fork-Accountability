@@ -4,9 +4,8 @@ import (
 	"strings"
 )
 
-// VoteSet contains all messages for a specific round
+// VoteSet contains all messages of a process for a specific round
 type VoteSet struct {
-	Round                     uint64     `yaml:"round"`
 	ReceivedPrevoteMessages   []*Message `yaml:"received_prevote"`
 	ReceivedPrecommitMessages []*Message `yaml:"received_precommit"`
 	SentPrevoteMessages       []*Message `yaml:"sent_prevote"`
@@ -14,9 +13,8 @@ type VoteSet struct {
 }
 
 // NewVoteSet creates a new VoteSet structure
-func NewVoteSet(round uint64) *VoteSet {
+func NewVoteSet() *VoteSet {
 	return &VoteSet{
-		Round:                     round,
 		ReceivedPrevoteMessages:   make([]*Message, 0),
 		ReceivedPrecommitMessages: make([]*Message, 0),
 		SentPrevoteMessages:       make([]*Message, 0),
@@ -24,31 +22,16 @@ func NewVoteSet(round uint64) *VoteSet {
 	}
 }
 
-// AddSentPrevoteMessage adds a message to the sent prevote messages of a round if not present yet
-func (vs *VoteSet) addSentPrevoteMessage(mes *Message) {
+func addSentMessage(messages []*Message, mes *Message) {
 	contains := false
-	for _, m := range vs.SentPrevoteMessages {
+	for _, m := range messages {
 		if mes.equals(m) {
 			contains = true
 			break
 		}
 	}
 	if !contains {
-		vs.SentPrevoteMessages = append(vs.SentPrevoteMessages, mes)
-	}
-}
-
-// AddSentPrecommitMessage adds a message to the sent precommit messages of a round if not present yet
-func (vs *VoteSet) addSentPrecommitMessage(mes *Message) {
-	contains := false
-	for _, m := range vs.SentPrecommitMessages {
-		if mes.equals(m) {
-			contains = true
-			break
-		}
-	}
-	if !contains {
-		vs.SentPrecommitMessages = append(vs.SentPrecommitMessages, mes)
+		messages = append(messages, mes)
 	}
 }
 
