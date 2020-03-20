@@ -9,10 +9,10 @@ cd ..
 echo "Starting validators
 "
 
-./validator/validator -config="validator/config_1.yaml" -address="127.0.0.1:8080" &
-./validator/validator -config="validator/config_2.yaml" -address="127.0.0.1:8081" &
-./validator/validator -config="validator/config_3.yaml" -address="127.0.0.1:8082" &
-./validator/validator -config="validator/config_4.yaml" -address="127.0.0.1:8083" &
+./validator/validator -config="config_1.yaml" -address="127.0.0.1:8080" &
+./validator/validator -config="config_2.yaml" -address="127.0.0.1:8081" &
+./validator/validator -config="config_3.yaml" -address="127.0.0.1:8082" &
+./validator/validator -config="config_4.yaml" -address="127.0.0.1:8083" &
 
 sleep 3
 

@@ -18,11 +18,11 @@ type ConnectionHandler struct {
 // NewConnectionHandler creates a new handler for the connection with validators
 func NewConnectionHandler() *ConnectionHandler {
 	return &ConnectionHandler{
-		connections:    make([]net.Conn, 0),
+		connections: make([]net.Conn, 0),
 	}
 }
 
-// resolve processes addresses
+// method to resolve processes addresses and store connection objects
 func (connHandler *ConnectionHandler) connectToValidators(validators string) error {
 
 	// split list of string addresses only if it's not empty in order to avoid problems
@@ -46,26 +46,28 @@ func (connHandler *ConnectionHandler) connectToValidators(validators string) err
 	return nil
 }
 
+// request HeightVoteSets from validators with a max timeout
+// if a validator doesn't send its hvs, the monitor will consider it faulty
 func (connHandler *ConnectionHandler) requestHVSWithTimeout(timeout uint) (map[uint64]*common.HeightVoteSet, error) {
 
 	hvsMap := make(map[uint64]*common.HeightVoteSet)
 
 	// prepare and send data request
 	err := connHandler.broadcastHVSRequest()
-
 	if err != nil {
 		return nil, err
 	}
 
+	// wait group to wait for responses
 	wg := sync.WaitGroup{}
 
+	// start waiting for every connection
 	for _, conn := range connHandler.connections {
-
 		wg.Add(1)
 
 		// Launch a goroutine to fetch the hvs
 		go func(conn net.Conn) {
-
+			// receive data from validator
 			packet, err := connection.Receive(conn)
 
 			if err != nil {
@@ -81,6 +83,7 @@ func (connHandler *ConnectionHandler) requestHVSWithTimeout(timeout uint) (map[u
 		}(conn)
 	}
 
+	// wait routine, it completes after the timeout or as soon as we receive all the hvs
 	if connHandler.waitTimeout(&wg, timeout) {
 		fmt.Println("timed out waiting for wait group, not all hvs were sent")
 	}
@@ -88,7 +91,7 @@ func (connHandler *ConnectionHandler) requestHVSWithTimeout(timeout uint) (map[u
 	return hvsMap, nil
 }
 
-// waitTimeout waits for the waitgroup for the specified max timeout and returns true if waiting timed out
+// waitTimeout waits for the WaitGroup for the specified max timeout and returns true if waiting timed out
 func (connHandler *ConnectionHandler) waitTimeout(wg *sync.WaitGroup, timeout uint) bool {
 	closeChannel := make(chan struct{})
 
@@ -119,10 +122,13 @@ func (connHandler *ConnectionHandler) waitTimeout(wg *sync.WaitGroup, timeout ui
 	}
 }
 
+// broadcast hvs request to all validators
 func (connHandler *ConnectionHandler) broadcastHVSRequest() error {
 
+	// prepare packet
 	packet := &connection.Packet{Code: connection.HvsRequest}
 
+	// broadcast message
 	for _, conn := range connHandler.connections {
 		err := connection.Send(conn, packet)
 		if err != nil {

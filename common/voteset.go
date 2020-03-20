@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -22,17 +23,36 @@ func NewVoteSet() *VoteSet {
 	}
 }
 
-func addSentMessage(messages []*Message, mes *Message) {
+// add a given message to the correct set of sent messages based on the type
+func (vs *VoteSet) addSentMessage(mes *Message) {
+
+	switch mes.Type {
+	case Prevote:
+		if !contains(vs.SentPrevoteMessages, mes) {
+			vs.SentPrevoteMessages = append(vs.SentPrevoteMessages, mes)
+		}
+
+	case Precommit:
+		if !contains(vs.SentPrecommitMessages, mes) {
+			vs.SentPrecommitMessages = append(vs.SentPrecommitMessages, mes)
+		}
+
+	default:
+		//  print error
+		fmt.Println("Error: message type not known")
+	}
+}
+
+// contains utility for list of messages
+func contains(messages []*Message, message *Message) bool {
 	contains := false
 	for _, m := range messages {
-		if mes.equals(m) {
+		if message.Equal(m) {
 			contains = true
 			break
 		}
 	}
-	if !contains {
-		messages = append(messages, mes)
-	}
+	return contains
 }
 
 // ThereAreQuorumPrevoteMessagesForPrecommit checks if there are enough prevotes to justify a precommit given a quorum
@@ -46,6 +66,7 @@ func (vs *VoteSet) ThereAreQuorumPrevoteMessagesForPrecommit(round uint64, quoru
 	return numberOfAppropriateMessages >= quorum
 }
 
+// string representation of a voteset
 func (vs *VoteSet) String() string {
 	var sb strings.Builder
 
@@ -60,6 +81,7 @@ func (vs *VoteSet) String() string {
 	return sb.String()
 }
 
+// utility to print list of messages
 func messagesToString(description string, messageSet []*Message) string {
 	var sb strings.Builder
 

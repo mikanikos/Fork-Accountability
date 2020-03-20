@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/mikanikos/Fork-Accountability/algorithm"
@@ -46,28 +44,7 @@ func main() {
 	// run monitor and get faulty processes
 	faultyProcesses := algorithm.IdentifyFaultyProcesses(uint64(len(*processes)), *firstDecisionRound, *secondDecisionRound, hvsMap)
 
-	printFaultyProcesses(faultyProcesses)
-}
+	fmt.Println(faultyProcesses.String())
 
-/**
-	Print faulty processes
- */
-func printFaultyProcesses(faultyMap map[uint64][]*algorithm.FaultinessReason) {
-	var sb strings.Builder
-
-	sb.WriteString("Faulty processes are: \n")
-
-	for processID, reasonsList := range faultyMap {
-		sb.WriteString(strconv.FormatUint(processID, 10))
-		sb.WriteString(": ")
-
-		for _, reason := range reasonsList {
-			sb.WriteString(reason.String())
-			sb.WriteString("; ")
-		}
-
-		sb.WriteString("\n")
-	}
-
-	fmt.Println(sb.String())
+	fmt.Println("Monitor: Algorithm completed")
 }

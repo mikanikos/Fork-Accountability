@@ -31,10 +31,10 @@ func (hvs *HeightVoteSet) AddMessage(mes *Message) {
 
 	switch mes.Type {
 	case Prevote:
-		addSentMessage(vs.SentPrevoteMessages, mes)
+		vs.addSentMessage(mes)
 
 	case Precommit:
-		addSentMessage(vs.SentPrecommitMessages, mes)
+		vs.addSentMessage(mes)
 
 	default:
 		//  print error
@@ -64,6 +64,7 @@ func (hvs *HeightVoteSet) ThereAreQuorumPrevoteMessagesForPrevote(lockedRound, c
 	return false
 }
 
+// string representation of a hvs
 func (hvs *HeightVoteSet) String() string {
 	var sb strings.Builder
 

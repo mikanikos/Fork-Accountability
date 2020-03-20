@@ -1,6 +1,7 @@
 package common
 
 import (
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -33,10 +34,12 @@ func NewMessage(typeMes MessageType, senderID, round uint64, value int) *Message
 	}
 }
 
-func (mes *Message) equals(other *Message) bool {
-	return mes.Type == other.Type && mes.SenderID == other.SenderID && mes.Round == other.Round && mes.Value == other.Value
+// equality for messages
+func (mes *Message) Equal(other *Message) bool {
+	return reflect.DeepEqual(mes, other)
 }
 
+// string representation of a message
 func (mes *Message) String() string {
 	var sb strings.Builder
 	sb.WriteString(string(mes.Type))

@@ -1,8 +1,9 @@
 --- # config file for validator 1
+# owner
 id: 1
 heightvoteset:
+  # round
   3:
-    round: 3
     received_prevote:
       - type: PREVOTE
         sender: 2
