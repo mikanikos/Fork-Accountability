@@ -34,12 +34,11 @@ func (connHandler *ConnectionHandler) connectToValidators(validators string) err
 	}
 
 	// resolve peers addresses given
-	validatorsConn := make([]net.Conn, 0)
 	for _, val := range validatorsList {
 		conn, err := connection.Connect(val)
 		if err == nil {
 			fmt.Println("Monitor: connected to " + conn.RemoteAddr().String())
-			validatorsConn = append(validatorsConn, conn)
+			connHandler.connections = append(connHandler.connections, conn)
 		} else {
 			return fmt.Errorf("error while connecting to one of the validators given: %s", err)
 		}
@@ -50,9 +49,9 @@ func (connHandler *ConnectionHandler) connectToValidators(validators string) err
 
 // request HeightVoteSets from validators with a max timeout
 // if a validator doesn't send its hvs, the monitor will consider it faulty
-func (connHandler *ConnectionHandler) requestHVSWithTimeout(timeout uint) (map[uint64]*common.HeightVoteSet, error) {
+func (connHandler *ConnectionHandler) requestHeightLogs(timeout uint) (*common.HeightLogs, error) {
 
-	hvsMap := make(map[uint64]*common.HeightVoteSet)
+	hvsMap := common.NewHeightLogs()
 
 	// prepare and send data request
 	err := connHandler.broadcastHVSRequest()
@@ -64,7 +63,7 @@ func (connHandler *ConnectionHandler) requestHVSWithTimeout(timeout uint) (map[u
 	wg := sync.WaitGroup{}
 
 	// start waiting for every connection
-	for _, conn := range connHandler.connections {
+	for _, connVal := range connHandler.connections {
 		wg.Add(1)
 
 		// Launch a goroutine to fetch the hvs
@@ -78,16 +77,22 @@ func (connHandler *ConnectionHandler) requestHVSWithTimeout(timeout uint) (map[u
 				fmt.Println("Monitor: invalid packet received from " + conn.RemoteAddr().String())
 			} else {
 				fmt.Println("Monitor: received hvs from " + conn.RemoteAddr().String())
-				hvsMap[packet.Hvs.OwnerID] = packet.Hvs
+				hvsMap.AddHvs(packet.Hvs)
 			}
+
+			err = conn.Close()
+			if err != nil {
+				fmt.Println("Monitor: error closing connection for " + conn.RemoteAddr().String())
+			}
+
 			wg.Done()
 
-		}(conn)
+		}(connVal)
 	}
 
 	// wait routine, it completes after the timeout or as soon as we receive all the hvs
 	if connHandler.waitTimeout(&wg, timeout) {
-		fmt.Println("timed out waiting for wait group, not all hvs were sent")
+		fmt.Println("timed out waiting for wait group, not all hvs have been received")
 	}
 
 	return hvsMap, nil
@@ -111,10 +116,11 @@ func (connHandler *ConnectionHandler) waitTimeout(wg *sync.WaitGroup, timeout ui
 
 		case <-closeChannel:
 			// completed normally
-			return true
+			return false
 
 		case <-repeatTimer.C:
 			// repeat request
+			fmt.Println("Monitor: repeating request")
 			_ = connHandler.broadcastHVSRequest()
 
 		case <-time.After(time.Duration(timeout) * time.Second):

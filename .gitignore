@@ -18,6 +18,7 @@
 # Binary files
 Fork-Accountability
 validator/validator
+monitor/monitor
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

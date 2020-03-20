@@ -35,16 +35,21 @@ func main() {
 	fmt.Println("Monitor: Connected to validators")
 
 	// request hvs from all processes
-	hvsMap, err := connHandler.requestHVSWithTimeout(*waitTimeout)
-	if err != nil || len(hvsMap) == 0 {
+	hvsMap, err := connHandler.requestHeightLogs(*waitTimeout)
+	if err != nil {
 		fmt.Printf("Monitor exiting: error during the request of hvs: %s", err)
+		os.Exit(1)
+	}
+
+	if len(hvsMap.Logs) == 0 {
+		fmt.Print("Monitor exiting: no hvs received within the timeout")
 		os.Exit(1)
 	}
 
 	fmt.Println("Monitor: Got all hvs from validators")
 
 	// run monitor and get faulty processes
-	faultyProcesses := algorithm.IdentifyFaultyProcesses(uint64(len(*processes)), *firstDecisionRound, *secondDecisionRound, hvsMap)
+	faultyProcesses := algorithm.IdentifyFaultyProcesses(uint64(len(hvsMap.Logs)), *firstDecisionRound, *secondDecisionRound, hvsMap)
 
 	fmt.Println(faultyProcesses.String())
 

@@ -17,7 +17,7 @@ var (
 var faultyProcesses *FaultySet
 
 // IdentifyFaultyProcesses detects which processes caused the fork and finds all processes that have bad behavior
-func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsMap map[uint64]*common.HeightVoteSet) *FaultySet {
+func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsMap *common.HeightLogs) *FaultySet {
 
 	faultyProcesses = NewFaultySet()
 
@@ -26,18 +26,18 @@ func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRou
 
 	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
 	for i := uint64(1); i <= numProcesses; i++ {
-		findFaultiness(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap[i])
+		findFaultiness(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap.Logs[i])
 	}
 
 	return faultyProcesses
 }
 
 // Preprocess messages by scanning all the received vote sets and add missing messages in the respective votes sets of processes which omitted sent messages
-func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsMap map[uint64]*common.HeightVoteSet) {
+func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsMap *common.HeightLogs) {
 	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
 		for processIndex := uint64(1); processIndex <= numProcesses; processIndex++ {
 
-			hvs := hvsMap[processIndex]
+			hvs := hvsMap.Logs[processIndex]
 			// if process didn't send the hvs, it's faulty
 			if hvs == nil {
 				faultyProcesses.AddFaultinessReason(NewFaultiness(processIndex, 0, ErrHVSNotSent))
@@ -59,9 +59,9 @@ func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound ui
 }
 
 // add missing votes to the other processes based on the messages received by the current process
-func addMissingVotes(hvsMap map[uint64]*common.HeightVoteSet, receivedMessages []*common.Message) {
+func addMissingVotes(hvsMap *common.HeightLogs, receivedMessages []*common.Message) {
 	for _, mes := range receivedMessages {
-		senderHeightVoteSet := hvsMap[mes.SenderID]
+		senderHeightVoteSet := hvsMap.Logs[mes.SenderID]
 
 		// sender didn't send hvs, it's faulty
 		if senderHeightVoteSet == nil {
