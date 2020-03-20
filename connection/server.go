@@ -38,6 +38,7 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 		packet, err := Receive(conn)
 
 		if err != nil {
+			fmt.Printf("error while trying to receive packet: %s", err)
 			break
 		}
 
@@ -51,7 +52,6 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 			}
 		}
 	}
-	//}
 
 	_ = conn.Close()
 }

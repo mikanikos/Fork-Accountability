@@ -14,5 +14,5 @@ const (
 	HvsResponse = 1
 
 	// lengths in bytes
-	maxBufferSize = 1024
+	maxBufferSize = 4096
 )

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"runtime"
 
@@ -28,15 +29,17 @@ func main() {
 	// parse file
 	hvs, err := parseConfigFile(*configFile)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Validator %s exiting: config file not parsed correctly: %s", *address, err)
+		os.Exit(1)
 	}
 
-	fmt.Println("Validator on " + *address + ": started listening for incoming requests")
+	fmt.Println("Validator on " + *address + ": start listening for incoming requests")
 
 	// start listening for incoming connection from monitor
 	err = connection.Listen(*address, hvs)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Validator %s exiting: cannot listen on given address: %s", *address, err)
+		os.Exit(1)
 	}
 }
 

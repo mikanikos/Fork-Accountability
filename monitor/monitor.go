@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/mikanikos/Fork-Accountability/algorithm"
@@ -27,16 +28,17 @@ func main() {
 	// connect to validators for requesting hvs
 	err := connHandler.connectToValidators(*processes)
 	if err != nil {
-		panic(fmt.Errorf("Error while connecting to validators %s: ", err))
-		return
+		fmt.Printf("Monitor exiting: couldn't connect to all validators: %s", err)
+		os.Exit(1)
 	}
 
-	fmt.Println("Monitor: Establish connection with validators")
+	fmt.Println("Monitor: Connected to validators")
 
 	// request hvs from all processes
 	hvsMap, err := connHandler.requestHVSWithTimeout(*waitTimeout)
-	if err != nil {
-		panic(err)
+	if err != nil || len(hvsMap) == 0 {
+		fmt.Printf("Monitor exiting: error during the request of hvs: %s", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("Monitor: Got all hvs from validators")
@@ -46,5 +48,5 @@ func main() {
 
 	fmt.Println(faultyProcesses.String())
 
-	fmt.Println("Monitor: Algorithm completed")
+	fmt.Println("Monitor: Run completed")
 }

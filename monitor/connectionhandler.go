@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/mikanikos/Fork-Accountability/common"
-	"github.com/mikanikos/Fork-Accountability/connection"
 	"net"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mikanikos/Fork-Accountability/common"
+	"github.com/mikanikos/Fork-Accountability/connection"
 )
 
 // ConnectionHandler handles the connection with validators
@@ -37,6 +38,7 @@ func (connHandler *ConnectionHandler) connectToValidators(validators string) err
 	for _, val := range validatorsList {
 		conn, err := connection.Connect(val)
 		if err == nil {
+			fmt.Println("Monitor: connected to " + conn.RemoteAddr().String())
 			validatorsConn = append(validatorsConn, conn)
 		} else {
 			return fmt.Errorf("error while connecting to one of the validators given: %s", err)

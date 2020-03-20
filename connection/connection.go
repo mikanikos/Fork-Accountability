@@ -48,6 +48,7 @@ func Receive(conn net.Conn) (*Packet, error) {
 	return packet, nil
 }
 
+// Connect tried to establish connection given an address
 func Connect(address string) (net.Conn, error) {
 	connClient, err := net.Dial("tcp", address)
 
