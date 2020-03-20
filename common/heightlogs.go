@@ -6,7 +6,7 @@ import (
 
 // HeightLogs contains all messages for all the rounds from each process in a specific height
 type HeightLogs struct {
-	Logs map[uint64]*HeightVoteSet
+	Logs  map[uint64]*HeightVoteSet
 	Mutex sync.RWMutex
 }
 
