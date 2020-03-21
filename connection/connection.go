@@ -2,6 +2,7 @@ package connection
 
 import (
 	"fmt"
+	"io"
 	"net"
 
 	"go.dedis.ch/protobuf"
@@ -30,8 +31,16 @@ func Receive(conn net.Conn) (*Packet, error) {
 
 	n, err := conn.Read(packetBytes)
 
+	if err == io.EOF {
+		return nil, err
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("error while reading from socket: %s", err)
+		if err == io.EOF {
+			return nil, err
+		} else {
+			return nil, fmt.Errorf("error while reading from socket: %s", err)
+		}
 	}
 
 	if n > maxBufferSize {

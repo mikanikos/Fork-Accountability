@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net"
-	"strings"
 	"sync"
 	"time"
 
@@ -24,17 +23,10 @@ func NewConnectionHandler() *ConnectionHandler {
 }
 
 // method to resolve processes addresses and store connection objects
-func (connHandler *ConnectionHandler) connectToValidators(validators string) error {
-
-	// split list of string addresses only if it's not empty in order to avoid problems
-	validatorsList := make([]string, 0)
-
-	if validators != "" {
-		validatorsList = strings.Split(validators, ",")
-	}
+func (connHandler *ConnectionHandler) connectToValidators(validators []string) error {
 
 	// resolve peers addresses given
-	for _, val := range validatorsList {
+	for _, val := range validators {
 		conn, err := connection.Connect(val)
 		if err == nil {
 			fmt.Println("Monitor: connected to " + conn.RemoteAddr().String())

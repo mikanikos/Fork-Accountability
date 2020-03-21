@@ -2,6 +2,7 @@ package connection
 
 import (
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/mikanikos/Fork-Accountability/common"
@@ -38,7 +39,11 @@ func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
 		packet, err := Receive(conn)
 
 		if err != nil {
-			fmt.Printf("error while trying to receive packet: %s", err)
+			if err == io.EOF {
+				fmt.Println("Monitor closed the connection")
+			} else {
+				fmt.Printf("error while trying to receive packet: %s", err)
+			}
 			break
 		}
 

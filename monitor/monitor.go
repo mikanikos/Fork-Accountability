@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/mikanikos/Fork-Accountability/algorithm"
@@ -25,8 +26,15 @@ func main() {
 	// handler for the connection with validators
 	connHandler := NewConnectionHandler()
 
+	// split list of string addresses only if it's not empty in order to avoid problems
+	validatorsList := make([]string, 0)
+
+	if *processes != "" {
+		validatorsList = strings.Split(*processes, ",")
+	}
+
 	// connect to validators for requesting hvs
-	err := connHandler.connectToValidators(*processes)
+	err := connHandler.connectToValidators(validatorsList)
 	if err != nil {
 		fmt.Printf("Monitor exiting: couldn't connect to all validators: %s", err)
 		os.Exit(1)
@@ -49,7 +57,7 @@ func main() {
 	fmt.Println("Monitor: Got all hvs from validators")
 
 	// run monitor and get faulty processes
-	faultyProcesses := algorithm.IdentifyFaultyProcesses(uint64(len(hvsMap.Logs)), *firstDecisionRound, *secondDecisionRound, hvsMap)
+	faultyProcesses := algorithm.IdentifyFaultyProcesses(uint64(len(validatorsList)), *firstDecisionRound, *secondDecisionRound, hvsMap)
 
 	fmt.Println(faultyProcesses.String())
 
