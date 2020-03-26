@@ -11,5 +11,14 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Intellij data
+.idea/
+*.iml
+
+# Binary files
+Fork-Accountability
+validator/validator
+monitor/monitor
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
