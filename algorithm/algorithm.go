@@ -3,6 +3,7 @@ package algorithm
 import (
 	"errors"
 	"github.com/mikanikos/Fork-Accountability/common"
+	"sync"
 )
 
 var (
@@ -24,12 +25,8 @@ func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRou
 	// first, preprocess messages by scanning all the received vote sets and add missing messages in the processes which omitted sent messages
 	preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
 
-	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
-	if firstDecisionRound == secondDecisionRound {
-		findFaultinessInSameRound(numProcesses, firstDecisionRound, hvsMap)
-	} else {
-		findFaultinessInDifferentRound(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
-	}
+	// then, find faulty processes by analyzing the message logs
+	findFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
 
 	return faultyProcesses
 }
@@ -76,6 +73,26 @@ func addMissingVotes(hvsMap *common.HeightLogs, receivedMessages []*common.Messa
 	}
 }
 
+// check for faultiness in each process by analyzing the history of messages and making sure it followed the consensus algorithm
+func findFaultyProcesses(numProcesses, firstRound, secondRound uint64, hvsMap *common.HeightLogs) {
+	wg := sync.WaitGroup{}
+	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
+
+	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
+	for processId := uint64(1); processId <= numProcesses; processId++ {
+		wg.Add(1)
+
+		hvs, hvsLoad := hvsMap.Logs[processId]
+		// if process didn't send the hvs, ignore because pre-processing already caught that
+		if hvs == nil || !hvsLoad {
+			continue
+		}
+
+		go isProcessFaulty(quorum, firstRound, secondRound, hvsMap.Logs[processId], &wg)
+	}
+}
+
+
 func checkForDuplicateMessages(processId, round uint64, vs *common.VoteSet) {
 	// check for duplicates prevotes
 	if len(vs.SentPrevoteMessages) > 1 {
@@ -88,32 +105,22 @@ func checkForDuplicateMessages(processId, round uint64, vs *common.VoteSet) {
 	}
 }
 
-// find faultiness if the fork happened in different rounds
-func findFaultinessInDifferentRound(numProcesses uint64, firstRound uint64, secondRound uint64, hvsMap *common.HeightLogs) {
+func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightVoteSet, wg *sync.WaitGroup) {
+	lockValue := -1
+	lockRound := uint64(0)
 
-	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
-
-	for processId := uint64(1); processId <= numProcesses; processId++ {
-
-		lockValue := -1
-		lockRound := uint64(0)
-
-		hvs, hvsLoad := hvsMap.Logs[processId]
-		// if process didn't send the hvs, ignore because pre-processing already caught that
-		if hvs == nil || !hvsLoad {
+	for round := firstRound; round <= secondRound; round++ {
+		vs, vsLoad := hvs.VoteSetMap[round]
+		// if process doesn't have a voteset, just ignore
+		if vs == nil || !vsLoad {
 			continue
 		}
 
-		for round := firstRound; round <= secondRound; round++ {
-			vs, vsLoad := hvs.VoteSetMap[round]
-			// if process doesn't have a voteset, just ignore
-			if vs == nil || !vsLoad {
-				continue
-			}
+		// check if multiple prevotes/precommits have been sent in the same round
+		checkForDuplicateMessages(hvs.OwnerID, round, vs)
 
-			// check if multiple prevotes/precommits have been sent in the same round
-			checkForDuplicateMessages(hvs.OwnerID, round, vs)
-
+		// avoid to check for other faultiness reasons if the fork happened in the same round
+		if firstRound != secondRound {
 			if len(vs.SentPrevoteMessages) == 1 {
 				// Only one prevote message has been sent
 				// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
@@ -140,27 +147,6 @@ func findFaultinessInDifferentRound(numProcesses uint64, firstRound uint64, seco
 					lockRound = round
 				}
 			}
-
 		}
-	}
-}
-
-// find faultiness if the fork happened in the same round: only equivocation is possible
-func findFaultinessInSameRound(numProcesses uint64, round uint64, hvsMap *common.HeightLogs) {
-	for processId := uint64(1); processId <= numProcesses; processId++ {
-		hvs, hvsLoad := hvsMap.Logs[processId]
-		// if process didn't send the hvs, ignore because pre-processing already caught that
-		if hvs == nil || !hvsLoad {
-			continue
-		}
-
-		vs, vsLoad := hvs.VoteSetMap[round]
-		// if process doesn't have a voteset, just ignore
-		if vs == nil || !vsLoad {
-			continue
-		}
-
-		// check if multiple prevotes/precommits have been sent in the same round
-		checkForDuplicateMessages(hvs.OwnerID, round, vs)
 	}
 }

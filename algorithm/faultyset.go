@@ -4,11 +4,13 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // FaultySet stores all the validators that are faulty and the corresponding faultiness proofs
 type FaultySet struct {
 	faultyProcesses map[uint64][]*Faultiness
+	Mutex           sync.Mutex
 }
 
 // NewFaultySet creates a new FaultySet structure
@@ -20,6 +22,9 @@ func NewFaultySet() *FaultySet {
 
 // AddFaultinessReason in the faultySet if not already present
 func (fs *FaultySet) AddFaultinessReason(fr *Faultiness) {
+	fs.Mutex.Lock()
+	defer fs.Mutex.Unlock()
+
 	reasons, reasonsLoad := fs.faultyProcesses[fr.processID]
 	// create list of reasons for the process if not present
 	if reasons == nil || !reasonsLoad {
