@@ -80,7 +80,6 @@ func findFaultyProcesses(numProcesses, firstRound, secondRound uint64, hvsMap *c
 
 	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
 	for processId := uint64(1); processId <= numProcesses; processId++ {
-		wg.Add(1)
 
 		hvs, hvsLoad := hvsMap.Logs[processId]
 		// if process didn't send the hvs, ignore because pre-processing already caught that
@@ -88,8 +87,11 @@ func findFaultyProcesses(numProcesses, firstRound, secondRound uint64, hvsMap *c
 			continue
 		}
 
+		wg.Add(1)
 		go isProcessFaulty(quorum, firstRound, secondRound, hvsMap.Logs[processId], &wg)
 	}
+
+	wg.Wait()
 }
 
 
@@ -149,4 +151,6 @@ func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightV
 			}
 		}
 	}
+
+	wg.Done()
 }
