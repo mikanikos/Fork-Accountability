@@ -7,8 +7,8 @@ import (
 
 var (
 	ErrHVSNotSent                    = errors.New("the process did not send its HeightVoteSet")
-	ErrMultiplePrevote               = errors.New("the process sent more than one PREVOTE message in a round")
-	ErrMultiplePrecommit             = errors.New("the process sent more than one PRECOMMIT message in a round")
+	ErrMultiplePrevotes              = errors.New("the process sent more than one PREVOTE message in a round")
+	ErrMultiplePrecommits            = errors.New("the process sent more than one PRECOMMIT message in a round")
 	ErrNotEnoughPrevotesForPrecommit = errors.New("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
 	ErrNotEnoughPrevotesForPrevote   = errors.New("the process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued")
 )
@@ -25,8 +25,10 @@ func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRou
 	preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
 
 	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
-	for i := uint64(1); i <= numProcesses; i++ {
-		findFaultiness(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap.Logs[i])
+	if firstDecisionRound == secondDecisionRound {
+		findFaultinessInSameRound(numProcesses, firstDecisionRound, hvsMap)
+	} else {
+		findFaultinessInDifferentRound(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
 	}
 
 	return faultyProcesses
@@ -37,9 +39,9 @@ func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound ui
 	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
 		for processIndex := uint64(1); processIndex <= numProcesses; processIndex++ {
 
-			hvs := hvsMap.Logs[processIndex]
+			hvs, hvsLoad := hvsMap.Logs[processIndex]
 			// if process didn't send the hvs, it's faulty
-			if hvs == nil {
+			if hvs == nil || !hvsLoad {
 				faultyProcesses.AddFaultinessReason(NewFaultiness(processIndex, 0, ErrHVSNotSent))
 				continue
 			}
@@ -74,61 +76,91 @@ func addMissingVotes(hvsMap *common.HeightLogs, receivedMessages []*common.Messa
 	}
 }
 
-// tries to find all the faultiness reasons in all the rounds given the current hvs of a process
-func findFaultiness(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvs *common.HeightVoteSet) {
-
-	if hvs == nil {
-		return
+func checkForDuplicateMessages(processId, round uint64, vs *common.VoteSet) {
+	// check for duplicates prevotes
+	if len(vs.SentPrevoteMessages) > 1 {
+		faultyProcesses.AddFaultinessReason(NewFaultiness(processId, round, ErrMultiplePrevotes))
 	}
 
-	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
-	precommitSent := false
-	precommitValue := -1
-	precommitRound := uint64(0)
+	// check for duplicates precommits
+	if len(vs.SentPrecommitMessages) > 1 {
+		faultyProcesses.AddFaultinessReason(NewFaultiness(processId, round, ErrMultiplePrecommits))
+	}
+}
 
-	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
+// find faultiness if the fork happened in different rounds
+func findFaultinessInDifferentRound(numProcesses uint64, firstRound uint64, secondRound uint64, hvsMap *common.HeightLogs) {
+
+	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
+
+	for processId := uint64(1); processId <= numProcesses; processId++ {
+
+		lockValue := -1
+		lockRound := uint64(0)
+
+		hvs, hvsLoad := hvsMap.Logs[processId]
+		// if process didn't send the hvs, ignore because pre-processing already caught that
+		if hvs == nil || !hvsLoad {
+			continue
+		}
+
+		for round := firstRound; round <= secondRound; round++ {
+			vs, vsLoad := hvs.VoteSetMap[round]
+			// if process doesn't have a voteset, just ignore
+			if vs == nil || !vsLoad {
+				continue
+			}
+
+			// check if multiple prevotes/precommits have been sent in the same round
+			checkForDuplicateMessages(hvs.OwnerID, round, vs)
+
+			if len(vs.SentPrevoteMessages) == 1 {
+				// Only one prevote message has been sent
+				// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
+				if lockValue != -1 {
+					message := vs.SentPrevoteMessages[0]
+					// Only if two values are not the same, we should look for 2f + 1 prevote messages
+					if message.Value != lockValue {
+						if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(lockRound, round, quorum, message) {
+							faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrevote))
+						}
+					}
+				}
+			}
+
+			if len(vs.SentPrecommitMessages) == 1 {
+				message := vs.SentPrecommitMessages[0]
+				if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
+					faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrecommit))
+				}
+
+				// If not -1 is precommited
+				if message.Value != -1 {
+					lockValue = message.Value
+					lockRound = round
+				}
+			}
+
+		}
+	}
+}
+
+// find faultiness if the fork happened in the same round: only equivocation is possible
+func findFaultinessInSameRound(numProcesses uint64, round uint64, hvsMap *common.HeightLogs) {
+	for processId := uint64(1); processId <= numProcesses; processId++ {
+		hvs, hvsLoad := hvsMap.Logs[processId]
+		// if process didn't send the hvs, ignore because pre-processing already caught that
+		if hvs == nil || !hvsLoad {
+			continue
+		}
+
 		vs, vsLoad := hvs.VoteSetMap[round]
-		// Maybe some process does not have a voteset for this round
+		// if process doesn't have a voteset, just ignore
 		if vs == nil || !vsLoad {
 			continue
 		}
 
-		// check for duplicates prevotes
-		if len(vs.SentPrevoteMessages) > 1 {
-			faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrMultiplePrevote))
-		}
-
-		if len(vs.SentPrevoteMessages) == 1 {
-			// Only one prevote message has been sent
-			// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
-			if precommitSent {
-				message := vs.SentPrevoteMessages[0]
-				// Only if two values are not the same, we should look for 2f + 1 prevote messages
-				if message.Value != precommitValue {
-					if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(precommitRound, round, quorum, message) {
-						faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrevote))
-					}
-				}
-			}
-		}
-
-		// check for duplicates precommits
-		if len(vs.SentPrecommitMessages) > 1 {
-			faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrMultiplePrecommit))
-		}
-
-		if len(vs.SentPrecommitMessages) == 1 {
-			message := vs.SentPrecommitMessages[0]
-			if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
-				faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrecommit))
-			}
-
-			// If not nil is precommited
-			if message.Value != -1 {
-				precommitSent = true
-				precommitValue = message.Value
-				precommitRound = round
-			}
-		}
+		// check if multiple prevotes/precommits have been sent in the same round
+		checkForDuplicateMessages(hvs.OwnerID, round, vs)
 	}
 }

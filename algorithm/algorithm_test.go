@@ -103,9 +103,9 @@ func TestBasicScenario(t *testing.T) {
 	faultySet := IdentifyFaultyProcesses(4, 3, 4, logs)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, ErrNotEnoughPrevotesForPrevote))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, ErrNotEnoughPrevotesForPrevote))
 
 	if !faultySet.Equal(expectedFaultySet) {
@@ -272,10 +272,10 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	faultySet := IdentifyFaultyProcesses(4, 3, 4, logs)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 3, ErrMultiplePrecommit))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 3, ErrMultiplePrecommits))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, ErrNotEnoughPrevotesForPrevote))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, ErrNotEnoughPrevotesForPrevote))
 
 	if !faultySet.Equal(expectedFaultySet) {
@@ -381,10 +381,10 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	faultySet := IdentifyFaultyProcesses(4, 3, 4, logs)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 3, ErrMultiplePrevote))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 3, ErrMultiplePrevotes))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, ErrNotEnoughPrevotesForPrevote))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, ErrNotEnoughPrevotesForPrevote))
 
 	if !faultySet.Equal(expectedFaultySet) {
@@ -489,9 +489,9 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(1, 3, ErrNotEnoughPrevotesForPrecommit))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, ErrNotEnoughPrevotesForPrevote))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, ErrMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, ErrNotEnoughPrevotesForPrevote))
 
 	if !faultySet.Equal(expectedFaultySet) {
