@@ -94,7 +94,6 @@ func findFaultyProcesses(numProcesses, firstRound, secondRound uint64, hvsMap *c
 	wg.Wait()
 }
 
-
 func checkForDuplicateMessages(processId, round uint64, vs *common.VoteSet) {
 	// check for duplicates prevotes
 	if len(vs.SentPrevoteMessages) > 1 {
@@ -121,33 +120,30 @@ func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightV
 		// check if multiple prevotes/precommits have been sent in the same round
 		checkForDuplicateMessages(hvs.OwnerID, round, vs)
 
-		// avoid to check for other faultiness reasons if the fork happened in the same round
-		if firstRound != secondRound {
-			if len(vs.SentPrevoteMessages) == 1 {
-				// Only one prevote message has been sent
-				// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
-				if lockValue != -1 {
-					message := vs.SentPrevoteMessages[0]
-					// Only if two values are not the same, we should look for 2f + 1 prevote messages
-					if message.Value != lockValue {
-						if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(lockRound, round, quorum, message) {
-							faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrevote))
-						}
+		if len(vs.SentPrevoteMessages) == 1 {
+			// Only one prevote message has been sent
+			// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
+			if lockValue != -1 {
+				message := vs.SentPrevoteMessages[0]
+				// Only if two values are not the same, we should look for 2f + 1 prevote messages
+				if message.Value != lockValue {
+					if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(lockRound, round, quorum, message) {
+						faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrevote))
 					}
 				}
 			}
+		}
 
-			if len(vs.SentPrecommitMessages) == 1 {
-				message := vs.SentPrecommitMessages[0]
-				if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
-					faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrecommit))
-				}
+		if len(vs.SentPrecommitMessages) == 1 {
+			message := vs.SentPrecommitMessages[0]
+			if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
+				faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrecommit))
+			}
 
-				// If not -1 is precommited
-				if message.Value != -1 {
-					lockValue = message.Value
-					lockRound = round
-				}
+			// If not -1 is precommited
+			if message.Value != -1 {
+				lockValue = message.Value
+				lockRound = round
 			}
 		}
 	}
