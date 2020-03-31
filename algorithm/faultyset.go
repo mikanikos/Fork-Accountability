@@ -67,7 +67,12 @@ func (fs *FaultySet) String() string {
 	return sb.String()
 }
 
-// equality for faultySets
+// equality for faultySet
 func (fs *FaultySet) Equal(other *FaultySet) bool {
 	return reflect.DeepEqual(fs, other)
+}
+
+// length of the faultySet
+func (fs *FaultySet) Length() int {
+	return len(fs.faultyProcesses)
 }

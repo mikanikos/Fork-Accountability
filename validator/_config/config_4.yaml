@@ -1,69 +1,73 @@
 --- # config file for validator 4
-# owner
 id: 4
-heightvoteset:
-  # round
-  3:
-    received_prevote:
-      - type: PREVOTE
-        sender: 2
-        round: 3
-        value: 10
+address: 127.0.0.1:8083
+messages:
+  # height
+  1:
+    ownerID: 4
+    heightvoteset:
+      # round
+      3:
+        received_prevote:
+          - type: PREVOTE
+            sender: 2
+            round: 3
+            value: 10
 
-      - type: PREVOTE
-        sender: 3
-        round: 3
-        value: 10
+          - type: PREVOTE
+            sender: 3
+            round: 3
+            value: 10
 
-      - type: PREVOTE
-        sender: 4
-        round: 3
-        value: 10
+          - type: PREVOTE
+            sender: 4
+            round: 3
+            value: 10
 
-    received_precommit: []
+        received_precommit: []
 
-    sent_prevote:
-      - type: PREVOTE
-        sender: 4
-        round: 3
-        value: 10
+        sent_prevote:
+          - type: PREVOTE
+            sender: 4
+            round: 3
+            value: 10
 
-    sent_precommit:
-      - type: PRECOMMIT
-        sender: 4
-        round: 3
-        value: 10
+        sent_precommit:
+          - type: PRECOMMIT
+            sender: 4
+            round: 3
+            value: 10
 
-  # round
-  4:
-    received_prevote:
-      - type: PREVOTE
-        sender: 2
-        round: 4
-        value: 20
+      # round
+      4:
+        received_prevote:
+          - type: PREVOTE
+            sender: 2
+            round: 4
+            value: 20
 
-      - type: PREVOTE
-        sender: 3
-        round: 4
-        value: 20
+          - type: PREVOTE
+            sender: 3
+            round: 4
+            value: 20
 
-      - type: PREVOTE
-        sender: 4
-        round: 4
-        value: 20
+          - type: PREVOTE
+            sender: 4
+            round: 4
+            value: 20
 
-    received_precommit: []
+        received_precommit: []
 
-    sent_prevote:
-      - type: PREVOTE
-        sender: 4
-        round: 4
-        value: 20
+        sent_prevote:
+          - type: PREVOTE
+            sender: 4
+            round: 4
+            value: 20
 
-    sent_precommit:
-      - type: PRECOMMIT
-        sender: 4
-        round: 4
-        value: 20
+        sent_precommit:
+          - type: PRECOMMIT
+            sender: 4
+            round: 4
+            value: 20
 
 

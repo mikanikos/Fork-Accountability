@@ -18,19 +18,21 @@ const (
 
 // Message struct
 type Message struct {
-	Type     MessageType `yaml:"type"`
-	SenderID uint64      `yaml:"sender"`
-	Round    uint64      `yaml:"round"`
-	Value    int         `yaml:"value"`
+	Type           MessageType `yaml:"type"`
+	SenderID       uint64      `yaml:"sender"`
+	Round          uint64      `yaml:"round"`
+	Value          int         `yaml:"value"`
+	Justifications []*Message  `yaml:"justifications"`
 }
 
 // NewMessage creates a new message
-func NewMessage(typeMes MessageType, senderID, round uint64, value int) *Message {
+func NewMessage(typeMes MessageType, senderID, round uint64, value int, justifications []*Message) *Message {
 	return &Message{
-		Type:     typeMes,
-		SenderID: senderID,
-		Round:    round,
-		Value:    value,
+		Type:           typeMes,
+		SenderID:       senderID,
+		Round:          round,
+		Value:          value,
+		Justifications: justifications,
 	}
 }
 

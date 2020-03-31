@@ -10,7 +10,7 @@ import (
 
 func Test_CorrectConfigParsing(t *testing.T) {
 
-	// Process p1 - correct
+	// Validator p1 - correct
 	voteSet1 := common.NewVoteSet()
 	voteSet1.ReceivedPrevoteMessages = append(voteSet1.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 3, 10))
 	voteSet1.ReceivedPrevoteMessages = append(voteSet1.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10))
@@ -26,7 +26,7 @@ func Test_CorrectConfigParsing(t *testing.T) {
 	heightVoteSet1 := common.NewHeightVoteSet(1)
 	heightVoteSet1.VoteSetMap[3] = voteSet1
 
-	// Process p2 - correct
+	// Validator p2 - correct
 	voteSet2 := common.NewVoteSet()
 	voteSet2.ReceivedPrevoteMessages = append(voteSet2.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 3, 10))
 	voteSet2.ReceivedPrevoteMessages = append(voteSet2.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10))
@@ -54,7 +54,7 @@ func Test_CorrectConfigParsing(t *testing.T) {
 	heightVoteSet2.VoteSetMap[3] = voteSet2
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
-	// Process P3 - faulty
+	// Validator P3 - faulty
 	voteSet3 := common.NewVoteSet()
 	voteSet3.ReceivedPrevoteMessages = append(voteSet3.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 3, 10))
 	voteSet3.ReceivedPrevoteMessages = append(voteSet3.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10))
@@ -75,7 +75,7 @@ func Test_CorrectConfigParsing(t *testing.T) {
 	heightVoteSet3.VoteSetMap[3] = voteSet3
 	heightVoteSet3.VoteSetMap[4] = voteSet33
 
-	// Process P4 - faulty
+	// Validator P4 - faulty
 	voteSet4 := common.NewVoteSet()
 	voteSet4.ReceivedPrevoteMessages = append(voteSet4.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 3, 10))
 	voteSet4.ReceivedPrevoteMessages = append(voteSet4.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10))
@@ -96,7 +96,7 @@ func Test_CorrectConfigParsing(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	fileName1 := "config_1.yaml"
+	fileName1 := "config.yaml"
 
 	hvs1, err := parseConfigFile(fileName1)
 	if err != nil {

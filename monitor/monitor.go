@@ -3,63 +3,73 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/mikanikos/Fork-Accountability/algorithm"
+	"github.com/mikanikos/Fork-Accountability/common"
+	"github.com/mikanikos/Fork-Accountability/utils"
+	"log"
 )
+
+// Monitor struct
+type Monitor struct {
+	Height              uint64   `yaml:"height"`
+	FirstDecisionRound  uint64   `yaml:"firstDecisionRound"`
+	SecondDecisionRound uint64   `yaml:"secondDecisionRound"`
+	Validators          []string `yaml:"validators"`
+}
+
+const configDirectory = "/_config/"
 
 func main() {
 
-	// parsing arguments
-	processes := flag.String("processes", "", "comma separated list of all processes addresses in the form ip:port")
-	firstDecisionRound := flag.Uint64("firstDecisionRound", 0, "first round when a decision was taken")
-	secondDecisionRound := flag.Uint64("secondDecisionRound", 0, "second round when a decision was taken (when fork was detected)")
-	waitTimeout := flag.Uint("waitTimeout", 5, "timeout to wait for HeightVoteSet from each process")
+	// parse arguments
+	configFile := flag.String("config", "", "configuration file path of the monitor")
 
+	// parse arguments
 	flag.Parse()
 
-	// wait for validators to start (can be added/removed whether validators are already listening on their port or not)
-	time.Sleep(time.Second * time.Duration(5))
+	// parse file
+	monitor := &Monitor{}
+	err := utils.ParseConfigFile(configDirectory+*configFile, monitor)
+	if err != nil {
+		log.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
+	}
 
-	// handler for the connection with validators
-	connHandler := NewConnectionHandler()
-
-	// split list of string addresses only if it's not empty in order to avoid problems
-	validatorsList := make([]string, 0)
-
-	if *processes != "" {
-		validatorsList = strings.Split(*processes, ",")
+	numValidators := len(monitor.Validators)
+	if numValidators == 0 {
+		log.Fatal("Monitor exiting: no validators given")
 	}
 
 	// connect to validators for requesting hvs
-	err := connHandler.connectToValidators(validatorsList)
+	connectionHandler := NewConnectionHandler(numValidators)
+	err = connectionHandler.connectToValidators(monitor.Validators)
 	if err != nil {
-		fmt.Printf("Monitor exiting: couldn't connect to all validators: %s", err)
-		os.Exit(1)
+		log.Fatalf("Monitor exiting: couldn't connect to all validators: %s", err)
 	}
 
-	fmt.Println("Monitor: Connected to validators")
+	fmt.Println("Monitor: Connected to validators, waiting for height vote sets")
 
-	// request hvs from all processes
-	hvsMap, err := connHandler.requestHeightLogs(*waitTimeout)
-	if err != nil {
-		fmt.Printf("Monitor exiting: error during the request of hvs: %s", err)
-		os.Exit(1)
+	// make request for hvs to validators
+	logs := common.NewHeightLogs(monitor.Height)
+	connectionHandler.requestHeightLogs(monitor.Height)
+
+	// create faulty set structure
+	faultySet := algorithm.NewFaultySet()
+	// lower bound on the number of faulty processes
+	minFaulty := (numValidators-1)/3 + 1 // f+1
+
+	// run until we have at least f+1 faulty processes
+	for faultySet.Length() < minFaulty {
+		// receive hvs from processes, it blocks the execution until another hvs arrives
+		hvs := <-connectionHandler.receiveChannel
+		logs.AddHvs(hvs)
+
+		// if we have at least f+1 hvs, run the monitor algorithm
+		if len(logs.Logs) >= minFaulty {
+			// run monitor and get faulty processes
+			faultySet = algorithm.IdentifyFaultyProcesses(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound, logs)
+		}
 	}
 
-	if len(hvsMap.Logs) == 0 {
-		fmt.Print("Monitor exiting: no hvs received within the timeout")
-		os.Exit(1)
-	}
-
-	fmt.Println("Monitor: Got all hvs from validators")
-
-	// run monitor and get faulty processes
-	faultyProcesses := algorithm.IdentifyFaultyProcesses(uint64(len(validatorsList)), *firstDecisionRound, *secondDecisionRound, hvsMap)
-
-	fmt.Println(faultyProcesses.String())
-
-	fmt.Println("Monitor: Run completed")
+	fmt.Println(faultySet.String())
+	fmt.Println("Monitor: Algorithm completed")
 }

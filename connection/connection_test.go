@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"github.com/mikanikos/Fork-Accountability/validator"
 	"testing"
 	"time"
 )
@@ -11,7 +12,7 @@ func Test_ServerInitialization(t *testing.T) {
 
 	// server
 	go func() {
-		err := Listen("127.0.0.1:7070", nil)
+		err := main.Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -23,7 +24,7 @@ func Test_ServerWrongAddressForListen(t *testing.T) {
 
 	// server
 	go func() {
-		err := Listen("127.0.0.1:7070", nil)
+		err := main.Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -36,7 +37,7 @@ func Test_ClientInitialization(t *testing.T) {
 
 	// server
 	go func() {
-		err := Listen("127.0.0.1:7070", nil)
+		err := main.Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -60,7 +61,7 @@ func Test_ClientSendsMessage(t *testing.T) {
 
 	// server
 	go func() {
-		err := Listen("127.0.0.1:7070", nil)
+		err := main.Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -81,7 +82,7 @@ func Test_ServerClientInteraction(t *testing.T) {
 
 	// server
 	go func() {
-		err := Listen("127.0.0.1:7070", nil)
+		err := main.Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
