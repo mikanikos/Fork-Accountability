@@ -16,6 +16,13 @@ type Validator struct {
 	Server *connection.Server // server
 }
 
+func NewValidator() *Validator {
+	return &Validator{
+		Messages: make(map[uint64]*common.HeightVoteSet),
+		Server:   connection.NewServer(),
+	}
+}
+
 func (validator *Validator) Run() {
 	fmt.Println("Validator on " + validator.Address + ": start listening for incoming requests")
 

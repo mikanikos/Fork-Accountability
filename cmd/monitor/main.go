@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	// parse file
-	monitor := &Monitor{}
+	monitor := NewMonitor()
 	err := utils.ParseConfigFile(configDirectory+*configFile, monitor)
 	if err != nil {
 		log.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
