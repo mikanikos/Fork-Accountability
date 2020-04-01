@@ -44,6 +44,8 @@ func Test_ClientInitialization(t *testing.T) {
 		}
 	}()
 
+	time.Sleep(time.Duration(1) * time.Second)
+
 	_, err := Connect(address)
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
@@ -69,6 +71,8 @@ func Test_ClientSendsMessage(t *testing.T) {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
 	}()
+
+	time.Sleep(time.Duration(2) * time.Second)
 
 	connClient, err := Connect(address)
 	if err != nil {

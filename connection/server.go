@@ -44,7 +44,7 @@ func (server *Server) Listen(address string) error {
 	}
 }
 
-// handle connection from client
+// HandleConnection from the given connection
 func (server *Server) HandleConnection(connection *Connection) {
 
 	fmt.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())

@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/mikanikos/Fork-Accountability/utils"
 	"log"
+
+	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
 const configDirectory = "/_config/"

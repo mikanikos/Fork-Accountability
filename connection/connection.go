@@ -10,6 +10,7 @@ import (
 	"go.dedis.ch/protobuf"
 )
 
+// Connection is a wrapper for a net.Conn
 type Connection struct {
 	Conn net.Conn
 }
@@ -44,9 +45,8 @@ func (c *Connection) Receive() (*Packet, error) {
 	if err != nil {
 		if err == io.EOF {
 			return nil, err
-		} else {
-			return nil, fmt.Errorf("error while reading from socket: %s", err)
 		}
+		return nil, fmt.Errorf("error while reading from socket: %s", err)
 	}
 
 	if n > maxBufferSize {

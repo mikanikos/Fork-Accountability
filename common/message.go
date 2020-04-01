@@ -37,7 +37,7 @@ func NewMessage(typeMes MessageType, senderID, round uint64, value int, justific
 	}
 }
 
-// equality for messages
+// Equal is the equality method for messages
 func (mes *Message) Equal(other *Message) bool {
 	return reflect.DeepEqual(mes, other)
 }

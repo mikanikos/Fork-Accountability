@@ -45,6 +45,21 @@ messages:
             sender: 2
             round: 4
             value: 20
+            justifications:
+              - type: PREVOTE
+                sender: 1
+                round: 3
+                value: 20
+
+              - type: PREVOTE
+                sender: 3
+                round: 3
+                value: 20
+
+              - type: PREVOTE
+                sender: 4
+                round: 3
+                value: 20
 
           - type: PREVOTE
             sender: 3

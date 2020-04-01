@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/mikanikos/Fork-Accountability/accountability"
 	"github.com/mikanikos/Fork-Accountability/common"
 	"github.com/mikanikos/Fork-Accountability/connection"
-	"log"
 )
 
 const (
@@ -33,6 +34,7 @@ func NewMonitor() *Monitor {
 	}
 }
 
+// Run monitor algorithm
 func (monitor *Monitor) Run() {
 	if monitor.Validators == nil || len(monitor.Validators) == 0 {
 		log.Fatal("Monitor exiting: no validators given")
@@ -73,7 +75,6 @@ func (monitor *Monitor) runAccountabilityAlgorithm() {
 	}
 
 	fmt.Println(acc.HeightLogs.String())
-	fmt.Println()
 	fmt.Println(acc.FaultySet.String())
 	fmt.Println("Monitor: Algorithm completed")
 

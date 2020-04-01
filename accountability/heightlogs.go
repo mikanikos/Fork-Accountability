@@ -1,11 +1,12 @@
 package accountability
 
 import (
-	"github.com/mikanikos/Fork-Accountability/common"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/mikanikos/Fork-Accountability/common"
 )
 
 // HeightLogs contains all messages for all the rounds from each process in a specific height
@@ -14,7 +15,7 @@ type HeightLogs struct {
 	mutex sync.Mutex
 }
 
-// NewHeightVoteSet creates a new height HeightLogs structure
+// NewHeightLogs creates a new HeightLogs structure
 func NewHeightLogs() *HeightLogs {
 	return &HeightLogs{
 		logs: make(map[uint64]*common.HeightVoteSet),
@@ -44,12 +45,12 @@ func (hl *HeightLogs) String() string {
 	return sb.String()
 }
 
-// equality for HeightLogs
+// Equal is an equality method for HeightLogs
 func (hl *HeightLogs) Equal(other *HeightLogs) bool {
 	return reflect.DeepEqual(hl, other)
 }
 
-// length of the HeightLogs
+// Length returns the length of the HeightLogs
 func (hl *HeightLogs) Length() int {
 	return len(hl.logs)
 }

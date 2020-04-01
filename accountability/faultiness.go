@@ -6,16 +6,18 @@ import (
 	"strings"
 )
 
+// FaultinessReason wraps a string for simplicity
 type FaultinessReason string
 
+// FaultinessReason returns the string representation
 func (fr FaultinessReason) FaultinessReason() string { return string(fr) }
 
 const (
-	FaultinessHVSNotSent                    = FaultinessReason("the process did not send its HeightVoteSet")
-	FaultinessMultiplePrevotes              = FaultinessReason("the process sent more than one PREVOTE message in a round")
-	FaultinessMultiplePrecommits            = FaultinessReason("the process sent more than one PRECOMMIT message in a round")
-	FaultinessNotEnoughPrevotesForPrecommit = FaultinessReason("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
-	FaultinessNotEnoughPrevotesForPrevote   = FaultinessReason("the process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued")
+	// FaultinessHVSNotSent                    = FaultinessReason("the process did not send its HeightVoteSet")
+	faultinessMultiplePrevotes              = FaultinessReason("the process sent more than one PREVOTE message in a round")
+	faultinessMultiplePrecommits            = FaultinessReason("the process sent more than one PRECOMMIT message in a round")
+	faultinessNotEnoughPrevotesForPrecommit = FaultinessReason("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
+	faultinessNotEnoughPrevotesForPrevote   = FaultinessReason("the process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued")
 )
 
 // Faultiness stores information about faulty processes
@@ -25,7 +27,7 @@ type Faultiness struct {
 	reason    FaultinessReason
 }
 
-// NewAccountability creates a new Faultiness structure
+// NewFaultiness creates a new Faultiness structure
 func NewFaultiness(processID, round uint64, reason FaultinessReason) *Faultiness {
 	return &Faultiness{
 		processID: processID,
@@ -48,7 +50,7 @@ func (fr *Faultiness) String() string {
 	return sb.String()
 }
 
-// equality for faultiness
+// Equal is an equality method for faultiness
 func (fr *Faultiness) Equal(other *Faultiness) bool {
 	return reflect.DeepEqual(fr, other)
 }

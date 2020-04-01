@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/mikanikos/Fork-Accountability/common"
-	"github.com/mikanikos/Fork-Accountability/utils"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/mikanikos/Fork-Accountability/common"
+	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
 func Test_CorrectConfigParsing_1(t *testing.T) {
@@ -63,7 +64,10 @@ func Test_CorrectConfigParsing_2(t *testing.T) {
 	voteSet2.SentPrecommitMessages = append(voteSet2.SentPrecommitMessages, common.NewMessage(common.Precommit, 2, 3, 10, nil))
 
 	voteSet22 := common.NewVoteSet()
-	voteSet22.ReceivedPrevoteMessages = append(voteSet22.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, nil))
+	voteSet22.ReceivedPrevoteMessages = append(voteSet22.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, []*common.Message{
+		common.NewMessage(common.Prevote, 1, 3, 20, nil),
+		common.NewMessage(common.Prevote, 3, 3, 20, nil),
+		common.NewMessage(common.Prevote, 4, 3, 20, nil)}))
 	voteSet22.ReceivedPrevoteMessages = append(voteSet22.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 4, 20, nil))
 	voteSet22.ReceivedPrevoteMessages = append(voteSet22.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 4, 20, nil))
 
@@ -71,7 +75,10 @@ func Test_CorrectConfigParsing_2(t *testing.T) {
 	voteSet22.ReceivedPrecommitMessages = append(voteSet22.ReceivedPrecommitMessages, common.NewMessage(common.Precommit, 3, 4, 20, nil))
 	voteSet22.ReceivedPrecommitMessages = append(voteSet22.ReceivedPrecommitMessages, common.NewMessage(common.Precommit, 4, 4, 20, nil))
 
-	voteSet22.SentPrevoteMessages = append(voteSet22.SentPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, nil))
+	voteSet22.SentPrevoteMessages = append(voteSet22.SentPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, []*common.Message{
+		common.NewMessage(common.Prevote, 1, 3, 20, nil),
+		common.NewMessage(common.Prevote, 3, 3, 20, nil),
+		common.NewMessage(common.Prevote, 4, 3, 20, nil)}))
 	voteSet22.SentPrecommitMessages = append(voteSet22.SentPrecommitMessages, common.NewMessage(common.Precommit, 2, 4, 20, nil))
 
 	heightVoteSet2 := common.NewHeightVoteSet(2)
@@ -111,7 +118,10 @@ func Test_CorrectConfigParsing_3(t *testing.T) {
 	voteSet3.SentPrecommitMessages = append(voteSet3.SentPrecommitMessages, common.NewMessage(common.Precommit, 3, 3, 10, nil))
 
 	voteSet33 := common.NewVoteSet()
-	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, nil))
+	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, []*common.Message{
+		common.NewMessage(common.Prevote, 1, 3, 20, nil),
+		common.NewMessage(common.Prevote, 3, 3, 20, nil),
+		common.NewMessage(common.Prevote, 4, 3, 20, nil)}))
 	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 4, 20, nil))
 	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 4, 20, nil))
 
@@ -155,7 +165,10 @@ func Test_CorrectConfigParsing_4(t *testing.T) {
 	voteSet4.SentPrecommitMessages = append(voteSet4.SentPrecommitMessages, common.NewMessage(common.Precommit, 4, 3, 10, nil))
 
 	voteSet44 := common.NewVoteSet()
-	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, nil))
+	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, []*common.Message{
+		common.NewMessage(common.Prevote, 1, 3, 20, nil),
+		common.NewMessage(common.Prevote, 3, 3, 20, nil),
+		common.NewMessage(common.Prevote, 4, 3, 20, nil)}))
 	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 4, 20, nil))
 	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 4, 20, nil))
 

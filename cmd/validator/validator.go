@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/mikanikos/Fork-Accountability/common"
 	"github.com/mikanikos/Fork-Accountability/connection"
-	"log"
 )
 
 // Validator struct
@@ -16,6 +17,7 @@ type Validator struct {
 	Server *connection.Server // server
 }
 
+// NewValidator creates a new validator
 func NewValidator() *Validator {
 	return &Validator{
 		Messages: make(map[uint64]*common.HeightVoteSet),
@@ -23,6 +25,7 @@ func NewValidator() *Validator {
 	}
 }
 
+// Run validator
 func (validator *Validator) Run() {
 	fmt.Println("Validator on " + validator.Address + ": start listening for incoming requests")
 

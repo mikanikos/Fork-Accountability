@@ -1,20 +1,16 @@
 #!/usr/bin/env bash
 
 cd ..
-cd monitor
-go build
-cd ..
-cd validator
-go build
-cd ..
+go build ./...
+
 
 echo "Starting validators
 "
 
-./cmd/validator/validator.exe -config="config_1.yaml" &
-./cmd/validator/validator.exe -config="config_2.yaml" &
-./cmd/validator/validator.exe -config="config_3.yaml" &
-./cmd/validator/validator.exe -config="config_4.yaml" &
+./cmd/validator/validator -config="config_1.yaml" &
+./cmd/validator/validator -config="config_2.yaml" &
+./cmd/validator/validator -config="config_3.yaml" &
+./cmd/validator/validator -config="config_4.yaml" &
 
 sleep 2
 
@@ -22,7 +18,7 @@ echo "
 Starting monitor
 "
 
-./cmd/monitor/monitor.exe -config="config.yaml" &
+./cmd/monitor/monitor -config="config.yaml" &
 
 sleep 3
 
