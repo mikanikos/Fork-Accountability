@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -45,11 +46,13 @@ func (mes *Message) Equal(other *Message) bool {
 func (mes *Message) String() string {
 	var sb strings.Builder
 	sb.WriteString(string(mes.Type))
-	sb.WriteString(" - ")
+	sb.WriteString(" - ID: ")
 	sb.WriteString(strconv.FormatUint(mes.SenderID, 10))
-	sb.WriteString(", ")
+	sb.WriteString(", Round: ")
 	sb.WriteString(strconv.FormatUint(mes.Round, 10))
-	sb.WriteString(", ")
+	sb.WriteString(", Value: ")
 	sb.WriteString(strconv.Itoa(mes.Value))
+	sb.WriteString(", Justifications: ")
+	sb.WriteString(fmt.Sprint(mes.Justifications))
 	return sb.String()
 }
