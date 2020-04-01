@@ -26,8 +26,6 @@ func NewValidator() *Validator {
 func (validator *Validator) Run() {
 	fmt.Println("Validator on " + validator.Address + ": start listening for incoming requests")
 
-	validator.Server = connection.NewServer()
-
 	// handle incoming data from client monitor
 	go validator.handleIncomingClientData()
 

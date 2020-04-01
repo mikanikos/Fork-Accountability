@@ -48,12 +48,11 @@ func (monitor *Monitor) Run() {
 	monitor.requestHeightLogs(monitor.Height)
 
 	// run accountability algorithm
-	monitor.RunAccountabilityAlgorithm()
+	monitor.runAccountabilityAlgorithm()
 }
 
-func (monitor *Monitor) RunAccountabilityAlgorithm() {
+func (monitor *Monitor) runAccountabilityAlgorithm() {
 	numValidators := len(monitor.Validators)
-	logs := common.NewHeightLogs(monitor.Height)
 
 	// create faulty set structure
 	acc := accountability.NewAccountability()
@@ -61,20 +60,23 @@ func (monitor *Monitor) RunAccountabilityAlgorithm() {
 	minFaulty := (numValidators-1)/3 + 1 // f+1
 
 	// run until we have at least f+1 faulty processes
-	for acc.Length() < minFaulty {
+	for acc.FaultySet.Length() < minFaulty {
 		// receive hvs from processes, it blocks the execution until another hvs arrives
 		hvs := <-monitor.receiveChannel
-		logs.AddHvs(hvs)
+		acc.HeightLogs.AddHvs(hvs)
 
 		// if we have at least f+1 hvs, run the monitor algorithm
-		if len(logs.Logs) >= minFaulty {
+		if acc.HeightLogs.Length() >= minFaulty {
 			// run monitor and get faulty processes
-			acc.IdentifyFaultyProcesses(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound, logs)
+			acc.IdentifyFaultyProcesses(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound)
 		}
 	}
 
-	fmt.Println(acc.String())
+	fmt.Println(acc.HeightLogs.String())
+	fmt.Println()
+	fmt.Println(acc.FaultySet.String())
 	fmt.Println("Monitor: Algorithm completed")
+
 }
 
 // method to resolve processes addresses and store connection objects

@@ -109,7 +109,7 @@ func TestBasicScenario(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 	logs.AddHvs(heightVoteSet3)
@@ -181,7 +181,7 @@ func TestBasicScenarioWithMissingHVS(t *testing.T) {
 	heightVoteSet2.VoteSetMap[3] = voteSet2
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 
@@ -298,7 +298,7 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 	logs.AddHvs(heightVoteSet3)
@@ -420,7 +420,7 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 	logs.AddHvs(heightVoteSet3)
@@ -540,7 +540,7 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 	logs.AddHvs(heightVoteSet3)
@@ -657,7 +657,7 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 	logs.AddHvs(heightVoteSet3)
@@ -778,7 +778,7 @@ func TestBasicScenario_TestFalseJustifications(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := common.NewHeightLogs(1)
+	logs := NewHeightLogs(1)
 	logs.AddHvs(heightVoteSet1)
 	logs.AddHvs(heightVoteSet2)
 	logs.AddHvs(heightVoteSet3)

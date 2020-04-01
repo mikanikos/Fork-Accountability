@@ -8,7 +8,7 @@ import (
 // run tests individually because of persistent connections between tests
 
 func Test_ServerInitialization(t *testing.T) {
-	
+
 	// server
 	go func() {
 		err := NewServer().Listen("127.0.0.1:7070")
@@ -20,7 +20,7 @@ func Test_ServerInitialization(t *testing.T) {
 }
 
 func Test_ServerWrongAddressForListen(t *testing.T) {
-	
+
 	// server
 	go func() {
 		err := NewServer().Listen("")
