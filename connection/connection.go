@@ -3,13 +3,19 @@ package connection
 import (
 	"fmt"
 	"io"
+	"log"
 	"net"
+	"time"
 
 	"go.dedis.ch/protobuf"
 )
 
+type Connection struct {
+	Conn net.Conn
+}
+
 // Send sends a packet to a given connection
-func Send(conn net.Conn, packet *Packet) error {
+func (c *Connection) Send(packet *Packet) error {
 
 	// encode message
 	messageEncoded, err := protobuf.Encode(packet)
@@ -19,17 +25,17 @@ func Send(conn net.Conn, packet *Packet) error {
 	}
 
 	// send message
-	_, err = conn.Write(messageEncoded)
+	_, err = c.Conn.Write(messageEncoded)
 	return err
 }
 
 // Receive receives a packet from a given connection
-func Receive(conn net.Conn) (*Packet, error) {
+func (c *Connection) Receive() (*Packet, error) {
 
 	packet := &Packet{}
 	packetBytes := make([]byte, maxBufferSize)
 
-	n, err := conn.Read(packetBytes)
+	n, err := c.Conn.Read(packetBytes)
 
 	if err == io.EOF {
 		return nil, err
@@ -58,12 +64,46 @@ func Receive(conn net.Conn) (*Packet, error) {
 }
 
 // Connect tried to establish connection given an address
-func Connect(address string) (net.Conn, error) {
+func Connect(address string) (*Connection, error) {
 	connClient, err := net.Dial("tcp", address)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to address %s: %s", address, err)
 	}
 
-	return connClient, nil
+	return &Connection{Conn: connClient}, nil
+}
+
+// Close tries to close a given connection
+func (c *Connection) Close() {
+	err := c.Conn.Close()
+	if err != nil {
+		log.Printf("error while closing connection to address %s: %s", c.Conn.RemoteAddr().String(), err)
+	}
+}
+
+// PeriodicSend periodically send a request at every timer tick
+// the sending can be stopped using the channel given
+func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer uint64) {
+
+	// start timer for repeating request to validator
+	repeatTimer := time.NewTicker(time.Duration(timer) * time.Second)
+	defer repeatTimer.Stop()
+
+	for {
+		select {
+
+		case <-closeChannel:
+			// stop because we received the packet from validator
+			return
+
+		case <-repeatTimer.C:
+			// repeat request
+			err := c.Send(packet)
+			if err != nil {
+				log.Printf("error while repeating request to %s: %s", c.Conn.RemoteAddr().String(), err)
+			}
+		}
+	}
+
 }

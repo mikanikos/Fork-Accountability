@@ -104,7 +104,7 @@ func Test_ServerClientInteraction(t *testing.T) {
 	}
 
 	// server receives packet
-	packetFromClient := <- receiveChannel
+	packetFromClient := <-receiveChannel
 	packetFromClient.Packet.Code = HvsResponse
 
 	// server sends packet back with modified code

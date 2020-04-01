@@ -6,40 +6,53 @@ import (
 	"net"
 )
 
-type PacketConnection struct {
-	Packet *Packet
-	Conn   net.Conn
+// Server object to handle requests from clients
+type Server struct {
+	ReceiveChannel chan *ClientData
+}
+
+// NewServer creates a new Server
+func NewServer() *Server {
+	return &Server{ReceiveChannel: make(chan *ClientData, maxChannelSize)}
+}
+
+// ClientData is the data sent by the client to be delivered to the Listener
+type ClientData struct {
+	Packet     *Packet
+	Connection *Connection
 }
 
 // Listen starts listening for incoming connections from the client monitor
-func Listen(address string, receiveChannel chan *PacketConnection) error {
+func (server *Server) Listen(address string) error {
 	listener, err := net.Listen("tcp", address)
 
 	if err != nil {
 		return fmt.Errorf("error while trying to listen on given address: %s", err)
 	}
 
+	defer listener.Close()
+
 	for {
 		conn, err := listener.Accept()
 
 		if err != nil {
-			_ = listener.Close()
 			return fmt.Errorf("error while trying to accept incoming connection: %s", err)
 		}
 
 		// handle connection in a separate goroutine
-		go handleConnection(conn, receiveChannel)
+		go server.HandleConnection(&Connection{Conn: conn})
 	}
 }
 
-// handle connection
-func handleConnection(conn net.Conn, receiveChannel chan *PacketConnection) {
+// handle connection from client
+func (server *Server) HandleConnection(connection *Connection) {
 
-	remoteAddr := conn.RemoteAddr().String()
-	fmt.Println("Handling client connection from " + remoteAddr)
+	fmt.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())
+
+	defer connection.Close()
 
 	for {
-		packet, err := Receive(conn)
+		packet, err := connection.Receive()
 
 		if err != nil {
 			if err == io.EOF {
@@ -47,15 +60,14 @@ func handleConnection(conn net.Conn, receiveChannel chan *PacketConnection) {
 			} else {
 				fmt.Printf("error while trying to receive packet: %s", err)
 			}
-			break
+			return
 		}
 
-		// send data to receiving channel
-		receiveChannel <- &PacketConnection{
-			Packet: packet,
-			Conn:   conn,
-		}
+		clientData := &ClientData{Packet: packet, Connection: connection}
+
+		// send data to receiving channel without blocking
+		go func(data *ClientData) {
+			server.ReceiveChannel <- data
+		}(clientData)
 	}
-
-	_ = conn.Close()
 }

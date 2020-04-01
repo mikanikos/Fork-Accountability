@@ -16,4 +16,6 @@ const (
 
 	// lengths in bytes
 	maxBufferSize = 1024
+
+	maxChannelSize = 100
 )
