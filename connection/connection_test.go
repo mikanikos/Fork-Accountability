@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"github.com/mikanikos/Fork-Accountability/validator"
 	"testing"
 	"time"
 )
@@ -12,7 +11,7 @@ func Test_ServerInitialization(t *testing.T) {
 
 	// server
 	go func() {
-		err := main.Listen("127.0.0.1:7070", nil)
+		err := Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -24,9 +23,9 @@ func Test_ServerWrongAddressForListen(t *testing.T) {
 
 	// server
 	go func() {
-		err := main.Listen("127.0.0.1:7070", nil)
-		if err != nil {
-			t.Fatalf("Failed while start listening: %s", err)
+		err := Listen("", nil)
+		if err == nil {
+			t.Fatalf("Should have failed listening: %s", err)
 		}
 	}()
 
@@ -37,7 +36,7 @@ func Test_ClientInitialization(t *testing.T) {
 
 	// server
 	go func() {
-		err := main.Listen("127.0.0.1:7070", nil)
+		err := Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -61,7 +60,7 @@ func Test_ClientSendsMessage(t *testing.T) {
 
 	// server
 	go func() {
-		err := main.Listen("127.0.0.1:7070", nil)
+		err := Listen("127.0.0.1:7070", nil)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -80,9 +79,11 @@ func Test_ClientSendsMessage(t *testing.T) {
 
 func Test_ServerClientInteraction(t *testing.T) {
 
-	// server
+	receiveChannel := make(chan *PacketConnection)
+
+	// server start listening
 	go func() {
-		err := main.Listen("127.0.0.1:7070", nil)
+		err := Listen("127.0.0.1:7070", receiveChannel)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -90,22 +91,35 @@ func Test_ServerClientInteraction(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(3))
 
+	// client connects
 	connClient, err := Connect("127.0.0.1:7070")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}
 
+	// client sends packet
 	err = Send(connClient, &Packet{Code: HvsRequest})
 	if err != nil {
-		t.Fatalf("Failed to send packet: %s", err)
+		t.Fatalf("Failed to send packet on client: %s", err)
 	}
 
-	packet, err := Receive(connClient)
+	// server receives packet
+	packetFromClient := <- receiveChannel
+	packetFromClient.Packet.Code = HvsResponse
 
+	// server sends packet back with modified code
+	err = Send(packetFromClient.Conn, packetFromClient.Packet)
+	if err != nil {
+		t.Fatalf("Failed to send packet on server: %s", err)
+	}
+
+	// client receives packet
+	packet, err := Receive(connClient)
 	if err != nil {
 		t.Fatalf("Failed to receive packet: %s", err)
 	}
 
+	// check if packet is the one expected
 	if packet.Code != HvsResponse {
 		t.Fatal("Failed to send/receive correct packet")
 	}

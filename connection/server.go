@@ -1,15 +1,19 @@
-package main
+package connection
 
 import (
 	"fmt"
-	"github.com/mikanikos/Fork-Accountability/connection"
 	"io"
 	"net"
 )
 
+type PacketConnection struct {
+	Packet *Packet
+	Conn   net.Conn
+}
+
 // Listen starts listening for incoming connections from the client monitor
-func (validator *Validator) Listen() error {
-	listener, err := net.Listen("tcp", validator.Address)
+func Listen(address string, receiveChannel chan *PacketConnection) error {
+	listener, err := net.Listen("tcp", address)
 
 	if err != nil {
 		return fmt.Errorf("error while trying to listen on given address: %s", err)
@@ -24,18 +28,18 @@ func (validator *Validator) Listen() error {
 		}
 
 		// handle connection in a separate goroutine
-		go validator.handleConnection(conn)
+		go handleConnection(conn, receiveChannel)
 	}
 }
 
 // handle connection
-func (validator *Validator) handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, receiveChannel chan *PacketConnection) {
 
 	remoteAddr := conn.RemoteAddr().String()
 	fmt.Println("Handling client connection from " + remoteAddr)
 
 	for {
-		packet, err := connection.Receive(conn)
+		packet, err := Receive(conn)
 
 		if err != nil {
 			if err == io.EOF {
@@ -46,16 +50,10 @@ func (validator *Validator) handleConnection(conn net.Conn) {
 			break
 		}
 
-		switch packet.Code {
-		case connection.HvsRequest:
-			fmt.Println("Validator on " + conn.LocalAddr().String() + ": sending hvs to monitor")
-			packet.Code = connection.HvsResponse
-			packet.Hvs = validator.Messages[packet.Height]
-			err := connection.Send(conn, packet)
-			if err != nil {
-				fmt.Println("Error while sending packet back to monitor")
-				break
-			}
+		// send data to receiving channel
+		receiveChannel <- &PacketConnection{
+			Packet: packet,
+			Conn:   conn,
 		}
 	}
 
