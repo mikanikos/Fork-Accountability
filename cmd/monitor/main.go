@@ -23,6 +23,10 @@ func main() {
 		log.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}
 
+	if monitor == nil {
+		log.Fatal("Monitor exiting: monitor is null")
+	}
+
 	// start monitor execution
 	monitor.Run()
 }

@@ -7,13 +7,18 @@ import (
 	"testing"
 )
 
-func Test_CorrectConfigParsing(t *testing.T) {
-
+func createTestMonitor() *Monitor {
 	monitorTest := NewMonitor()
 	monitorTest.Height = 1
 	monitorTest.FirstDecisionRound = 3
 	monitorTest.SecondDecisionRound = 4
 	monitorTest.Validators = append(monitorTest.Validators, "127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083")
+	return monitorTest
+}
+
+func Test_CorrectConfigParsing(t *testing.T) {
+
+	monitorTest := createTestMonitor()
 
 	configFile := "config.yaml"
 	monitorConfig := NewMonitor()

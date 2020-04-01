@@ -23,6 +23,10 @@ func main() {
 		log.Fatalf("Validator exiting: config file not parsed correctly: %s", err)
 	}
 
+	if validator == nil {
+		log.Fatal("Validator exiting: validator is null")
+	}
+
 	// start validator execution
 	validator.Run()
 }

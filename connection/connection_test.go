@@ -34,15 +34,17 @@ func Test_ServerWrongAddressForListen(t *testing.T) {
 
 func Test_ClientInitialization(t *testing.T) {
 
+	address := "127.0.0.1:7071"
+
 	// server
 	go func() {
-		err := NewServer().Listen("127.0.0.1:7070")
+		err := NewServer().Listen(address)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
 	}()
 
-	_, err := Connect("127.0.0.1:7070")
+	_, err := Connect(address)
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}
@@ -50,7 +52,7 @@ func Test_ClientInitialization(t *testing.T) {
 
 func Test_ClientFailingToConnect(t *testing.T) {
 
-	_, err := Connect("127.0.0.1:7070")
+	_, err := Connect("")
 	if err == nil {
 		t.Fatal("Connection should have not been successful")
 	}
@@ -58,15 +60,17 @@ func Test_ClientFailingToConnect(t *testing.T) {
 
 func Test_ClientSendsMessage(t *testing.T) {
 
+	address := "127.0.0.1:9090"
+
 	// server
 	go func() {
-		err := NewServer().Listen("127.0.0.1:7070")
+		err := NewServer().Listen(address)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
 	}()
 
-	connClient, err := Connect("127.0.0.1:7070")
+	connClient, err := Connect(address)
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}
@@ -79,11 +83,13 @@ func Test_ClientSendsMessage(t *testing.T) {
 
 func Test_ServerClientInteraction(t *testing.T) {
 
+	address := "127.0.0.1:6060"
+
 	server := NewServer()
 
 	// server start listening
 	go func() {
-		err := server.Listen("127.0.0.1:7070")
+		err := server.Listen(address)
 		if err != nil {
 			t.Fatalf("Failed while start listening: %s", err)
 		}
@@ -92,7 +98,7 @@ func Test_ServerClientInteraction(t *testing.T) {
 	time.Sleep(time.Second * time.Duration(3))
 
 	// client connects
-	connClient, err := Connect("127.0.0.1:7070")
+	connClient, err := Connect(address)
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %s", err)
 	}

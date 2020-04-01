@@ -109,22 +109,23 @@ func TestBasicScenario(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-	logs.AddHvs(heightVoteSet3)
-	logs.AddHvs(heightVoteSet4)
-
+	// create accountability struct
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, FaultinessNotEnoughPrevotesForPrevote))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }
@@ -181,18 +182,18 @@ func TestBasicScenarioWithMissingHVS(t *testing.T) {
 	heightVoteSet2.VoteSetMap[3] = voteSet2
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 0, FaultinessHVSNotSent))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 0, FaultinessHVSNotSent))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }
@@ -298,23 +299,23 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-	logs.AddHvs(heightVoteSet3)
-	logs.AddHvs(heightVoteSet4)
-
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 3, FaultinessMultiplePrecommits))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, FaultinessNotEnoughPrevotesForPrevote))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }
@@ -420,23 +421,23 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-	logs.AddHvs(heightVoteSet3)
-	logs.AddHvs(heightVoteSet4)
-
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, FaultinessNotEnoughPrevotesForPrevote))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }
@@ -540,23 +541,23 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-	logs.AddHvs(heightVoteSet3)
-	logs.AddHvs(heightVoteSet4)
-
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(1, 3, FaultinessNotEnoughPrevotesForPrecommit))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, FaultinessNotEnoughPrevotesForPrevote))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }
@@ -657,23 +658,23 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-	logs.AddHvs(heightVoteSet3)
-	logs.AddHvs(heightVoteSet4)
-
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, FaultinessNotEnoughPrevotesForPrevote))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }
@@ -778,23 +779,23 @@ func TestBasicScenario_TestFalseJustifications(t *testing.T) {
 	heightVoteSet4.VoteSetMap[3] = voteSet4
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
-	logs := NewHeightLogs(1)
-	logs.AddHvs(heightVoteSet1)
-	logs.AddHvs(heightVoteSet2)
-	logs.AddHvs(heightVoteSet3)
-	logs.AddHvs(heightVoteSet4)
-
 	acc := NewAccountability()
-	acc.IdentifyFaultyProcesses(4, 3, 4, logs)
 
-	expectedFaultySet := NewAccountability()
+	acc.HeightLogs.AddHvs(heightVoteSet1)
+	acc.HeightLogs.AddHvs(heightVoteSet2)
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
+
+	acc.IdentifyFaultyProcesses(4, 3, 4)
+
+	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(2, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, FaultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, FaultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, FaultinessNotEnoughPrevotesForPrevote))
 
-	if !acc.Equal(expectedFaultySet) {
+	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
 	}
 }

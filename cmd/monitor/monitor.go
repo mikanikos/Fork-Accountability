@@ -34,7 +34,7 @@ func NewMonitor() *Monitor {
 }
 
 func (monitor *Monitor) Run() {
-	if len(monitor.Validators) == 0 {
+	if monitor.Validators == nil || len(monitor.Validators) == 0 {
 		log.Fatal("Monitor exiting: no validators given")
 	}
 

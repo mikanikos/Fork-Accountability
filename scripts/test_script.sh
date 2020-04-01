@@ -11,10 +11,10 @@ cd ..
 echo "Starting validators
 "
 
-./validator/validator -config="config_1.yaml" -address="127.0.0.1:21990" &
-./validator/validator -config="config_2.yaml" -address="127.0.0.1:21991" &
-./validator/validator -config="config_3.yaml" -address="127.0.0.1:21992" &
-./validator/validator -config="config_4.yaml" -address="127.0.0.1:21993" &
+./cmd/validator/validator.exe -config="config_1.yaml" &
+./cmd/validator/validator.exe -config="config_2.yaml" &
+./cmd/validator/validator.exe -config="config_3.yaml" &
+./cmd/validator/validator.exe -config="config_4.yaml" &
 
 sleep 2
 
@@ -22,9 +22,9 @@ echo "
 Starting monitor
 "
 
-./monitor/monitor -processes="127.0.0.1:21990,127.0.0.1:21991,127.0.0.1:21992,127.0.0.1:21993" -firstDecisionRound=3 -secondDecisionRound=4 -waitTimeout=5 &
+./cmd/monitor/monitor.exe -config="config.yaml" &
 
-sleep 7
+sleep 3
 
 pkill -f validator
 pkill -f monitor
