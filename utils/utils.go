@@ -7,6 +7,7 @@ import (
 	"net"
 	"path"
 	"runtime"
+	"strconv"
 )
 
 // parse config file given as a parameter and returns the validator data
@@ -30,17 +31,42 @@ func ParseConfigFile(localPath string, structure interface{}) error {
 	return nil
 }
 
-// GetFreePort asks the kernel for a free open port that is ready to use.
-func GetFreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+// GetFreeAddress asks the kernel for a free open port that is ready to use.
+func GetFreeAddress() (string, error) {
+
+	localhost := "127.0.0.1:"
+
+	addr, err := net.ResolveTCPAddr("tcp", localhost+"0")
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	l, err := net.ListenTCP("tcp", addr)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
+	return localhost+strconv.Itoa(l.Addr().(*net.TCPAddr).Port), nil
+}
+
+// GetFreeAddress asks the kernel for free open ports that are ready to use.
+func GetFreeAddresses(count int) ([]string, error) {
+
+	localhost := "127.0.0.1:"
+	ports := make([]string, 0)
+
+	for i := 0; i < count; i++ {
+		addr, err := net.ResolveTCPAddr("tcp", localhost+"0")
+		if err != nil {
+			return nil, err
+		}
+
+		l, err := net.ListenTCP("tcp", addr)
+		if err != nil {
+			return nil, err
+		}
+		defer l.Close()
+		ports = append(ports, localhost+strconv.Itoa(l.Addr().(*net.TCPAddr).Port))
+	}
+	return ports, nil
 }

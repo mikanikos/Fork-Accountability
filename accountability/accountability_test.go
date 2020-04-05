@@ -1,6 +1,8 @@
 package accountability
 
 import (
+	"fmt"
+	"github.com/mikanikos/Fork-Accountability/utils"
 	"testing"
 
 	"github.com/mikanikos/Fork-Accountability/common"
@@ -14,10 +16,18 @@ func TestBasicScenario(t *testing.T) {
 	// create accountability struct
 	acc := NewAccountability()
 
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig1())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig2())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig3())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig4())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig1())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig2())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig3())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig4())
+
+	if !(acc.HeightLogs.Contains(1) && acc.HeightLogs.Contains(2) && acc.HeightLogs.Contains(3) && acc.HeightLogs.Contains(4)) {
+		t.Fatal("Monitor didn't store height logs correctly")
+	}
+
+	if acc.HeightLogs.Length() != 4 {
+		t.Fatal("Monitor didn't store height logs correctly")
+	}
 
 	acc.IdentifyFaultyProcesses(4, 3, 4)
 
@@ -26,6 +36,12 @@ func TestBasicScenario(t *testing.T) {
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, faultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, faultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, faultinessNotEnoughPrevotesForPrevote))
+
+	if acc.FaultySet.Length() != expectedFaultySet.Length() {
+		t.Fatal("Monitor detected different faulty processes")
+	}
+
+	fmt.Println(acc.String())
 
 	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -71,10 +87,10 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 
 	acc := NewAccountability()
 
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig1())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig1())
 	acc.HeightLogs.AddHvs(heightVoteSet2)
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig3())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig4())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig3())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig4())
 
 	acc.IdentifyFaultyProcesses(4, 3, 4)
 
@@ -129,10 +145,10 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 
 	acc := NewAccountability()
 
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig1())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig1())
 	acc.HeightLogs.AddHvs(heightVoteSet2)
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig3())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig4())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig3())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig4())
 
 	acc.IdentifyFaultyProcesses(4, 3, 4)
 
@@ -168,9 +184,9 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	acc := NewAccountability()
 
 	acc.HeightLogs.AddHvs(heightVoteSet1)
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig2())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig3())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig4())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig2())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig3())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig4())
 
 	acc.IdentifyFaultyProcesses(4, 3, 4)
 
@@ -220,12 +236,58 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	heightVoteSet2.VoteSetMap[3] = voteSet2
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
+	// Process P3 - faulty
+	voteSet3 := common.NewVoteSet()
+	voteSet3.ReceivedPrevoteMessages = append(voteSet3.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 3, 10, nil))
+	voteSet3.ReceivedPrevoteMessages = append(voteSet3.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10, nil))
+	voteSet3.ReceivedPrevoteMessages = append(voteSet3.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 3, 10, nil))
+
+	voteSet3.SentPrevoteMessages = append(voteSet3.SentPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10, nil))
+	voteSet3.SentPrecommitMessages = append(voteSet3.SentPrecommitMessages, common.NewMessage(common.Precommit, 3, 3, 10, nil))
+
+	voteSet33 := common.NewVoteSet()
+	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, []*common.Message{
+		common.NewMessage(common.Prevote, 1, 3, 20, nil),
+		common.NewMessage(common.Prevote, 4, 3, 20, nil)}))
+	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 4, 20, nil))
+	voteSet33.ReceivedPrevoteMessages = append(voteSet33.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 4, 20, nil))
+
+	voteSet33.SentPrevoteMessages = append(voteSet33.SentPrevoteMessages, common.NewMessage(common.Prevote, 3, 4, 20, nil))
+	voteSet33.SentPrecommitMessages = append(voteSet33.SentPrecommitMessages, common.NewMessage(common.Precommit, 3, 4, 20, nil))
+
+	heightVoteSet3 := common.NewHeightVoteSet(3)
+	heightVoteSet3.VoteSetMap[3] = voteSet3
+	heightVoteSet3.VoteSetMap[4] = voteSet33
+
+	// Process P4 - faulty
+	voteSet4 := common.NewVoteSet()
+	voteSet4.ReceivedPrevoteMessages = append(voteSet4.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 3, 10, nil))
+	voteSet4.ReceivedPrevoteMessages = append(voteSet4.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 3, 10, nil))
+	voteSet4.ReceivedPrevoteMessages = append(voteSet4.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 3, 10, nil))
+
+	voteSet4.SentPrevoteMessages = append(voteSet4.SentPrevoteMessages, common.NewMessage(common.Prevote, 4, 3, 10, nil))
+	voteSet4.SentPrecommitMessages = append(voteSet4.SentPrecommitMessages, common.NewMessage(common.Precommit, 4, 3, 10, nil))
+
+	voteSet44 := common.NewVoteSet()
+	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 2, 4, 20, []*common.Message{
+		common.NewMessage(common.Prevote, 1, 3, 20, nil),
+		common.NewMessage(common.Prevote, 4, 3, 20, nil)}))
+	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 3, 4, 20, nil))
+	voteSet44.ReceivedPrevoteMessages = append(voteSet44.ReceivedPrevoteMessages, common.NewMessage(common.Prevote, 4, 4, 20, nil))
+
+	voteSet44.SentPrevoteMessages = append(voteSet44.SentPrevoteMessages, common.NewMessage(common.Prevote, 4, 4, 20, nil))
+	voteSet44.SentPrecommitMessages = append(voteSet44.SentPrecommitMessages, common.NewMessage(common.Precommit, 4, 4, 20, nil))
+
+	heightVoteSet4 := common.NewHeightVoteSet(4)
+	heightVoteSet4.VoteSetMap[3] = voteSet4
+	heightVoteSet4.VoteSetMap[4] = voteSet44
+
 	acc := NewAccountability()
 
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig1())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig1())
 	acc.HeightLogs.AddHvs(heightVoteSet2)
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig3())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig4())
+	acc.HeightLogs.AddHvs(heightVoteSet3)
+	acc.HeightLogs.AddHvs(heightVoteSet4)
 
 	acc.IdentifyFaultyProcesses(4, 3, 4)
 
@@ -235,6 +297,9 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(3, 4, faultinessNotEnoughPrevotesForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 3, faultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness(4, 4, faultinessNotEnoughPrevotesForPrevote))
+
+	fmt.Println(expectedFaultySet)
+	fmt.Println(acc.FaultySet)
 
 	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -279,10 +344,10 @@ func TestBasicScenario_TestFalseJustifications(t *testing.T) {
 
 	acc := NewAccountability()
 
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig1())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig1())
 	acc.HeightLogs.AddHvs(heightVoteSet2)
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig3())
-	acc.HeightLogs.AddHvs(common.GetHvsForDefaultConfig4())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig3())
+	acc.HeightLogs.AddHvs(utils.GetHvsForDefaultConfig4())
 
 	acc.IdentifyFaultyProcesses(4, 3, 4)
 

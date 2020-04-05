@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/mikanikos/Fork-Accountability/common"
 	"github.com/mikanikos/Fork-Accountability/connection"
+	"github.com/mikanikos/Fork-Accountability/utils"
 	"log"
 	"os"
 	"reflect"
@@ -18,7 +19,13 @@ func createTestMonitor() *Monitor {
 	monitorTest.Timeout = 30
 	monitorTest.FirstDecisionRound = 3
 	monitorTest.SecondDecisionRound = 4
-	monitorTest.Validators = append(monitorTest.Validators, "127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083")
+
+	addresses, err := utils.GetFreeAddresses(4)
+	if err != nil {
+		return nil
+	}
+
+	monitorTest.Validators = append(monitorTest.Validators, addresses...)
 	return monitorTest
 }
 
@@ -33,7 +40,12 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 	}
 
 	monitorConfig.receiveChannel = nil
+	monitorConfig.accAlgorithm = nil
+
 	monitorTest.receiveChannel = nil
+	monitorTest.accAlgorithm = nil
+
+	monitorTest.Validators = []string{"127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083"}
 
 	// compare the two monitors
 	if !reflect.DeepEqual(monitorTest, monitorConfig) {
@@ -41,11 +53,13 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 	}
 }
 
-func validatorMock(id uint64, address string, delay uint64, hvs *common.HeightVoteSet, t *testing.T) {
+func validatorMock(address string, delay uint64, hvs *common.HeightVoteSet, t *testing.T) {
 	server := connection.NewServer()
 
 	go func() {
 		for clientData := range server.ReceiveChannel {
+
+			time.Sleep(time.Duration(delay) * time.Second)
 
 			packet := clientData.Packet
 
@@ -55,8 +69,6 @@ func validatorMock(id uint64, address string, delay uint64, hvs *common.HeightVo
 				// prepare packet
 				packet.Code = connection.HvsResponse
 				packet.Hvs = hvs
-
-				time.Sleep(time.Duration(delay) * time.Second)
 
 				err := clientData.Connection.Send(packet)
 				if err != nil {
@@ -75,14 +87,14 @@ func validatorMock(id uint64, address string, delay uint64, hvs *common.HeightVo
 
 func TestMonitor_ConnectToValidatorsSuccessfully(t *testing.T) {
 
-	go validatorMock(1, "127.0.0.1:8080", 0, common.NewHeightVoteSet(1), t)
-	go validatorMock(2, "127.0.0.1:8081", 0, common.NewHeightVoteSet(2), t)
-	go validatorMock(3, "127.0.0.1:8082", 0, common.NewHeightVoteSet(3), t)
-	go validatorMock(4, "127.0.0.1:8083", 0, common.NewHeightVoteSet(4), t)
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 0, common.NewHeightVoteSet(1), t)
+	go validatorMock(testMonitor.Validators[1], 0, common.NewHeightVoteSet(2), t)
+	go validatorMock(testMonitor.Validators[2], 0, common.NewHeightVoteSet(3), t)
+	go validatorMock(testMonitor.Validators[3], 0, common.NewHeightVoteSet(4), t)
 
 	time.Sleep(time.Second * time.Duration(1))
-
-	testMonitor := createTestMonitor()
 
 	err := testMonitor.connectToValidators()
 
@@ -107,12 +119,12 @@ func TestMonitor_ConnectToValidatorsNoValidatorsGiven(t *testing.T) {
 
 func TestMonitor_ConnectToValidators_Fail(t *testing.T) {
 
-	go validatorMock(1, "127.0.0.1:8080", 0, common.NewHeightVoteSet(1), t)
-	go validatorMock(4, "127.0.0.1:8083", 0, common.NewHeightVoteSet(4), t)
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 0, common.NewHeightVoteSet(1), t)
+	go validatorMock(testMonitor.Validators[3], 0, common.NewHeightVoteSet(4), t)
 
 	time.Sleep(time.Second * time.Duration(1))
-
-	testMonitor := createTestMonitor()
 
 	err := testMonitor.connectToValidators()
 
@@ -131,14 +143,14 @@ func captureOutput(f func()) string {
 
 func TestMonitor_RunFailed(t *testing.T) {
 
-	go validatorMock(1, "127.0.0.1:8080", 0, common.NewHeightVoteSet(1), t)
-	go validatorMock(2, "127.0.0.1:8081", 0, common.NewHeightVoteSet(2), t)
-	go validatorMock(3, "127.0.0.1:8082", 0, common.NewHeightVoteSet(3), t)
-	go validatorMock(4, "127.0.0.1:8083", 0, common.NewHeightVoteSet(4), t)
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 0, common.NewHeightVoteSet(1), t)
+	go validatorMock(testMonitor.Validators[1], 0, common.NewHeightVoteSet(2), t)
+	go validatorMock(testMonitor.Validators[2], 0, common.NewHeightVoteSet(3), t)
+	go validatorMock(testMonitor.Validators[3], 0, common.NewHeightVoteSet(4), t)
 
 	time.Sleep(time.Second * time.Duration(1))
-
-	testMonitor := createTestMonitor()
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, failStatus) {
@@ -153,10 +165,11 @@ func TestMonitor_RunTimeout(t *testing.T) {
 	testMonitor.Timeout = 3
 	delay := testMonitor.Timeout+2
 
-	go validatorMock(1, "127.0.0.1:8080", delay, common.NewHeightVoteSet(1), t)
-	go validatorMock(2, "127.0.0.1:8081", delay, common.NewHeightVoteSet(2), t)
-	go validatorMock(3, "127.0.0.1:8082", delay, common.NewHeightVoteSet(3), t)
-	go validatorMock(4, "127.0.0.1:8083", delay, common.NewHeightVoteSet(4), t)
+	go validatorMock(testMonitor.Validators[0], delay, common.NewHeightVoteSet(1), t)
+	go validatorMock(testMonitor.Validators[1], delay, common.NewHeightVoteSet(2), t)
+	go validatorMock(testMonitor.Validators[2], delay, common.NewHeightVoteSet(3), t)
+	go validatorMock(testMonitor.Validators[3], delay, common.NewHeightVoteSet(4), t)
+
 
 	time.Sleep(time.Second * time.Duration(1))
 
@@ -168,14 +181,14 @@ func TestMonitor_RunTimeout(t *testing.T) {
 
 func TestMonitor_RunSuccessful(t *testing.T) {
 
-	go validatorMock(1, "127.0.0.1:8080", 0, common.GetHvsForDefaultConfig1(), t)
-	go validatorMock(2, "127.0.0.1:8081", 0, common.GetHvsForDefaultConfig2(), t)
-	go validatorMock(3, "127.0.0.1:8082", 0, common.GetHvsForDefaultConfig3(), t)
-	go validatorMock(4, "127.0.0.1:8083", 0, common.GetHvsForDefaultConfig4(), t)
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 0, utils.GetHvsForDefaultConfig1(), t)
+	go validatorMock(testMonitor.Validators[1], 0, utils.GetHvsForDefaultConfig2(), t)
+	go validatorMock(testMonitor.Validators[2], 0, utils.GetHvsForDefaultConfig3(), t)
+	go validatorMock(testMonitor.Validators[3], 0, utils.GetHvsForDefaultConfig4(), t)
 
 	time.Sleep(time.Second * time.Duration(1))
-
-	testMonitor := createTestMonitor()
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
@@ -185,14 +198,51 @@ func TestMonitor_RunSuccessful(t *testing.T) {
 
 func TestMonitor_RunSuccessfulWithDelays(t *testing.T) {
 
-	go validatorMock(1, "127.0.0.1:8080", 1, common.GetHvsForDefaultConfig1(), t)
-	go validatorMock(2, "127.0.0.1:8081", 4, common.GetHvsForDefaultConfig2(), t)
-	go validatorMock(3, "127.0.0.1:8082", 3, common.GetHvsForDefaultConfig3(), t)
-	go validatorMock(4, "127.0.0.1:8083", 8, common.GetHvsForDefaultConfig4(), t)
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1(), t)
+	go validatorMock(testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2(), t)
+	go validatorMock(testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3(), t)
+	go validatorMock(testMonitor.Validators[3], 6, utils.GetHvsForDefaultConfig4(), t)
+
+	time.Sleep(time.Second * time.Duration(2))
+
+
+	output := captureOutput(testMonitor.Run)
+	if !strings.Contains(output, successfulStatus) {
+		t.Fatal("Output of the algorithm was not expected")
+	}
+}
+
+func TestMonitor_RunSuccessfulWithAllFaultyFirst(t *testing.T) {
+
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 3, utils.GetHvsForDefaultConfig1(), t)
+	go validatorMock(testMonitor.Validators[1], 3, utils.GetHvsForDefaultConfig2(), t)
+	go validatorMock(testMonitor.Validators[2], 1, utils.GetHvsForDefaultConfig3(), t)
+	go validatorMock(testMonitor.Validators[3], 1, utils.GetHvsForDefaultConfig4(), t)
 
 	time.Sleep(time.Second * time.Duration(1))
 
+
+	output := captureOutput(testMonitor.Run)
+	if !strings.Contains(output, successfulStatus) {
+		t.Fatal("Output of the algorithm was not expected")
+	}
+}
+
+func TestMonitor_RunSuccessfulWithAllFaultyLast(t *testing.T) {
+
 	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1(), t)
+	go validatorMock(testMonitor.Validators[1], 1, utils.GetHvsForDefaultConfig2(), t)
+	go validatorMock(testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3(), t)
+	go validatorMock(testMonitor.Validators[3], 3, utils.GetHvsForDefaultConfig4(), t)
+
+	time.Sleep(time.Second * time.Duration(1))
+
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {

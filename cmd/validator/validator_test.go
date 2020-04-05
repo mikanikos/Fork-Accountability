@@ -2,13 +2,12 @@ package main
 
 import (
 	"github.com/mikanikos/Fork-Accountability/connection"
+	"github.com/mikanikos/Fork-Accountability/utils"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/mikanikos/Fork-Accountability/common"
 )
 
 func Test_CorrectConfigParsing_1(t *testing.T) {
@@ -17,7 +16,7 @@ func Test_CorrectConfigParsing_1(t *testing.T) {
 	validatorTest := NewValidator()
 	validatorTest.ID = 1
 	validatorTest.Address = "127.0.0.1:8080"
-	validatorTest.Messages[1] = common.GetHvsForDefaultConfig1()
+	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig1()
 
 	// parse config file
 	fileName1 := "config_1.yaml"
@@ -41,7 +40,7 @@ func Test_CorrectConfigParsing_2(t *testing.T) {
 	validatorTest := NewValidator()
 	validatorTest.ID = 2
 	validatorTest.Address = "127.0.0.1:8081"
-	validatorTest.Messages[1] = common.GetHvsForDefaultConfig2()
+	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig2()
 
 	// parse config file
 	fileName2 := "config_2.yaml"
@@ -65,7 +64,7 @@ func Test_CorrectConfigParsing_3(t *testing.T) {
 	validatorTest := NewValidator()
 	validatorTest.ID = 3
 	validatorTest.Address = "127.0.0.1:8082"
-	validatorTest.Messages[1] = common.GetHvsForDefaultConfig3()
+	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig3()
 
 	// parse config file
 	fileName3 := "config_3.yaml"
@@ -89,7 +88,7 @@ func Test_CorrectConfigParsing_4(t *testing.T) {
 	validatorTest := NewValidator()
 	validatorTest.ID = 4
 	validatorTest.Address = "127.0.0.1:8083"
-	validatorTest.Messages[1] = common.GetHvsForDefaultConfig4()
+	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig4()
 
 	// parse config file
 	fileName4 := "config_4.yaml"
@@ -133,8 +132,12 @@ func Test_ValidatorRun(t *testing.T) {
 
 	validatorTest := NewValidator()
 	validatorTest.ID = 1
-	validatorTest.Address = "127.0.0.1:9090"
+	freeAddress, err := utils.GetFreeAddress()
+	if err != nil {
+		t.Fatal("Error while getting a free port")
+	}
 
+	validatorTest.Address = freeAddress
 	validatorCompleted := false
 
 	go func() {

@@ -1,7 +1,6 @@
 package accountability
 
 import (
-	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,18 +45,6 @@ func (hl *HeightLogs) String() string {
 	}
 
 	return sb.String()
-}
-
-// Equal is an equality method for HeightLogs
-func (hl *HeightLogs) Equal(other *HeightLogs) bool {
-
-	if other == nil {
-		return false
-	}
-
-	hl.mutex.RLock()
-	defer hl.mutex.RUnlock()
-	return reflect.DeepEqual(hl.logs, other.logs)
 }
 
 // Length returns the length of the HeightLogs

@@ -16,7 +16,7 @@ monitorOutFile="monitor"
 
 for i in $(seq 1 $numValidators);
 do
-  ./cmd/validator/validator -config="config_" + "$i" + ".yaml" > "./tests/out/$validatorOutFile$i.out" &
+  ./cmd/validator/validator -config="cmd/validator/_config/config_" + "$i" + ".yaml" > "./tests/out/$validatorOutFile$i.out" &
 done
 
 # give some time to validators to start listening
@@ -26,19 +26,16 @@ echo "
 Starting monitor
 "
 
-./cmd/monitor/monitor -config="config.yaml" > "./tests/out/$monitorOutFile.out" &
+./cmd/monitor/monitor -config="cmd/monitor/_config/config.yaml" > "./tests/out/$monitorOutFile.out" &
 
 # give some time for communication and running the algorithm
 sleep 2
 
-
-for i in $(seq 1 $numValidators);
-do
-
-done
-
-
-
+# Chceck output
+msgLine="Algorithm completed"
+if ! (grep -q "$msgLine" "$monitorOutFile.out"); then
+  failed="T"
+fi
 
 pkill -f validator
 pkill -f monitor
