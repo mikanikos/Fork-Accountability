@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/mikanikos/Fork-Accountability/connection"
-	"github.com/mikanikos/Fork-Accountability/utils"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/mikanikos/Fork-Accountability/connection"
+	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
 func Test_CorrectConfigParsing_1(t *testing.T) {

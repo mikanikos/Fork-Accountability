@@ -1,9 +1,10 @@
 package connection
 
 import (
-	"github.com/mikanikos/Fork-Accountability/utils"
 	"testing"
 	"time"
+
+	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
 // run tests individually because of persistent connections between tests

@@ -2,8 +2,9 @@ package accountability
 
 import (
 	"fmt"
-	"github.com/mikanikos/Fork-Accountability/utils"
 	"testing"
+
+	"github.com/mikanikos/Fork-Accountability/utils"
 
 	"github.com/mikanikos/Fork-Accountability/common"
 )

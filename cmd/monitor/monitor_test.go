@@ -2,15 +2,16 @@ package main
 
 import (
 	"bytes"
-	"github.com/mikanikos/Fork-Accountability/common"
-	"github.com/mikanikos/Fork-Accountability/connection"
-	"github.com/mikanikos/Fork-Accountability/utils"
 	"log"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/mikanikos/Fork-Accountability/common"
+	"github.com/mikanikos/Fork-Accountability/connection"
+	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
 func createTestMonitor() *Monitor {
@@ -72,7 +73,7 @@ func validatorMock(address string, delay uint64, hvs *common.HeightVoteSet, t *t
 
 				err := clientData.Connection.Send(packet)
 				if err != nil {
-					t.Fatalf("Error while sending packet back to monitor: %s", err)
+					log.Printf("Error while sending packet back to monitor: %s", err)
 				}
 			}
 		}
@@ -80,7 +81,7 @@ func validatorMock(address string, delay uint64, hvs *common.HeightVoteSet, t *t
 
 	err := server.Listen(address)
 	if err != nil {
-		t.Fatalf("Failed while start listening: %s", err)
+		log.Printf("Failed while start listening: %s", err)
 	}
 }
 

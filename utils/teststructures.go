@@ -2,6 +2,7 @@ package utils
 
 import "github.com/mikanikos/Fork-Accountability/common"
 
+// GetHvsForDefaultConfig1 for hvs of the validator with config_1.yaml
 func GetHvsForDefaultConfig1() *common.HeightVoteSet {
 	// Process P1 - correct
 	voteSet1 := common.NewVoteSet()
@@ -22,6 +23,7 @@ func GetHvsForDefaultConfig1() *common.HeightVoteSet {
 	return heightVoteSet1
 }
 
+// GetHvsForDefaultConfig2 for hvs of the validator with config_2.yaml
 func GetHvsForDefaultConfig2() *common.HeightVoteSet {
 	// Process P2 - correct
 	voteSet2 := common.NewVoteSet()
@@ -60,6 +62,7 @@ func GetHvsForDefaultConfig2() *common.HeightVoteSet {
 	return heightVoteSet2
 }
 
+// GetHvsForDefaultConfig3 for hvs of the validator with config_3.yaml
 func GetHvsForDefaultConfig3() *common.HeightVoteSet {
 	// Process P3 - faulty
 	voteSet3 := common.NewVoteSet()
@@ -88,6 +91,7 @@ func GetHvsForDefaultConfig3() *common.HeightVoteSet {
 	return heightVoteSet3
 }
 
+// GetHvsForDefaultConfig4 for hvs of the validator with config_4.yaml
 func GetHvsForDefaultConfig4() *common.HeightVoteSet {
 	// Process P4 - faulty
 	voteSet4 := common.NewVoteSet()

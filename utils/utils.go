@@ -2,15 +2,16 @@ package utils
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
 	"path"
 	"runtime"
 	"strconv"
+
+	"gopkg.in/yaml.v2"
 )
 
-// parse config file given as a parameter and returns the validator data
+// ParseConfigFile parses config file given as a parameter and returns the validator data
 func ParseConfigFile(localPath string, structure interface{}) error {
 
 	_, filePath, _, ok := runtime.Caller(0)
@@ -31,7 +32,7 @@ func ParseConfigFile(localPath string, structure interface{}) error {
 	return nil
 }
 
-// GetFreeAddress asks the kernel for a free open port that is ready to use.
+// GetFreeAddress asks the kernel for a free open port that is ready to use
 func GetFreeAddress() (string, error) {
 
 	localhost := "127.0.0.1:"
@@ -49,7 +50,7 @@ func GetFreeAddress() (string, error) {
 	return localhost + strconv.Itoa(l.Addr().(*net.TCPAddr).Port), nil
 }
 
-// GetFreeAddress asks the kernel for free open ports that are ready to use.
+// GetFreeAddresses asks the kernel for free open ports that are ready to use
 func GetFreeAddresses(count int) ([]string, error) {
 
 	localhost := "127.0.0.1:"
