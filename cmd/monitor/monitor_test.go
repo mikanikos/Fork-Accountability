@@ -34,7 +34,7 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 	monitorTest := createTestMonitor()
 
 	configFile := "config.yaml"
-	monitorConfig, err := parseMonitorConfig(configDirectory+configFile)
+	monitorConfig, err := parseMonitorConfig(configDirectory + configFile)
 	if err != nil {
 		t.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}
@@ -83,7 +83,6 @@ func validatorMock(address string, delay uint64, hvs *common.HeightVoteSet, t *t
 		t.Fatalf("Failed while start listening: %s", err)
 	}
 }
-
 
 func TestMonitor_ConnectToValidatorsSuccessfully(t *testing.T) {
 
@@ -163,13 +162,12 @@ func TestMonitor_RunTimeout(t *testing.T) {
 	testMonitor := createTestMonitor()
 
 	testMonitor.Timeout = 3
-	delay := testMonitor.Timeout+2
+	delay := testMonitor.Timeout + 2
 
 	go validatorMock(testMonitor.Validators[0], delay, common.NewHeightVoteSet(1), t)
 	go validatorMock(testMonitor.Validators[1], delay, common.NewHeightVoteSet(2), t)
 	go validatorMock(testMonitor.Validators[2], delay, common.NewHeightVoteSet(3), t)
 	go validatorMock(testMonitor.Validators[3], delay, common.NewHeightVoteSet(4), t)
-
 
 	time.Sleep(time.Second * time.Duration(1))
 
@@ -207,7 +205,6 @@ func TestMonitor_RunSuccessfulWithDelays(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
@@ -225,7 +222,6 @@ func TestMonitor_RunSuccessfulWithAllFaultyFirst(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(1))
 
-
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
@@ -242,7 +238,6 @@ func TestMonitor_RunSuccessfulWithAllFaultyLast(t *testing.T) {
 	go validatorMock(testMonitor.Validators[3], 3, utils.GetHvsForDefaultConfig4(), t)
 
 	time.Sleep(time.Second * time.Duration(1))
-
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {

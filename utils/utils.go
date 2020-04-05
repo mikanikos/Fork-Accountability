@@ -46,7 +46,7 @@ func GetFreeAddress() (string, error) {
 		return "", err
 	}
 	defer l.Close()
-	return localhost+strconv.Itoa(l.Addr().(*net.TCPAddr).Port), nil
+	return localhost + strconv.Itoa(l.Addr().(*net.TCPAddr).Port), nil
 }
 
 // GetFreeAddress asks the kernel for free open ports that are ready to use.

@@ -11,7 +11,7 @@ const configDirectory = "/cmd/monitor/_config/"
 func main() {
 
 	// parse arguments
-	configFile := flag.String("config", configDirectory +"config.yaml", "configuration file path of the monitor")
+	configFile := flag.String("config", configDirectory+"config.yaml", "configuration file path of the monitor")
 
 	// parse arguments
 	flag.Parse()
