@@ -10,7 +10,7 @@ import (
 // FaultySet stores all the validators that are faulty and the corresponding faultiness proofs
 type FaultySet struct {
 	faultyProcesses map[uint64][]*Faultiness
-	mutex           sync.Mutex
+	mutex           sync.RWMutex
 }
 
 // NewFaultySet creates a new FaultySet structure
@@ -48,6 +48,10 @@ func (fs *FaultySet) AddFaultinessReason(fr *Faultiness) {
 
 // string representation of a faulty set
 func (fs *FaultySet) String() string {
+
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
+
 	var sb strings.Builder
 
 	sb.WriteString("Faulty processes are: \n")
@@ -69,10 +73,19 @@ func (fs *FaultySet) String() string {
 
 // Equal is an equality method for FaultySet
 func (fs *FaultySet) Equal(other *FaultySet) bool {
-	return reflect.DeepEqual(fs, other)
+
+	if other == nil {
+		return false
+	}
+
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
+	return reflect.DeepEqual(fs.faultyProcesses, other.faultyProcesses)
 }
 
 // Length returns the length of the FaultySet
 func (fs *FaultySet) Length() int {
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
 	return len(fs.faultyProcesses)
 }

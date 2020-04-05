@@ -3,6 +3,7 @@ package connection
 import (
 	"fmt"
 	"io"
+	"log"
 	"net"
 )
 
@@ -22,7 +23,7 @@ type ClientData struct {
 	Connection *Connection
 }
 
-// Listen starts listening for incoming connections from the client monitor
+// Listen starts listening for incoming connections from the client
 func (server *Server) Listen(address string) error {
 	listener, err := net.Listen("tcp", address)
 
@@ -47,18 +48,16 @@ func (server *Server) Listen(address string) error {
 // HandleConnection from the given connection
 func (server *Server) HandleConnection(connection *Connection) {
 
-	fmt.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())
-
-	defer connection.Close()
+	log.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())
 
 	for {
 		packet, err := connection.Receive()
 
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("Monitor closed the connection")
+				log.Printf("Client %s closed the connection", connection.Conn.RemoteAddr())
 			} else {
-				fmt.Printf("error while trying to receive packet: %s", err)
+				log.Printf("error while trying to receive packet from %s: %s", connection.Conn.RemoteAddr(), err)
 			}
 			return
 		}

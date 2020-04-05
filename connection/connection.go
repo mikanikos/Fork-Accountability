@@ -27,7 +27,11 @@ func (c *Connection) Send(packet *Packet) error {
 
 	// send message
 	_, err = c.Conn.Write(messageEncoded)
-	return err
+	if err != nil {
+		return fmt.Errorf("error while sending packet to %s: %s", c.Conn.RemoteAddr(), err)
+	}
+
+	return nil
 }
 
 // Receive receives a packet from a given connection
@@ -37,10 +41,6 @@ func (c *Connection) Receive() (*Packet, error) {
 	packetBytes := make([]byte, maxBufferSize)
 
 	n, err := c.Conn.Read(packetBytes)
-
-	if err == io.EOF {
-		return nil, err
-	}
 
 	if err != nil {
 		if err == io.EOF {
@@ -93,8 +93,11 @@ func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer 
 	for {
 		select {
 
-		case <-closeChannel:
+		case status := <-closeChannel:
 			// stop because we received the packet from validator
+			if status {
+				c.Close()
+			}
 			return
 
 		case <-repeatTimer.C:

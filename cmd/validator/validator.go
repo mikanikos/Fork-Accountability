@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"time"
 
 	"github.com/mikanikos/Fork-Accountability/common"
 	"github.com/mikanikos/Fork-Accountability/connection"
@@ -26,11 +26,11 @@ func NewValidator() *Validator {
 }
 
 // Run validator
-func (validator *Validator) Run() {
-	fmt.Println("Validator on " + validator.Address + ": start listening for incoming requests")
+func (validator *Validator) Run(delay uint64) {
+	log.Println("Validator on " + validator.Address + ": start listening for incoming requests")
 
 	// handle incoming data from client monitor
-	go validator.handleIncomingClientData()
+	go validator.handleIncomingClientData(delay)
 
 	// start listening for incoming connection from monitor
 	err := validator.Server.Listen(validator.Address)
@@ -40,14 +40,17 @@ func (validator *Validator) Run() {
 }
 
 // process packet from client (monitor)
-func (validator *Validator) handleIncomingClientData() {
+func (validator *Validator) handleIncomingClientData(delay uint64) {
 	// process client data from server channel
 	for clientData := range validator.Server.ReceiveChannel {
+
+		time.Sleep(time.Duration(delay) * time.Second)
+
 		packet := clientData.Packet
 
 		// if it's a request packet, send the response back
-		if packet.Code == connection.HvsRequest {
-			fmt.Println("Validator on " + validator.Address + ": sending hvs to monitor")
+		if packet != nil && packet.Code == connection.HvsRequest {
+			log.Println("Validator on " + validator.Address + ": sending hvs to monitor")
 
 			// prepare packet
 			packet.Code = connection.HvsResponse
@@ -55,7 +58,7 @@ func (validator *Validator) handleIncomingClientData() {
 
 			err := clientData.Connection.Send(packet)
 			if err != nil {
-				log.Println("Error while sending packet back to monitor")
+				log.Printf("Error while sending packet back to monitor: %s", err)
 			}
 		}
 	}

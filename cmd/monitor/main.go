@@ -6,27 +6,29 @@ import (
 	"log"
 )
 
-const configDirectory = "/_config/"
+const configDirectory = "/cmd/monitor/_config/"
 
 func main() {
 
 	// parse arguments
-	configFile := flag.String("config", "", "configuration file path of the monitor")
+	configFile := flag.String("config", configDirectory +"config.yaml", "configuration file path of the monitor")
 
 	// parse arguments
 	flag.Parse()
 
 	// parse file
-	monitor := NewMonitor()
-	err := utils.ParseConfigFile(configDirectory+*configFile, monitor)
+	monitor, err := parseMonitorConfig(*configFile)
 	if err != nil {
 		log.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}
 
-	if monitor == nil {
-		log.Fatal("Monitor exiting: monitor is null")
-	}
-
 	// start monitor execution
 	monitor.Run()
+}
+
+// parse config file for the monitor
+func parseMonitorConfig(configFile string) (*Monitor, error) {
+	monitor := NewMonitor()
+	err := utils.ParseConfigFile(configFile, monitor)
+	return monitor, err
 }

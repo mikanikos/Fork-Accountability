@@ -1,6 +1,7 @@
 package accountability
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/mikanikos/Fork-Accountability/common"
@@ -20,8 +21,22 @@ func NewAccountability() *Accountability {
 	}
 }
 
+// String returns a string representation (result) of the accountability algorithm
+func (acc *Accountability) String() string {
+	var sb strings.Builder
+	sb.WriteString("Accountability algorithm overview: \n")
+	sb.WriteString(acc.HeightLogs.String())
+	sb.WriteString(acc.FaultySet.String())
+	return sb.String()
+}
+
 // IdentifyFaultyProcesses detects which processes caused the fork and finds all processes that have bad behavior
 func (acc *Accountability) IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
+
+	// lock logs to prevent other additions during the execution
+	acc.HeightLogs.mutex.Lock()
+	defer acc.HeightLogs.mutex.Unlock()
+
 	// first, preprocess messages by scanning all the received vote sets and add missing messages in the processes which omitted sent messages
 	acc.preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound)
 
@@ -35,7 +50,7 @@ func (acc *Accountability) preprocessMessages(numProcesses, firstDecisionRound, 
 		for processIndex := uint64(1); processIndex <= numProcesses; processIndex++ {
 
 			hvs, hvsLoad := acc.HeightLogs.logs[processIndex]
-			// if process didn't send the hvs, it's faulty
+			// if process didn't send the hvs, just ignore
 			if hvs == nil || !hvsLoad {
 				//acc.FaultySet.AddFaultinessReason(NewFaultiness(processIndex, 0, FaultinessHVSNotSent))
 				continue
@@ -60,7 +75,7 @@ func (acc *Accountability) addMissingVotes(receivedMessages []*common.Message) {
 	for _, mes := range receivedMessages {
 		senderHeightVoteSet := acc.HeightLogs.logs[mes.SenderID]
 
-		// sender didn't send hvs, it's faulty
+		// sender didn't send hvs, just ignore
 		if senderHeightVoteSet == nil {
 			//acc.FaultySet.AddFaultinessReason(NewFaultiness(mes.SenderID, 0, FaultinessHVSNotSent))
 			continue

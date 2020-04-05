@@ -7,27 +7,30 @@ import (
 	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
-const configDirectory = "/_config/"
+const configDirectory = "/cmd/validator/_config/"
 
 func main() {
 
 	// parse arguments
-	configFile := flag.String("config", "", "configuration file path of the validator")
+	configFile := flag.String("config", configDirectory+"config_1.yaml", "configuration file path of the validator")
+	delay := flag.Uint64("delay", 0, "time to wait (in seconds) before replying back to the monitor, used for testing")
 
 	// parse arguments
 	flag.Parse()
 
 	// parse file
-	validator := NewValidator()
-	err := utils.ParseConfigFile(configDirectory+*configFile, validator)
+	validator, err := parseValidatorConfig(*configFile)
 	if err != nil {
 		log.Fatalf("Validator exiting: config file not parsed correctly: %s", err)
 	}
 
-	if validator == nil {
-		log.Fatal("Validator exiting: validator is null")
-	}
-
 	// start validator execution
-	validator.Run()
+	validator.Run(*delay)
+}
+
+// parse config file for the validator
+func parseValidatorConfig(configFile string) (*Validator, error) {
+	validator := NewValidator()
+	err := utils.ParseConfigFile(configFile, validator)
+	return validator, err
 }
