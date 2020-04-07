@@ -1,45 +1,58 @@
-package algorithm
+package accountability
 
 import (
-	"errors"
-	"github.com/mikanikos/Fork-Accountability/common"
+	"strings"
 	"sync"
+
+	"github.com/mikanikos/Fork-Accountability/common"
 )
 
-var (
-	ErrHVSNotSent                    = errors.New("the process did not send its HeightVoteSet")
-	ErrMultiplePrevotes              = errors.New("the process sent more than one PREVOTE message in a round")
-	ErrMultiplePrecommits            = errors.New("the process sent more than one PRECOMMIT message in a round")
-	ErrNotEnoughPrevotesForPrecommit = errors.New("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
-	ErrNotEnoughPrevotesForPrevote   = errors.New("the process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued")
-)
+// Accountability stores all the validators that are faulty and the corresponding faultiness proofs
+type Accountability struct {
+	HeightLogs *HeightLogs
+	FaultySet  *FaultySet
+}
 
-// faulty set
-var faultyProcesses *FaultySet
+// NewAccountability creates a new Accountability structure
+func NewAccountability() *Accountability {
+	return &Accountability{
+		HeightLogs: NewHeightLogs(),
+		FaultySet:  NewFaultySet(),
+	}
+}
+
+// String returns a string representation (result) of the accountability algorithm
+func (acc *Accountability) String() string {
+	var sb strings.Builder
+	sb.WriteString("Accountability algorithm overview: \n")
+	sb.WriteString(acc.HeightLogs.String())
+	sb.WriteString(acc.FaultySet.String())
+	return sb.String()
+}
 
 // IdentifyFaultyProcesses detects which processes caused the fork and finds all processes that have bad behavior
-func IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsMap *common.HeightLogs) *FaultySet {
+func (acc *Accountability) IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
 
-	faultyProcesses = NewFaultySet()
+	// lock logs to prevent other additions during the execution
+	acc.HeightLogs.mutex.Lock()
+	defer acc.HeightLogs.mutex.Unlock()
 
 	// first, preprocess messages by scanning all the received vote sets and add missing messages in the processes which omitted sent messages
-	preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
+	acc.preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound)
 
-	// then, find faulty processes by analyzing the message logs
-	findFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound, hvsMap)
-
-	return faultyProcesses
+	// then, find faulty processes by analyzing the message HeightLogs
+	acc.findFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound)
 }
 
 // Preprocess messages by scanning all the received vote sets and add missing messages in the respective votes sets of processes which omitted sent messages
-func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64, hvsMap *common.HeightLogs) {
+func (acc *Accountability) preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
 	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
 		for processIndex := uint64(1); processIndex <= numProcesses; processIndex++ {
 
-			hvs, hvsLoad := hvsMap.Logs[processIndex]
-			// if process didn't send the hvs, it's faulty
+			hvs, hvsLoad := acc.HeightLogs.logs[processIndex]
+			// if process didn't send the hvs, just ignore
 			if hvs == nil || !hvsLoad {
-				faultyProcesses.AddFaultinessReason(NewFaultiness(processIndex, 0, ErrHVSNotSent))
+				//acc.FaultySet.AddFaultinessReason(NewFaultiness(processIndex, 0, FaultinessHVSNotSent))
 				continue
 			}
 
@@ -50,21 +63,21 @@ func preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound ui
 			}
 
 			// Processing of the received prevote messages
-			addMissingVotes(hvsMap, vs.ReceivedPrevoteMessages)
+			acc.addMissingVotes(vs.ReceivedPrevoteMessages)
 			// Processing of the received precommit messages
-			addMissingVotes(hvsMap, vs.ReceivedPrecommitMessages)
+			acc.addMissingVotes(vs.ReceivedPrecommitMessages)
 		}
 	}
 }
 
 // add missing votes to the other processes based on the messages received by the current process
-func addMissingVotes(hvsMap *common.HeightLogs, receivedMessages []*common.Message) {
+func (acc *Accountability) addMissingVotes(receivedMessages []*common.Message) {
 	for _, mes := range receivedMessages {
-		senderHeightVoteSet := hvsMap.Logs[mes.SenderID]
+		senderHeightVoteSet := acc.HeightLogs.logs[mes.SenderID]
 
-		// sender didn't send hvs, it's faulty
+		// sender didn't send hvs, just ignore
 		if senderHeightVoteSet == nil {
-			faultyProcesses.AddFaultinessReason(NewFaultiness(mes.SenderID, 0, ErrHVSNotSent))
+			//acc.FaultySet.AddFaultinessReason(NewFaultiness(mes.SenderID, 0, FaultinessHVSNotSent))
 			continue
 		}
 
@@ -74,39 +87,39 @@ func addMissingVotes(hvsMap *common.HeightLogs, receivedMessages []*common.Messa
 }
 
 // check for faultiness in each process by analyzing the history of messages and making sure it followed the consensus algorithm
-func findFaultyProcesses(numProcesses, firstRound, secondRound uint64, hvsMap *common.HeightLogs) {
+func (acc *Accountability) findFaultyProcesses(numProcesses, firstRound, secondRound uint64) {
 	wg := sync.WaitGroup{}
 	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
 
 	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
-	for processId := uint64(1); processId <= numProcesses; processId++ {
+	for processID := uint64(1); processID <= numProcesses; processID++ {
 
-		hvs, hvsLoad := hvsMap.Logs[processId]
+		hvs, hvsLoad := acc.HeightLogs.logs[processID]
 		// if process didn't send the hvs, ignore because pre-processing already caught that
 		if hvs == nil || !hvsLoad {
 			continue
 		}
 
 		wg.Add(1)
-		go isProcessFaulty(quorum, firstRound, secondRound, hvsMap.Logs[processId], &wg)
+		go acc.isProcessFaulty(quorum, firstRound, secondRound, hvs, &wg)
 	}
 
 	wg.Wait()
 }
 
-func checkForDuplicateMessages(processId, round uint64, vs *common.VoteSet) {
+func (acc *Accountability) checkForDuplicateMessages(processID, round uint64, vs *common.VoteSet) {
 	// check for duplicates prevotes
 	if len(vs.SentPrevoteMessages) > 1 {
-		faultyProcesses.AddFaultinessReason(NewFaultiness(processId, round, ErrMultiplePrevotes))
+		acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
 	}
 
 	// check for duplicates precommits
 	if len(vs.SentPrecommitMessages) > 1 {
-		faultyProcesses.AddFaultinessReason(NewFaultiness(processId, round, ErrMultiplePrecommits))
+		acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
 	}
 }
 
-func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightVoteSet, wg *sync.WaitGroup) {
+func (acc *Accountability) isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightVoteSet, wg *sync.WaitGroup) {
 	lockValue := -1
 	lockRound := uint64(0)
 
@@ -118,7 +131,7 @@ func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightV
 		}
 
 		// check if multiple prevotes/precommits have been sent in the same round
-		checkForDuplicateMessages(hvs.OwnerID, round, vs)
+		acc.checkForDuplicateMessages(hvs.OwnerID, round, vs)
 
 		if len(vs.SentPrevoteMessages) == 1 {
 			// Only one prevote message has been sent
@@ -128,7 +141,7 @@ func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightV
 				// Only if two values are not the same, we should look for 2f + 1 prevote messages
 				if message.Value != lockValue {
 					if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(lockRound, round, quorum, message) {
-						faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrevote))
+						acc.FaultySet.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, faultinessNotEnoughPrevotesForPrevote))
 					}
 				}
 			}
@@ -137,7 +150,7 @@ func isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightV
 		if len(vs.SentPrecommitMessages) == 1 {
 			message := vs.SentPrecommitMessages[0]
 			if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
-				faultyProcesses.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, ErrNotEnoughPrevotesForPrecommit))
+				acc.FaultySet.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, faultinessNotEnoughPrevotesForPrecommit))
 			}
 
 			// If not -1 is precommited

@@ -8,7 +8,7 @@ import (
 
 // HeightVoteSet contains all messages for all the rounds of a specific height
 type HeightVoteSet struct {
-	OwnerID    uint64              `yaml:"id"`
+	OwnerID    uint64              `yaml:"ownerID"`
 	VoteSetMap map[uint64]*VoteSet `yaml:"heightvoteset"`
 }
 
@@ -44,24 +44,42 @@ func (hvs *HeightVoteSet) AddMessage(mes *Message) {
 
 // ThereAreQuorumPrevoteMessagesForPrevote checks if there are enough prevotes to justify another prevote given a quorum
 func (hvs *HeightVoteSet) ThereAreQuorumPrevoteMessagesForPrevote(lockedRound, currentRound, quorum uint64, prevoteMessage *Message) bool {
-	for round, voteSet := range hvs.VoteSetMap {
-		if (round < lockedRound || round >= currentRound) || (voteSet == nil) {
-			continue
+	// if not enough justification, the process is faulty
+	if uint64(len(prevoteMessage.Justifications)) < quorum {
+		return false
+	}
+
+	// go over all justifications provided and check that each one exists and is appropriate
+	for _, justification := range prevoteMessage.Justifications {
+		// if it's not between the lockedRound and the current round, it's not valid according to the Tendermint algorithm
+		if justification.Round < lockedRound || justification.Round >= currentRound {
+			return false
 		}
 
-		numOfAppropriateMessages := uint64(0)
-		for _, receivedPrevoteMessage := range voteSet.ReceivedPrevoteMessages {
-			if receivedPrevoteMessage.Value == prevoteMessage.Value {
-				numOfAppropriateMessages++
+		// load vote set
+		vs, vsLoaded := hvs.VoteSetMap[justification.Round]
+
+		// if vote set not present, the justification is not real and thus not valid
+		if vs == nil || !vsLoaded {
+			return false
+		}
+
+		foundJustification := false
+		for _, receivedPrevoteMessage := range vs.ReceivedPrevoteMessages {
+			// find the justification anc check that is equal to the one contained in the prevote message and corresponds to the same value
+			if receivedPrevoteMessage.Value == prevoteMessage.Value && justification.Equal(receivedPrevoteMessage) {
+				foundJustification = true
+				break
 			}
 		}
 
-		if numOfAppropriateMessages >= quorum {
-			return true
+		// if not found, justification is fake
+		if !foundJustification {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
 // string representation of a hvs

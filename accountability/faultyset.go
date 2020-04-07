@@ -1,4 +1,4 @@
-package algorithm
+package accountability
 
 import (
 	"reflect"
@@ -10,7 +10,7 @@ import (
 // FaultySet stores all the validators that are faulty and the corresponding faultiness proofs
 type FaultySet struct {
 	faultyProcesses map[uint64][]*Faultiness
-	Mutex           sync.Mutex
+	mutex           sync.RWMutex
 }
 
 // NewFaultySet creates a new FaultySet structure
@@ -20,10 +20,10 @@ func NewFaultySet() *FaultySet {
 	}
 }
 
-// AddFaultinessReason in the faultySet if not already present
+// AddFaultinessReason in the FaultySet if not already present
 func (fs *FaultySet) AddFaultinessReason(fr *Faultiness) {
-	fs.Mutex.Lock()
-	defer fs.Mutex.Unlock()
+	fs.mutex.Lock()
+	defer fs.mutex.Unlock()
 
 	reasons, reasonsLoad := fs.faultyProcesses[fr.processID]
 	// create list of reasons for the process if not present
@@ -48,6 +48,10 @@ func (fs *FaultySet) AddFaultinessReason(fr *Faultiness) {
 
 // string representation of a faulty set
 func (fs *FaultySet) String() string {
+
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
+
 	var sb strings.Builder
 
 	sb.WriteString("Faulty processes are: \n")
@@ -67,7 +71,21 @@ func (fs *FaultySet) String() string {
 	return sb.String()
 }
 
-// equality for faultySets
+// Equal is an equality method for FaultySet
 func (fs *FaultySet) Equal(other *FaultySet) bool {
-	return reflect.DeepEqual(fs, other)
+
+	if other == nil {
+		return false
+	}
+
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
+	return reflect.DeepEqual(fs.faultyProcesses, other.faultyProcesses)
+}
+
+// Length returns the length of the FaultySet
+func (fs *FaultySet) Length() int {
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
+	return len(fs.faultyProcesses)
 }
