@@ -27,9 +27,6 @@ jobs:
         
     - name: Build
       run: go build -v ./...
-    
-    - name: Lint
-      uses: actions-contrib/golangci-lint@v1
       
     - name: Test
       run: go test -v ./... -covermode=count -coverprofile=coverage.out
