@@ -114,7 +114,7 @@ func (acc *Accountability) findFaultyProcesses(numProcesses, firstDecisionRound,
 
 						// Only if two values are not the same, we should look for 2f + 1 prevote messages
 						if int(message.Value) != lockValue && !checkQuorumPrevotesForPrevote(hvs, lockRound, round, quorum, message) {
-							acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessNotEnoughPrevotesForPrevote))
+							acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrevote))
 						}
 					}
 				}
@@ -135,7 +135,7 @@ func (acc *Accountability) findFaultyProcesses(numProcesses, firstDecisionRound,
 
 						// we should look for 2f + 1 precommit messages
 						if !checkQuorumPrevotesForPrecommit(vs, round, quorum, message) {
-							acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessNotEnoughPrevotesForPrecommit))
+							acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrecommit))
 						}
 					}
 				}

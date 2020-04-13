@@ -34,9 +34,9 @@ func TestBasicScenario(t *testing.T) {
 
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrevote))
 
 	if acc.FaultySet.Length() != expectedFaultySet.Length() {
 		t.Fatal("Monitor detected different faulty processes")
@@ -61,10 +61,10 @@ func TestBasicScenario(t *testing.T) {
 //
 //	expectedFaultySet := NewFaultySet()
 //	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-//	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessNotEnoughPrevotesForPrecommit))
-//	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessNotEnoughPrevotesForPrecommit))
+//	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMissingQuorumForPrecommit))
+//	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMissingQuorumForPrecommit))
 //	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-//	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrecommit))
+//	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrecommit))
 //
 //	fmt.Println(acc.FaultySet.String())
 //
@@ -122,9 +122,9 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("2", 3, faultinessMultiplePrecommits))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrevote))
 
 	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -180,9 +180,9 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("2", 3, faultinessMultiplePrevotes))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrevote))
 
 	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -216,11 +216,11 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	acc.Run(4, 3, 4)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("1", 3, faultinessNotEnoughPrevotesForPrecommit))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("1", 3, faultinessMissingQuorumForPrecommit))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrevote))
 
 	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -317,11 +317,11 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	acc.Run(4, 3, 4)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("2", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("2", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrevote))
 
 	fmt.Println(expectedFaultySet)
 	fmt.Println(acc.FaultySet)
@@ -377,11 +377,11 @@ func TestBasicScenario_TestFalseJustifications(t *testing.T) {
 	acc.Run(4, 3, 4)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("2", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("2", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
 	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessNotEnoughPrevotesForPrevote))
+	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrevote))
 
 	if !acc.FaultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")

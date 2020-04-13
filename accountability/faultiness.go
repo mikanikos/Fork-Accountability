@@ -13,10 +13,10 @@ type FaultinessReason string
 func (fr FaultinessReason) FaultinessReason() string { return string(fr) }
 
 const (
-	faultinessMultiplePrevotes              = FaultinessReason("the process sent more than one PREVOTE message in a round")
-	faultinessMultiplePrecommits            = FaultinessReason("the process sent more than one PRECOMMIT message in a round")
-	faultinessNotEnoughPrevotesForPrecommit = FaultinessReason("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
-	faultinessNotEnoughPrevotesForPrevote   = FaultinessReason("the process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued")
+	faultinessMultiplePrevotes          = FaultinessReason("the process sent more than one PREVOTE message in a round")
+	faultinessMultiplePrecommits        = FaultinessReason("the process sent more than one PRECOMMIT message in a round")
+	faultinessMissingQuorumForPrecommit = FaultinessReason("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
+	faultinessMissingQuorumForPrevote   = FaultinessReason("the process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued")
 )
 
 // Faultiness stores information about faulty processes
