@@ -64,9 +64,9 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 	numValidators := len(monitor.Validators)
 
 	// lower bound on the number of faulty processes
-	minFaulty := (numValidators-1)/3 + 1 // f+1
+	threshold := (numValidators-1)/3 + 1 // f+1
 
-	// count the number of responses from different validators
+	// count the number of responses (regardless of validity) from different validators
 	responseCount := 0
 
 	// wait until the specified timer expires
@@ -79,24 +79,25 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 			// exit because timer expired
 			return timeoutStatus
 
-		case status := <-monitor.receiveChannel:
+		case isNewPacket := <-monitor.receiveChannel:
 
-			// check status received (new hvs or validator disconnected)
-			// if we have delivered at least f + 1 message logs, run the monitor algorithm
-			if status && monitor.accAlgorithm.HeightLogs.Length() >= minFaulty {
+			// check if new packet has been received
+			if isNewPacket {
+				// if we have delivered at least f + 1 message logs, run the monitor algorithm
+				if monitor.accAlgorithm.CanRun(threshold) {
 
-				// run monitor and get faulty processes
-				monitor.accAlgorithm.IdentifyFaultyProcesses(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound)
+					// run monitor and get faulty processes
+					monitor.accAlgorithm.Run(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound)
 
-				// if we have at least f + 1 faulty processes, the algorithm completed
-				if monitor.accAlgorithm.FaultySet.Length() >= minFaulty {
-					return successfulStatus
+					// if we have at least f + 1 faulty processes, the algorithm completed
+					if monitor.accAlgorithm.IsCompleted(threshold) {
+						return successfulStatus
+					}
 				}
 			}
 
 			// count the number of responses from validators
 			responseCount++
-
 			if responseCount == numValidators {
 				// exit because no new hvs will arrive and avoid waiting longer
 				return failStatus
@@ -130,7 +131,7 @@ func (monitor *Monitor) requestHeightLogs() {
 	// prepare packet to send
 	packet := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
 
-	// start goroutines to send message and wait for reply for each validator
+	// start goroutines to send message and wait for reply from each validator
 	for _, conn := range monitor.connections {
 
 		// channel used to close connection once hvs has been received and stop to send the request
@@ -166,9 +167,11 @@ func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection, val
 		}
 
 		// check if packet and its data are valid
-		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && !monitor.accAlgorithm.HeightLogs.Contains(packet.Hvs.OwnerID) {
+		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
+			!monitor.accAlgorithm.HeightLogs.Contains(conn.Conn.RemoteAddr().String()) {
+
 			// add hvs for the validator who sent it
-			monitor.accAlgorithm.HeightLogs.AddHvs(packet.Hvs)
+			monitor.accAlgorithm.HeightLogs.AddHvs(conn.Conn.RemoteAddr().String(), packet.Hvs)
 
 			// notify the monitor that new hvs has arrived
 			monitor.receiveChannel <- true

@@ -1,16 +1,15 @@
 package accountability
 
 import (
-	"strings"
-	"sync"
-
 	"github.com/mikanikos/Fork-Accountability/common"
+	"strings"
 )
 
 // Accountability stores all the validators that are faulty and the corresponding faultiness proofs
 type Accountability struct {
-	HeightLogs *HeightLogs
-	FaultySet  *FaultySet
+	messageLogsReceived uint64
+	HeightLogs          *HeightLogs
+	FaultySet           *FaultySet
 }
 
 // NewAccountability creates a new Accountability structure
@@ -24,61 +23,64 @@ func NewAccountability() *Accountability {
 // String returns a string representation (result) of the accountability algorithm
 func (acc *Accountability) String() string {
 	var sb strings.Builder
-	sb.WriteString("Accountability algorithm overview: \n")
+	sb.WriteString("Accountability algorithm report\n\n")
 	sb.WriteString(acc.HeightLogs.String())
 	sb.WriteString(acc.FaultySet.String())
 	return sb.String()
 }
 
-// IdentifyFaultyProcesses detects which processes caused the fork and finds all processes that have bad behavior
-func (acc *Accountability) IdentifyFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
+// IsCompleted returns true if the algorithm has completed, false otherwise
+func (acc *Accountability) IsCompleted(threshold int) bool {
+	// if we have at least f + 1 faulty processes, the algorithm completed
+	return acc.FaultySet.Length() >= threshold
+}
+
+// CanRun returns true if the algorithm can run, false otherwise
+func (acc *Accountability) CanRun(threshold int) bool {
+	acc.messageLogsReceived++
+	// if we have delivered at least f + 1 message logs, run the monitor algorithm
+	return int(acc.messageLogsReceived) >= threshold
+}
+
+// Run starts the accountability algorithm to detect which processes caused the fork and finds all processes that have bad behavior
+func (acc *Accountability) Run(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
 
 	// lock logs to prevent other additions during the execution
 	acc.HeightLogs.mutex.Lock()
 	defer acc.HeightLogs.mutex.Unlock()
 
-	// first, preprocess messages by scanning all the received vote sets and add missing messages in the processes which omitted sent messages
-	acc.preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound)
+	// clear faulty set
+	acc.FaultySet.Clear()
 
-	// then, find faulty processes by analyzing the message HeightLogs
+	// first, preprocess messages by scanning all the received vote sets and add missing messages in the processes which omitted to have sent some messages
+	acc.preprocessMessages(firstDecisionRound, secondDecisionRound)
+
+	// then, find faulty processes by analyzing their message logs
 	acc.findFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound)
 }
 
-// Preprocess messages by scanning all the received vote sets and add missing messages in the respective votes sets of processes which omitted sent messages
-func (acc *Accountability) preprocessMessages(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
-	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
-		for processIndex := uint64(1); processIndex <= numProcesses; processIndex++ {
-
-			hvs, hvsLoad := acc.HeightLogs.logs[processIndex]
-			// if process didn't send the hvs, just ignore
-			if hvs == nil || !hvsLoad {
-				//acc.FaultySet.AddFaultinessReason(NewFaultiness(processIndex, 0, FaultinessHVSNotSent))
-				continue
+// Preprocess messages by scanning all the received vote sets and add missing messages in the respective votes sets of processes which omitted to have sent some messages
+func (acc *Accountability) preprocessMessages(firstDecisionRound, secondDecisionRound uint64) {
+	for _, hvs := range acc.HeightLogs.logs {
+		for round, vs := range hvs.VoteSetMap {
+			if round >= firstDecisionRound && round <= secondDecisionRound {
+				// Processing of the received prevote messages
+				acc.addMissingVotes(vs.ReceivedPrevoteMessages)
+				// Processing of the received precommit messages
+				acc.addMissingVotes(vs.ReceivedPrecommitMessages)
 			}
-
-			vs, vsLoad := hvs.VoteSetMap[round]
-			// if process doesn't have a voteset, just ignore
-			if vs == nil || !vsLoad {
-				continue
-			}
-
-			// Processing of the received prevote messages
-			acc.addMissingVotes(vs.ReceivedPrevoteMessages)
-			// Processing of the received precommit messages
-			acc.addMissingVotes(vs.ReceivedPrecommitMessages)
 		}
 	}
 }
 
-// add missing votes to the other processes based on the messages received by the current process
+// Add missing votes to the other processes based on the messages received by the current process
 func (acc *Accountability) addMissingVotes(receivedMessages []*common.Message) {
+	// add all received messages
 	for _, mes := range receivedMessages {
-		senderHeightVoteSet := acc.HeightLogs.logs[mes.SenderID]
-
-		// sender didn't send hvs, just ignore
-		if senderHeightVoteSet == nil {
-			//acc.FaultySet.AddFaultinessReason(NewFaultiness(mes.SenderID, 0, FaultinessHVSNotSent))
-			continue
+		senderHeightVoteSet, loaded := acc.HeightLogs.logs[mes.SenderID]
+		if senderHeightVoteSet == nil || !loaded {
+			senderHeightVoteSet = common.NewHeightVoteSet()
+			acc.HeightLogs.logs[mes.SenderID] = senderHeightVoteSet
 		}
 
 		// add message if not already present in the sender vote set
@@ -86,80 +88,109 @@ func (acc *Accountability) addMissingVotes(receivedMessages []*common.Message) {
 	}
 }
 
-// check for faultiness in each process by analyzing the history of messages and making sure it followed the consensus algorithm
-func (acc *Accountability) findFaultyProcesses(numProcesses, firstRound, secondRound uint64) {
-	wg := sync.WaitGroup{}
+// Check for faultiness in each process by analyzing the history of messages and making sure it followed the consensus algorithm
+func (acc *Accountability) findFaultyProcesses(numProcesses, firstDecisionRound, secondDecisionRound uint64) {
 	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
 
 	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
-	for processID := uint64(1); processID <= numProcesses; processID++ {
+	for processID, hvs := range acc.HeightLogs.logs {
+		lockValue := -1        // null value, we assume positive values for messages
+		lockRound := uint64(0) // null round, rounds start from 1
 
-		hvs, hvsLoad := acc.HeightLogs.logs[processID]
-		// if process didn't send the hvs, ignore because pre-processing already caught that
-		if hvs == nil || !hvsLoad {
-			continue
-		}
+		// check if a process is faulty in all the rounds and detect all the faultiness reasons for it
+		for round, vs := range hvs.VoteSetMap {
+			if round >= firstDecisionRound && round <= secondDecisionRound {
 
-		wg.Add(1)
-		go acc.isProcessFaulty(quorum, firstRound, secondRound, hvs, &wg)
-	}
+				// check for duplicates prevotes
+				sentPrevotesLength := len(vs.SentPrevoteMessages)
+				if sentPrevotesLength > 1 {
+					acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
+				} else {
 
-	wg.Wait()
-}
+					// if only one prevote message has been sent AND
+					// if the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
+					if sentPrevotesLength == 1 && lockValue != -1 {
+						message := vs.SentPrevoteMessages[0]
 
-func (acc *Accountability) checkForDuplicateMessages(processID, round uint64, vs *common.VoteSet) {
-	// check for duplicates prevotes
-	if len(vs.SentPrevoteMessages) > 1 {
-		acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
-	}
+						// Only if two values are not the same, we should look for 2f + 1 prevote messages
+						if int(message.Value) != lockValue && !checkQuorumPrevotesForPrevote(hvs, lockRound, round, quorum, message) {
+							acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessNotEnoughPrevotesForPrevote))
+						}
+					}
+				}
 
-	// check for duplicates precommits
-	if len(vs.SentPrecommitMessages) > 1 {
-		acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
-	}
-}
+				sentPrecommitsLength := len(vs.SentPrecommitMessages)
+				// check for duplicates precommits
+				if sentPrecommitsLength > 1 {
+					acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
+				} else {
 
-func (acc *Accountability) isProcessFaulty(quorum, firstRound, secondRound uint64, hvs *common.HeightVoteSet, wg *sync.WaitGroup) {
-	lockValue := -1
-	lockRound := uint64(0)
+					// if only one precommit message has been sent
+					if sentPrecommitsLength == 1 {
+						message := vs.SentPrecommitMessages[0]
 
-	for round := firstRound; round <= secondRound; round++ {
-		vs, vsLoad := hvs.VoteSetMap[round]
-		// if process doesn't have a voteset, just ignore
-		if vs == nil || !vsLoad {
-			continue
-		}
+						// set lock value and lock round
+						lockValue = int(message.Value)
+						lockRound = round
 
-		// check if multiple prevotes/precommits have been sent in the same round
-		acc.checkForDuplicateMessages(hvs.OwnerID, round, vs)
-
-		if len(vs.SentPrevoteMessages) == 1 {
-			// Only one prevote message has been sent
-			// If the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
-			if lockValue != -1 {
-				message := vs.SentPrevoteMessages[0]
-				// Only if two values are not the same, we should look for 2f + 1 prevote messages
-				if message.Value != lockValue {
-					if !hvs.ThereAreQuorumPrevoteMessagesForPrevote(lockRound, round, quorum, message) {
-						acc.FaultySet.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, faultinessNotEnoughPrevotesForPrevote))
+						// we should look for 2f + 1 precommit messages
+						if !checkQuorumPrevotesForPrecommit(vs, round, quorum, message) {
+							acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessNotEnoughPrevotesForPrecommit))
+						}
 					}
 				}
 			}
 		}
+	}
+}
 
-		if len(vs.SentPrecommitMessages) == 1 {
-			message := vs.SentPrecommitMessages[0]
-			if message.Value != -1 && !vs.ThereAreQuorumPrevoteMessagesForPrecommit(round, quorum, message) {
-				acc.FaultySet.AddFaultinessReason(NewFaultiness(hvs.OwnerID, round, faultinessNotEnoughPrevotesForPrecommit))
-			}
+// ThereAreQuorumPrevoteMessagesForPrecommit checks if there are enough prevotes to justify a precommit given a quorum
+func checkQuorumPrevotesForPrecommit(vs *common.VoteSet, round uint64, quorum uint64, precommit *common.Message) bool {
+	numberOfAppropriateMessages := uint64(0)
+	for _, receivedPrevoteMessage := range vs.ReceivedPrevoteMessages {
+		if receivedPrevoteMessage.Value == precommit.Value && receivedPrevoteMessage.Round == round {
+			numberOfAppropriateMessages++
+		}
+	}
+	return numberOfAppropriateMessages >= quorum
+}
 
-			// If not -1 is precommited
-			if message.Value != -1 {
-				lockValue = message.Value
-				lockRound = round
+// ThereAreQuorumPrevoteMessagesForPrevote checks if there are enough prevotes to justify another prevote given a quorum
+func checkQuorumPrevotesForPrevote(hvs *common.HeightVoteSet, lockedRound, currentRound, quorum uint64, prevote *common.Message) bool {
+	// if not enough justifications, the process is faulty
+	if uint64(len(prevote.Justifications)) < quorum {
+		return false
+	}
+
+	// go over all justifications provided and check that each one exists and is appropriate
+	for _, justification := range prevote.Justifications {
+		// if it's not between the lockedRound and the current round, it's not valid according to the consensus algorithm
+		if justification.Round < lockedRound || justification.Round >= currentRound {
+			return false
+		}
+
+		// load vote set
+		vs, vsLoaded := hvs.VoteSetMap[justification.Round]
+
+		// if vote set not present, the justification is not real and, thus, not valid
+		if vs == nil || !vsLoaded {
+			return false
+		}
+
+		foundJustification := false
+		for _, receivedPrevoteMessage := range vs.ReceivedPrevoteMessages {
+			// find the justification and check that is equal to the one contained in the prevote message and corresponds to the same value
+			if receivedPrevoteMessage.Value == prevote.Value && justification.Equal(receivedPrevoteMessage) {
+				foundJustification = true
+				break
 			}
+		}
+
+		// if not found, justification is fake
+		if !foundJustification {
+			return false
 		}
 	}
 
-	wg.Done()
+	return true
 }

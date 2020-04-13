@@ -1,7 +1,6 @@
 package accountability
 
 import (
-	"strconv"
 	"strings"
 	"sync"
 
@@ -10,22 +9,22 @@ import (
 
 // HeightLogs contains all messages for all the rounds from each process in a specific height
 type HeightLogs struct {
-	logs  map[uint64]*common.HeightVoteSet
+	logs  map[string]*common.HeightVoteSet
 	mutex sync.RWMutex
 }
 
 // NewHeightLogs creates a new HeightLogs structure
 func NewHeightLogs() *HeightLogs {
 	return &HeightLogs{
-		logs: make(map[uint64]*common.HeightVoteSet),
+		logs: make(map[string]*common.HeightVoteSet),
 	}
 }
 
 // AddHvs adds a new hvs in the height HeightLogs
-func (hl *HeightLogs) AddHvs(hvs *common.HeightVoteSet) {
+func (hl *HeightLogs) AddHvs(processID string, hvs *common.HeightVoteSet) {
 	hl.mutex.Lock()
 	defer hl.mutex.Unlock()
-	hl.logs[hvs.OwnerID] = hvs
+	hl.logs[processID] = hvs
 }
 
 // string representation of a HeightLogs
@@ -35,11 +34,12 @@ func (hl *HeightLogs) String() string {
 
 	var sb strings.Builder
 
-	sb.WriteString("Height logs are: \n")
+	sb.WriteString("Height logs\n\n")
 
 	for processID, hvs := range hl.logs {
-		sb.WriteString(strconv.FormatUint(processID, 10))
-		sb.WriteString(": ")
+		sb.WriteString("Process ")
+		sb.WriteString(processID)
+		sb.WriteString("\n\n")
 		sb.WriteString(hvs.String())
 		sb.WriteString("\n")
 	}
@@ -55,7 +55,7 @@ func (hl *HeightLogs) Length() int {
 }
 
 // Contains checks if an element in the logs is already present
-func (hl *HeightLogs) Contains(id uint64) bool {
+func (hl *HeightLogs) Contains(id string) bool {
 	hl.mutex.RLock()
 	defer hl.mutex.RUnlock()
 	_, loaded := hl.logs[id]

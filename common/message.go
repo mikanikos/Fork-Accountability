@@ -20,14 +20,14 @@ const (
 // Message struct
 type Message struct {
 	Type           MessageType `yaml:"type"`
-	SenderID       uint64      `yaml:"sender"`
+	SenderID       string      `yaml:"sender"`
 	Round          uint64      `yaml:"round"`
-	Value          int         `yaml:"value"`
+	Value          uint64      `yaml:"value"`
 	Justifications []*Message  `yaml:"justifications"`
 }
 
 // NewMessage creates a new message
-func NewMessage(typeMes MessageType, senderID, round uint64, value int, justifications []*Message) *Message {
+func NewMessage(typeMes MessageType, senderID string, round uint64, value uint64, justifications []*Message) *Message {
 	return &Message{
 		Type:           typeMes,
 		SenderID:       senderID,
@@ -42,16 +42,16 @@ func (mes *Message) Equal(other *Message) bool {
 	return reflect.DeepEqual(mes, other)
 }
 
-// string representation of a message
+// String representation of a message
 func (mes *Message) String() string {
 	var sb strings.Builder
 	sb.WriteString(string(mes.Type))
 	sb.WriteString(" - ID: ")
-	sb.WriteString(strconv.FormatUint(mes.SenderID, 10))
+	sb.WriteString(mes.SenderID)
 	sb.WriteString(", Round: ")
 	sb.WriteString(strconv.FormatUint(mes.Round, 10))
 	sb.WriteString(", Value: ")
-	sb.WriteString(strconv.Itoa(mes.Value))
+	sb.WriteString(strconv.FormatUint(mes.Value, 10))
 	sb.WriteString(", Justifications: ")
 	sb.WriteString(fmt.Sprint(mes.Justifications))
 	return sb.String()

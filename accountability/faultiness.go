@@ -13,7 +13,6 @@ type FaultinessReason string
 func (fr FaultinessReason) FaultinessReason() string { return string(fr) }
 
 const (
-	// FaultinessHVSNotSent                    = FaultinessReason("the process did not send its HeightVoteSet")
 	faultinessMultiplePrevotes              = FaultinessReason("the process sent more than one PREVOTE message in a round")
 	faultinessMultiplePrecommits            = FaultinessReason("the process sent more than one PRECOMMIT message in a round")
 	faultinessNotEnoughPrevotesForPrecommit = FaultinessReason("the process did not receive 2f + 1 PREVOTE messages for a sent PRECOMMIT message to be issued")
@@ -22,13 +21,13 @@ const (
 
 // Faultiness stores information about faulty processes
 type Faultiness struct {
-	processID uint64
+	processID string
 	round     uint64
 	reason    FaultinessReason
 }
 
 // NewFaultiness creates a new Faultiness structure
-func NewFaultiness(processID, round uint64, reason FaultinessReason) *Faultiness {
+func NewFaultiness(processID string, round uint64, reason FaultinessReason) *Faultiness {
 	return &Faultiness{
 		processID: processID,
 		round:     round,
@@ -41,7 +40,7 @@ func (fr *Faultiness) String() string {
 	var sb strings.Builder
 
 	sb.WriteString("Process ")
-	sb.WriteString(strconv.FormatUint(fr.processID, 10))
+	sb.WriteString(fr.processID)
 	sb.WriteString(" at round ")
 	sb.WriteString(strconv.FormatUint(fr.round, 10))
 	sb.WriteString(": ")

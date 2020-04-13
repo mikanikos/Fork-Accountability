@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -36,10 +35,6 @@ func (vs *VoteSet) addSentMessage(mes *Message) {
 		if !contains(vs.SentPrecommitMessages, mes) {
 			vs.SentPrecommitMessages = append(vs.SentPrecommitMessages, mes)
 		}
-
-	default:
-		//  print error
-		fmt.Println("Error: message type not known")
 	}
 }
 
@@ -55,18 +50,7 @@ func contains(messages []*Message, message *Message) bool {
 	return contains
 }
 
-// ThereAreQuorumPrevoteMessagesForPrecommit checks if there are enough prevotes to justify a precommit given a quorum
-func (vs *VoteSet) ThereAreQuorumPrevoteMessagesForPrecommit(round uint64, quorum uint64, precommit *Message) bool {
-	numberOfAppropriateMessages := uint64(0)
-	for _, receivedPrevoteMessage := range vs.ReceivedPrevoteMessages {
-		if receivedPrevoteMessage.Value == precommit.Value && receivedPrevoteMessage.Round == round {
-			numberOfAppropriateMessages++
-		}
-	}
-	return numberOfAppropriateMessages >= quorum
-}
-
-// string representation of a voteset
+// String representation of a voteset
 func (vs *VoteSet) String() string {
 	var sb strings.Builder
 

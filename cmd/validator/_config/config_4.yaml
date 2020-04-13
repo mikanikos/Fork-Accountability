@@ -1,10 +1,8 @@
 --- # config file for validator 4
-id: 4
 address: 127.0.0.1:8083
 messages:
   # height
   1:
-    ownerID: 4
     heightvoteset:
       # round
       3:

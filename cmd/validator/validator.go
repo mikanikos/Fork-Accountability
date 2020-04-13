@@ -10,7 +10,6 @@ import (
 
 // Validator struct
 type Validator struct {
-	ID       uint64                           `yaml:"id"`
 	Address  string                           `yaml:"address"`
 	Messages map[uint64]*common.HeightVoteSet `yaml:"messages"`
 
