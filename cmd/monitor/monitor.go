@@ -83,6 +83,10 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 
 			// check if new packet has been received
 			if isNewPacket {
+
+				// increments the number of valid packets received
+				monitor.accAlgorithm.MessageLogsReceived++
+
 				// if we have delivered at least f + 1 message logs, run the monitor algorithm
 				if monitor.accAlgorithm.CanRun(threshold) {
 

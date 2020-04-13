@@ -3,11 +3,13 @@ package accountability
 import (
 	"reflect"
 	"strings"
+	"sync"
 )
 
 // FaultySet stores all the validators that are faulty and the corresponding faultiness proofs
 type FaultySet struct {
 	faultyProcesses map[string][]*Faultiness
+	mutex           sync.RWMutex
 }
 
 // NewFaultySet creates a new FaultySet structure
@@ -19,6 +21,9 @@ func NewFaultySet() *FaultySet {
 
 // AddFaultinessReason in the FaultySet if not already present
 func (fs *FaultySet) AddFaultinessReason(fr *Faultiness) {
+	fs.mutex.Lock()
+	defer fs.mutex.Unlock()
+
 	reasons, reasonsLoad := fs.faultyProcesses[fr.processID]
 	// create list of reasons for the process if not present
 	if reasons == nil || !reasonsLoad {
@@ -42,6 +47,10 @@ func (fs *FaultySet) AddFaultinessReason(fr *Faultiness) {
 
 // string representation of a faulty set
 func (fs *FaultySet) String() string {
+
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
+
 	var sb strings.Builder
 
 	sb.WriteString("Faulty processes detected\n")
@@ -64,15 +73,22 @@ func (fs *FaultySet) Equal(other *FaultySet) bool {
 	if other == nil {
 		return false
 	}
+
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
 	return reflect.DeepEqual(fs.faultyProcesses, other.faultyProcesses)
 }
 
 // Length returns the length of the FaultySet
 func (fs *FaultySet) Length() int {
+	fs.mutex.RLock()
+	defer fs.mutex.RUnlock()
 	return len(fs.faultyProcesses)
 }
 
 // Clear removes all elements in the FaultySet
 func (fs *FaultySet) Clear() {
+	fs.mutex.Lock()
+	defer fs.mutex.Unlock()
 	fs.faultyProcesses = make(map[string][]*Faultiness)
 }
