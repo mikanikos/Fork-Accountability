@@ -15,7 +15,7 @@ func Test_CorrectConfigParsing_1(t *testing.T) {
 
 	// create validator structure
 	validatorTest := NewValidator()
-	validatorTest.Address = "127.0.0.1:8081"
+	validatorTest.Address = "127.0.0.1:8080"
 	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig1()
 
 	// parse config file
@@ -38,7 +38,7 @@ func Test_CorrectConfigParsing_2(t *testing.T) {
 
 	// create validator structure
 	validatorTest := NewValidator()
-	validatorTest.Address = "127.0.0.1:8082"
+	validatorTest.Address = "127.0.0.1:8081"
 	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig2()
 
 	// parse config file
@@ -61,7 +61,7 @@ func Test_CorrectConfigParsing_3(t *testing.T) {
 
 	// create validator structure
 	validatorTest := NewValidator()
-	validatorTest.Address = "127.0.0.1:8083"
+	validatorTest.Address = "127.0.0.1:8082"
 	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig3()
 
 	// parse config file
@@ -84,7 +84,7 @@ func Test_CorrectConfigParsing_4(t *testing.T) {
 
 	// create validator structure
 	validatorTest := NewValidator()
-	validatorTest.Address = "127.0.0.1:8084"
+	validatorTest.Address = "127.0.0.1:8083"
 	validatorTest.Messages[1] = utils.GetHvsForDefaultConfig4()
 
 	// parse config file

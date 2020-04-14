@@ -98,12 +98,12 @@ func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer 
 	for {
 		select {
 
-		// case status := <-closeChannel:
-		// 	// stop because we received the packet from validator
-		// 	if status {
-		// 		c.Close()
-		// 	}
-		// 	return
+		case status := <-closeChannel:
+			// stop because we received the packet from validator
+			if status {
+				c.Close()
+			}
+			return
 
 		case <-repeatTimer.C:
 			// repeat request

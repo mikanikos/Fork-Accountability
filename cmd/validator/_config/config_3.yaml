@@ -1,6 +1,6 @@
 --- # config file for validator 3
 id: 3
-address: 127.0.0.1:8083
+address: 127.0.0.1:8082
 messages:
   # height
   1:

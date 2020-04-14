@@ -34,7 +34,7 @@ echo "
 Starting monitor
 "
 
-./cmd/monitor/monitor -config="/cmd/monitor/_config/config.yaml" &
+./cmd/monitor/monitor -config="/cmd/monitor/_config/config.yaml" -report="true" &
 
 # give some time for communication and running the algorithm
 sleep 15

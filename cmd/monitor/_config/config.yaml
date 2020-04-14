@@ -1,12 +1,11 @@
 --- # config file for monitor
-address: 127.0.0.1:8080
 height: 1
 firstDecisionRound: 3
 secondDecisionRound: 4
 timeout: 30
 # each validator must have a unique address (it is used as id)
 validators:
+  - 127.0.0.1:8080
   - 127.0.0.1:8081
   - 127.0.0.1:8082
   - 127.0.0.1:8083
-  - 127.0.0.1:8084

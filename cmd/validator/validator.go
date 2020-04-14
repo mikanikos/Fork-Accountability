@@ -41,7 +41,6 @@ func (validator *Validator) Run(delay uint64) {
 
 // process packet from client (monitor)
 func (validator *Validator) handleIncomingClientData(delay uint64) {
-
 	// process client data from server channel
 	for clientData := range validator.server.ReceiveChannel {
 
@@ -57,14 +56,8 @@ func (validator *Validator) handleIncomingClientData(delay uint64) {
 			packet.Code = connection.HvsResponse
 			packet.Hvs = validator.Messages[packet.Height]
 			packet.ID = validator.ID
-			packet.Address = validator.Address
 
-			clientConnection, err := connection.Connect(packet.Address)
-			if err != nil {
-				log.Printf("Error while connecting to monitor: %s", err)
-			}
-
-			err = clientConnection.Send(packet)
+			err := clientData.Connection.Send(packet)
 			if err != nil {
 				log.Printf("Error while sending packet back to monitor: %s", err)
 			}

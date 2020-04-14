@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -12,7 +13,6 @@ import (
 
 // Monitor struct
 type Monitor struct {
-	Address             string   `yaml:"address"`
 	Height              uint64   `yaml:"height"`
 	FirstDecisionRound  uint64   `yaml:"firstDecisionRound"`
 	SecondDecisionRound uint64   `yaml:"secondDecisionRound"`
@@ -20,19 +20,19 @@ type Monitor struct {
 	Validators          []string `yaml:"validators"`
 
 	// connections with all the validators
-	connections []*connection.Connection
+	connections    []*connection.Connection
+	receiveChannel chan *connection.Packet
 	// create accountability structure
 	accAlgorithm *accountability.Accountability
-	server       *connection.Server
 }
 
 // NewMonitor creates a new monitor
 func NewMonitor() *Monitor {
 	return &Monitor{
-		Validators:   make([]string, 0),
-		connections:  make([]*connection.Connection, 0),
-		accAlgorithm: accountability.NewAccountability(),
-		server:       connection.NewServer(),
+		Validators:     make([]string, 0),
+		connections:    make([]*connection.Connection, 0),
+		receiveChannel: make(chan *connection.Packet, maxChannelSize),
+		accAlgorithm:   accountability.NewAccountability(),
 	}
 }
 
@@ -89,15 +89,10 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 			// exit because timer expired
 			return timeoutStatus
 
-		case connData := <-monitor.server.ReceiveChannel:
-
-			packet := connData.Packet
-
-			log.Println("got packet")
+		case packet := <-monitor.receiveChannel:
 
 			// check if new packet has been received
-			if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
-				!monitor.accAlgorithm.HeightLogs.Contains(packet.ID) {
+			if packet != nil {
 
 				// increments the number of valid packets received
 				monitor.accAlgorithm.MessageLogsReceived++
@@ -156,52 +151,51 @@ func (monitor *Monitor) connectToValidators() error {
 // request async HeightVoteSets from validators
 func (monitor *Monitor) requestHeightLogs() {
 
-	// start listening for incoming packets at the given address
-	go monitor.server.Listen(monitor.Address)
-
-	// prepare packet to send
-	packet := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
-
-	// start goroutines to send periodically the packet to all validators
+	// start goroutines to send message and wait for reply from each validator
 	for _, conn := range monitor.connections {
 
 		// receive packets from validator
-		//go monitor.receiveHvsFromValidator(conn, validatorCloseChannel)
-
-		// periodic send request to validator
-		conn.Send(packet)
+		go monitor.receiveHvsFromValidator(conn)
 	}
 }
 
-// // receive hvs from validator
-// func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection, validatorCloseChannel chan bool) {
+// receive hvs from validator
+func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection) {
 
-// 	// try receive packet until a valid packet is sent
-// 	for {
-// 		packet, err := conn.Receive()
+	packet := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
 
-// 		if err != nil {
-// 			// if connection is closed, exit
-// 			if err == io.EOF {
-// 				log.Printf("Connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
-// 			} else {
-// 				log.Printf("Error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
-// 			}
+	// try receive packet until a valid packet is sent
+	for {
 
-// 			// notify that a validator disconnected and will not receive any hvs from it
-// 			monitor.receiveChannel <- nil
-// 			validatorCloseChannel <- false
-// 			return
-// 		}
+		log.Printf("Monitor: sending packet to %s", conn.Conn.RemoteAddr().String())
 
-// 		// check if packet and its data are valid
-// 		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
-// 			!monitor.accAlgorithm.HeightLogs.Contains(packet.ID) {
+		// sending packet to validator
+		err := conn.Send(packet)
+		if err != nil {
+			log.Printf("Error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
+		}
 
-// 			// notify the monitor that new hvs has arrived
-// 			monitor.receiveChannel <- packet
-// 			validatorCloseChannel <- true
-// 			return
-// 		}
-// 	}
-// }
+		// wait to receive packet from validator
+		packet, err := conn.Receive()
+		if err != nil {
+			// if connection is closed, exit
+			if err == io.EOF {
+				log.Printf("Connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
+			} else {
+				log.Printf("Error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
+			}
+
+			// notify that a validator disconnected and will not receive any hvs from it
+			monitor.receiveChannel <- nil
+			return
+		}
+
+		// check if packet and its data are valid
+		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height {
+
+			// notify the monitor that new hvs has arrived
+			monitor.receiveChannel <- packet
+			return
+		}
+	}
+}
