@@ -54,7 +54,7 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 	}
 }
 
-func validatorMock(address string, delay uint64, hvs *common.HeightVoteSet) {
+func validatorMock(id string, address string, delay uint64, hvs *common.HeightVoteSet) {
 	server := connection.NewServer()
 
 	go func() {
@@ -70,6 +70,7 @@ func validatorMock(address string, delay uint64, hvs *common.HeightVoteSet) {
 				// prepare packet
 				packet.Code = connection.HvsResponse
 				packet.Hvs = hvs
+				packet.ID = id
 
 				err := clientData.Connection.Send(packet)
 				if err != nil {
@@ -89,10 +90,10 @@ func TestMonitor_ConnectToValidatorsSuccessfully(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[1], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[2], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[3], 0, common.NewHeightVoteSet())
+	go validatorMock("1", testMonitor.Validators[0], 0, common.NewHeightVoteSet())
+	go validatorMock("2", testMonitor.Validators[1], 0, common.NewHeightVoteSet())
+	go validatorMock("3", testMonitor.Validators[2], 0, common.NewHeightVoteSet())
+	go validatorMock("4", testMonitor.Validators[3], 0, common.NewHeightVoteSet())
 
 	time.Sleep(time.Second * time.Duration(1))
 
@@ -121,10 +122,10 @@ func TestMonitor_ConnectToValidators_Fail(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[3], 0, common.NewHeightVoteSet())
+	go validatorMock("1", testMonitor.Validators[0], 0, common.NewHeightVoteSet())
+	go validatorMock("3", testMonitor.Validators[3], 0, common.NewHeightVoteSet())
 
-	time.Sleep(time.Second * time.Duration(1))
+	time.Sleep(time.Second * time.Duration(2))
 
 	err := testMonitor.connectToValidators()
 
@@ -145,12 +146,12 @@ func TestMonitor_RunFailed(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[1], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[2], 0, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[3], 0, common.NewHeightVoteSet())
+	go validatorMock("1", testMonitor.Validators[0], 0, common.NewHeightVoteSet())
+	go validatorMock("2", testMonitor.Validators[1], 0, common.NewHeightVoteSet())
+	go validatorMock("3", testMonitor.Validators[2], 0, common.NewHeightVoteSet())
+	go validatorMock("4", testMonitor.Validators[3], 0, common.NewHeightVoteSet())
 
-	time.Sleep(time.Second * time.Duration(1))
+	time.Sleep(time.Second * time.Duration(2))
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, failStatus) {
@@ -165,12 +166,12 @@ func TestMonitor_RunTimeout(t *testing.T) {
 	testMonitor.Timeout = 3
 	delay := testMonitor.Timeout + 2
 
-	go validatorMock(testMonitor.Validators[0], delay, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[1], delay, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[2], delay, common.NewHeightVoteSet())
-	go validatorMock(testMonitor.Validators[3], delay, common.NewHeightVoteSet())
+	go validatorMock("1", testMonitor.Validators[0], delay, common.NewHeightVoteSet())
+	go validatorMock("2", testMonitor.Validators[1], delay, common.NewHeightVoteSet())
+	go validatorMock("3", testMonitor.Validators[2], delay, common.NewHeightVoteSet())
+	go validatorMock("4", testMonitor.Validators[3], delay, common.NewHeightVoteSet())
 
-	time.Sleep(time.Second * time.Duration(1))
+	time.Sleep(time.Second * time.Duration(2))
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, timeoutStatus) {
@@ -182,12 +183,12 @@ func TestMonitor_RunSuccessful(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 0, utils.GetHvsForDefaultConfig1())
-	go validatorMock(testMonitor.Validators[1], 0, utils.GetHvsForDefaultConfig2())
-	go validatorMock(testMonitor.Validators[2], 0, utils.GetHvsForDefaultConfig3())
-	go validatorMock(testMonitor.Validators[3], 0, utils.GetHvsForDefaultConfig4())
+	go validatorMock("1", testMonitor.Validators[0], 0, utils.GetHvsForDefaultConfig1())
+	go validatorMock("2", testMonitor.Validators[1], 0, utils.GetHvsForDefaultConfig2())
+	go validatorMock("3", testMonitor.Validators[2], 0, utils.GetHvsForDefaultConfig3())
+	go validatorMock("4", testMonitor.Validators[3], 0, utils.GetHvsForDefaultConfig4())
 
-	time.Sleep(time.Second * time.Duration(1))
+	time.Sleep(time.Second * time.Duration(2))
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
@@ -199,10 +200,10 @@ func TestMonitor_RunSuccessfulWithDelays(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
-	go validatorMock(testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2())
-	go validatorMock(testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
-	go validatorMock(testMonitor.Validators[3], 6, utils.GetHvsForDefaultConfig4())
+	go validatorMock("1", testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
+	go validatorMock("2", testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2())
+	go validatorMock("3", testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
+	go validatorMock("4", testMonitor.Validators[3], 6, utils.GetHvsForDefaultConfig4())
 
 	time.Sleep(time.Second * time.Duration(2))
 
@@ -216,12 +217,12 @@ func TestMonitor_RunSuccessfulWithAllFaultyFirst(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 3, utils.GetHvsForDefaultConfig1())
-	go validatorMock(testMonitor.Validators[1], 3, utils.GetHvsForDefaultConfig2())
-	go validatorMock(testMonitor.Validators[2], 1, utils.GetHvsForDefaultConfig3())
-	go validatorMock(testMonitor.Validators[3], 1, utils.GetHvsForDefaultConfig4())
+	go validatorMock("1", testMonitor.Validators[0], 3, utils.GetHvsForDefaultConfig1())
+	go validatorMock("2", testMonitor.Validators[1], 3, utils.GetHvsForDefaultConfig2())
+	go validatorMock("3", testMonitor.Validators[2], 1, utils.GetHvsForDefaultConfig3())
+	go validatorMock("4", testMonitor.Validators[3], 1, utils.GetHvsForDefaultConfig4())
 
-	time.Sleep(time.Second * time.Duration(1))
+	time.Sleep(time.Second * time.Duration(2))
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
@@ -233,12 +234,29 @@ func TestMonitor_RunSuccessfulWithAllFaultyLast(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
-	go validatorMock(testMonitor.Validators[1], 1, utils.GetHvsForDefaultConfig2())
-	go validatorMock(testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
-	go validatorMock(testMonitor.Validators[3], 3, utils.GetHvsForDefaultConfig4())
+	go validatorMock("1", testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
+	go validatorMock("2", testMonitor.Validators[1], 1, utils.GetHvsForDefaultConfig2())
+	go validatorMock("3", testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
+	go validatorMock("4", testMonitor.Validators[3], 3, utils.GetHvsForDefaultConfig4())
 
-	time.Sleep(time.Second * time.Duration(1))
+	time.Sleep(time.Second * time.Duration(2))
+
+	output := captureOutput(testMonitor.Run)
+	if !strings.Contains(output, successfulStatus) {
+		t.Fatal("Output of the algorithm was not expected")
+	}
+}
+
+func TestMonitor_RunSuccessfulWithLateReply(t *testing.T) {
+
+	testMonitor := createTestMonitor()
+
+	go validatorMock("1", testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
+	go validatorMock("2", testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2())
+	go validatorMock("3", testMonitor.Validators[2], 1, utils.GetHvsForDefaultConfig3())
+	go validatorMock("4", testMonitor.Validators[3], 4, utils.GetHvsForDefaultConfig4())
+
+	time.Sleep(time.Second * time.Duration(2))
 
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
@@ -250,10 +268,10 @@ func TestMonitor_WriteReport(t *testing.T) {
 
 	testMonitor := createTestMonitor()
 
-	go validatorMock(testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
-	go validatorMock(testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2())
-	go validatorMock(testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
-	go validatorMock(testMonitor.Validators[3], 6, utils.GetHvsForDefaultConfig4())
+	go validatorMock("1", testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
+	go validatorMock("2", testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2())
+	go validatorMock("3", testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
+	go validatorMock("4", testMonitor.Validators[3], 6, utils.GetHvsForDefaultConfig4())
 
 	time.Sleep(time.Second * time.Duration(2))
 
