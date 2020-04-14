@@ -10,14 +10,14 @@ import (
 type Accountability struct {
 	MessageLogsReceived uint64
 	HeightLogs          *HeightLogs
-	faultySet           *FaultySet
+	FaultySet           *FaultySet
 }
 
 // NewAccountability creates a new Accountability structure
 func NewAccountability() *Accountability {
 	return &Accountability{
 		HeightLogs: NewHeightLogs(),
-		faultySet:  NewFaultySet(),
+		FaultySet:  NewFaultySet(),
 	}
 }
 
@@ -26,14 +26,14 @@ func (acc *Accountability) String() string {
 	var sb strings.Builder
 	sb.WriteString("Accountability algorithm report\n\n")
 	sb.WriteString(acc.HeightLogs.String())
-	sb.WriteString(acc.faultySet.String())
+	sb.WriteString(acc.FaultySet.String())
 	return sb.String()
 }
 
 // IsCompleted returns true if the algorithm has completed, false otherwise
 func (acc *Accountability) IsCompleted(threshold int) bool {
 	// if we have at least f + 1 faulty processes, the algorithm completed
-	return acc.faultySet.Length() >= threshold
+	return acc.FaultySet.Length() >= threshold
 }
 
 // CanRun returns true if the algorithm can run after the update, false otherwise
@@ -50,7 +50,7 @@ func (acc *Accountability) Run(numProcesses, firstDecisionRound, secondDecisionR
 	defer acc.HeightLogs.mutex.Unlock()
 
 	// clear faulty set
-	acc.faultySet.Clear()
+	acc.FaultySet.Clear()
 
 	// first, preprocess messages by scanning all the received vote sets and add missing messages in the processes which omitted to have sent some messages
 	acc.preprocessMessages(firstDecisionRound, secondDecisionRound)
@@ -121,7 +121,7 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 		// check for duplicates prevotes
 		sentPrevotesLength := len(vs.SentPrevoteMessages)
 		if sentPrevotesLength > 1 {
-			acc.faultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
+			acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
 		} else {
 
 			// if only one prevote message has been sent AND
@@ -131,7 +131,7 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 
 				// Only if two values are not the same, we should look for 2f + 1 prevote messages
 				if int(message.Value) != lockValue && !checkQuorumPrevotesForPrevote(hvs, lockRound, round, quorum, message) {
-					acc.faultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrevote))
+					acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrevote))
 				}
 			}
 		}
@@ -139,7 +139,7 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 		sentPrecommitsLength := len(vs.SentPrecommitMessages)
 		// check for duplicates precommits
 		if sentPrecommitsLength > 1 {
-			acc.faultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
+			acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
 		} else {
 
 			// if only one precommit message has been sent
@@ -148,7 +148,7 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 
 				// we should look for 2f + 1 precommit messages
 				if !checkQuorumPrevotesForPrecommit(vs, round, quorum, message) {
-					acc.faultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrecommit))
+					acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrecommit))
 				}
 
 				// set lock value and lock round

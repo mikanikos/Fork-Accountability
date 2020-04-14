@@ -7,12 +7,11 @@ import (
 	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
-const configDirectory = "/cmd/monitor/_config/"
-
 func main() {
 
 	// parse arguments
-	configFile := flag.String("config", configDirectory+"config.yaml", "configuration file path of the monitor")
+	configFile := flag.String("config", configRelativePath+"config.yaml", "relative path of the configuration file for the monitor respect to the project folder")
+	writeReport := flag.Bool("report", false, "specify if a report should be generated at the end of the execution instead of printing to standard output")
 
 	// parse arguments
 	flag.Parse()
@@ -24,7 +23,7 @@ func main() {
 	}
 
 	// start monitor execution
-	monitor.Run()
+	monitor.Run(*writeReport)
 }
 
 // parse config file for the monitor

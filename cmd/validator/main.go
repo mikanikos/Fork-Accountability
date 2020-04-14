@@ -12,8 +12,8 @@ const configDirectory = "/cmd/validator/_config/"
 func main() {
 
 	// parse arguments
-	configFile := flag.String("config", configDirectory+"config_1.yaml", "configuration file path of the validator")
-	delay := flag.Uint64("delay", 0, "time to wait (in seconds) before replying back to the monitor, used for testing")
+	configFile := flag.String("config", configDirectory+"config_1.yaml", "relative path of the configuration file for the validator respect to the project folder")
+	delay := flag.Uint64("delay", 0, "time to wait (in seconds) before replying back to the monitor, use for testing")
 
 	// parse arguments
 	flag.Parse()

@@ -35,7 +35,7 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 	monitorTest := createTestMonitor()
 
 	configFile := "config.yaml"
-	monitorConfig, err := parseMonitorConfig(configDirectory + configFile)
+	monitorConfig, err := parseMonitorConfig(configRelativePath + configFile)
 	if err != nil {
 		t.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}
@@ -133,10 +133,10 @@ func TestMonitor_ConnectToValidators_Fail(t *testing.T) {
 	}
 }
 
-func captureOutput(f func()) string {
+func captureOutput(f func(bool)) string {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	f()
+	f(false)
 	log.SetOutput(os.Stderr)
 	return buf.String()
 }
@@ -243,5 +243,25 @@ func TestMonitor_RunSuccessfulWithAllFaultyLast(t *testing.T) {
 	output := captureOutput(testMonitor.Run)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
+	}
+}
+
+func TestMonitor_WriteReport(t *testing.T) {
+
+	testMonitor := createTestMonitor()
+
+	go validatorMock(testMonitor.Validators[0], 1, utils.GetHvsForDefaultConfig1())
+	go validatorMock(testMonitor.Validators[1], 4, utils.GetHvsForDefaultConfig2())
+	go validatorMock(testMonitor.Validators[2], 3, utils.GetHvsForDefaultConfig3())
+	go validatorMock(testMonitor.Validators[3], 6, utils.GetHvsForDefaultConfig4())
+
+	time.Sleep(time.Second * time.Duration(2))
+
+	_ = os.Remove(reportDirectory+reportFile)
+
+	testMonitor.Run(true)
+
+	if _, err := os.Stat(reportDirectory+reportFile); os.IsNotExist(err) {
+		t.Fatal("Monitor didn't generate report")
 	}
 }

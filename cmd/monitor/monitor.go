@@ -4,18 +4,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"time"
 
 	"github.com/mikanikos/Fork-Accountability/accountability"
 	"github.com/mikanikos/Fork-Accountability/connection"
-)
-
-const sendTimer = 3
-
-const (
-	successfulStatus = "Monitor: Algorithm completed"
-	failStatus       = "Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes"
-	timeoutStatus    = "Monitor: Algorithm failed because of timeout expiration"
 )
 
 // Monitor struct
@@ -44,7 +37,18 @@ func NewMonitor() *Monitor {
 }
 
 // Run monitor algorithm
-func (monitor *Monitor) Run() {
+func (monitor *Monitor) Run(writeReport bool) {
+
+	// write logs to file, if desired
+	if writeReport {
+		_ = os.Mkdir(reportDirectory, 0666)
+		f, err := os.Create(reportDirectory+reportFile)
+		if err != nil {
+			log.Fatalf("Monitor exiting: error opening report file: %v", err)
+		}
+		defer f.Close()
+		log.SetOutput(f)
+	}
 
 	// connect to validators for requesting hvs
 	err := monitor.connectToValidators()
@@ -52,12 +56,20 @@ func (monitor *Monitor) Run() {
 		log.Fatalf("Monitor exiting: couldn't connect to all validators: %s", err)
 	}
 
+	log.Println("Monitor successfully connected to all validators")
+
 	// make request for hvs to validators
 	monitor.requestHeightLogs()
+
+	log.Println("Monitor started sending packets to all validators")
 
 	// run accountability algorithm
 	output := monitor.runAccountabilityAlgorithm()
 	log.Println(output)
+
+	if output == successfulStatus {
+		log.Println(monitor.accAlgorithm.String())
+	}
 }
 
 func (monitor *Monitor) runAccountabilityAlgorithm() string {
@@ -87,11 +99,17 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 				// increments the number of valid packets received
 				monitor.accAlgorithm.MessageLogsReceived++
 
+				log.Printf("Monitor received %d message logs\n", monitor.accAlgorithm.MessageLogsReceived)
+
 				// if we have delivered at least f + 1 message logs, run the monitor algorithm
 				if monitor.accAlgorithm.CanRun(threshold) {
 
+					log.Println("Monitor started running the accountability algorithm")
+
 					// run monitor and get faulty processes
 					monitor.accAlgorithm.Run(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound)
+
+					log.Printf("Monitor detected %d faulty processes\n", monitor.accAlgorithm.FaultySet.Length())
 
 					// if we have at least f + 1 faulty processes, the algorithm completed
 					if monitor.accAlgorithm.IsCompleted(threshold) {
@@ -161,7 +179,7 @@ func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection, val
 			if err == io.EOF {
 				log.Printf("Connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
 			} else {
-				log.Printf("error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
+				log.Printf("Error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
 			}
 
 			// notify that a validator disconnected and will not receive any hvs from it
@@ -173,6 +191,8 @@ func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection, val
 		// check if packet and its data are valid
 		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
 			!monitor.accAlgorithm.HeightLogs.Contains(conn.Conn.RemoteAddr().String()) {
+
+			log.Printf("Monitor: received height vote set from %s\n", conn.Conn.RemoteAddr().String())
 
 			// add hvs for the validator who sent it
 			monitor.accAlgorithm.HeightLogs.AddHvs(conn.Conn.RemoteAddr().String(), packet.Hvs)

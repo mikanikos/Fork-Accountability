@@ -78,7 +78,7 @@ func Connect(address string) (*Connection, error) {
 func (c *Connection) Close() {
 	err := c.Conn.Close()
 	if err != nil {
-		log.Printf("error while closing connection to address %s: %s", c.Conn.RemoteAddr().String(), err)
+		log.Printf("Error while closing connection to address %s: %s", c.Conn.RemoteAddr().String(), err)
 	}
 }
 
@@ -104,7 +104,7 @@ func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer 
 			// repeat request
 			err := c.Send(packet)
 			if err != nil {
-				log.Printf("error while repeating request to %s: %s", c.Conn.RemoteAddr().String(), err)
+				log.Printf("Error while repeating request to %s: %s", c.Conn.RemoteAddr().String(), err)
 			}
 		}
 	}
