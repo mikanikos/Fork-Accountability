@@ -61,7 +61,7 @@ func TestBasicScenario(t *testing.T) {
 	}
 }
 
-func TestBasicScenarioWithMissingHVS(t *testing.T) {
+func TestBasicScenarioWithMissingHVS_CorrectFirst(t *testing.T) {
 
 	// create accountability struct
 	acc := NewAccountability()
@@ -71,16 +71,38 @@ func TestBasicScenarioWithMissingHVS(t *testing.T) {
 
 	acc.Run(4, 3, 4)
 
-	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 3, faultinessMissingQuorumForPrecommit))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrevote))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("3", 4, faultinessMissingQuorumForPrecommit))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 3, faultinessMultiplePrevotes))
-	expectedFaultySet.AddFaultinessReason(NewFaultiness("4", 4, faultinessMissingQuorumForPrecommit))
+	if !acc.IsCompleted(2) {
+		t.Fatal("Monitor should have completed")
+	}
+}
 
-	if !acc.FaultySet.Equal(expectedFaultySet) {
-		t.Fatal("Monitor failed to detect faulty processes")
+func TestBasicScenarioWithMissingHVS_FaultyFirst(t *testing.T) {
+
+	// create accountability struct
+	acc := NewAccountability()
+
+	acc.HeightLogs.AddHvs("3", utils.GetHvsForDefaultConfig3())
+	acc.HeightLogs.AddHvs("4", utils.GetHvsForDefaultConfig4())
+
+	acc.Run(4, 3, 4)
+
+	if !acc.IsCompleted(2) {
+		t.Fatal("Monitor should have completed")
+	}
+}
+
+func TestBasicScenarioWithMissingHVS_NotCompleting(t *testing.T) {
+
+	// create accountability struct
+	acc := NewAccountability()
+
+	acc.HeightLogs.AddHvs("1", utils.GetHvsForDefaultConfig1())
+	acc.HeightLogs.AddHvs("3", utils.GetHvsForDefaultConfig3())
+
+	acc.Run(4, 3, 4)
+
+	if acc.IsCompleted(2) {
+		t.Fatal("Monitor should not have completed")
 	}
 }
 

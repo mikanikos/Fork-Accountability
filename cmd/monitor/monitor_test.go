@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"path"
 	"reflect"
 	"strings"
 	"testing"
@@ -34,8 +35,7 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 
 	monitorTest := createTestMonitor()
 
-	configFile := "config.yaml"
-	monitorConfig, err := parseMonitorConfig(configRelativePath + configFile)
+	monitorConfig, err := parseMonitorConfig(configPath)
 	if err != nil {
 		t.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}
@@ -133,10 +133,10 @@ func TestMonitor_ConnectToValidators_Fail(t *testing.T) {
 	}
 }
 
-func captureOutput(f func(bool)) string {
+func captureOutput(f func(string)) string {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	f(false)
+	f("")
 	log.SetOutput(os.Stderr)
 	return buf.String()
 }
@@ -257,11 +257,18 @@ func TestMonitor_WriteReport(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	_ = os.Remove(reportDirectory + reportFile)
+	directory := "_report"
+	report := "report.out"
+	localPath := path.Join(directory, report)
 
-	testMonitor.Run(true)
+	defer os.RemoveAll(directory)
 
-	if _, err := os.Stat(reportDirectory + reportFile); os.IsNotExist(err) {
+	_ = os.Remove(localPath)
+	_ = os.Mkdir(directory, 0777)
+
+	testMonitor.Run(reportPath)
+
+	if _, err := os.Stat(localPath); os.IsNotExist(err) {
 		t.Fatal("Monitor didn't generate report")
 	}
 }

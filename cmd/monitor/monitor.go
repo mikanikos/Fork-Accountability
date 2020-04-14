@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"time"
 
 	"github.com/mikanikos/Fork-Accountability/accountability"
 	"github.com/mikanikos/Fork-Accountability/connection"
+	"github.com/mikanikos/Fork-Accountability/utils"
 )
 
 // Monitor struct
@@ -37,12 +37,11 @@ func NewMonitor() *Monitor {
 }
 
 // Run monitor algorithm
-func (monitor *Monitor) Run(writeReport bool) {
+func (monitor *Monitor) Run(report string) {
 
 	// write logs to file, if desired
-	if writeReport {
-		_ = os.Mkdir(reportDirectory, 0777)
-		f, err := os.OpenFile(reportDirectory+reportFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	if report != "" {
+		f, err := utils.OpenFile(report)
 		if err != nil {
 			log.Fatalf("Monitor exiting: error opening report file: %s", err)
 		}

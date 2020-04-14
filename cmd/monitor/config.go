@@ -1,9 +1,8 @@
 package main
 
 const (
-	configRelativePath = "/cmd/monitor/_config/"
-	reportDirectory    = "cmd/monitor/_report/"
-	reportFile         = "report.out"
+	configPath = "cmd/monitor/_config/config.yaml"
+	reportPath = "cmd/monitor/_report/report.out"
 
 	sendTimer = 5
 

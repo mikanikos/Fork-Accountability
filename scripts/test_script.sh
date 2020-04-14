@@ -12,15 +12,8 @@ cd monitor
 go build
 cd ../..
 
-numValidators=4
-
 echo "Starting validators
 "
-
-# for i in $(seq 1 $numValidators);
-# do
-#   ./cmd/validator/validator -config="/cmd/validator/_config/config_$i.yaml" &
-# done
 
 ./cmd/validator/validator -config="/cmd/validator/_config/config_1.yaml" -delay=1 &
 ./cmd/validator/validator -config="/cmd/validator/_config/config_2.yaml" -delay=5 &

@@ -10,8 +10,8 @@ import (
 func main() {
 
 	// parse arguments
-	configFile := flag.String("config", configRelativePath+"config.yaml", "relative path of the configuration file for the monitor respect to the project folder")
-	writeReport := flag.Bool("report", false, "specify if a report should be generated at the end of the execution instead of printing to standard output")
+	configFile := flag.String("config", configPath, "path (relative to the project root directory) of the configuration file for the monitor")
+	writeReport := flag.String("report", "", "path (relative to the project root directory) of the report to generate at the end of the execution instead of printing logs to standard output")
 
 	// parse arguments
 	flag.Parse()
