@@ -4,9 +4,11 @@ import "github.com/mikanikos/Fork-Accountability/common"
 
 // Packet is a general packet exchanged by validators and monitor
 type Packet struct {
-	Code   uint32
-	Height uint64
-	Hvs    *common.HeightVoteSet
+	Code    uint32
+	ID      string
+	Address string
+	Height  uint64
+	Hvs     *common.HeightVoteSet
 }
 
 // main whisper protocol parameters, from official specs

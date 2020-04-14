@@ -86,6 +86,11 @@ func (c *Connection) Close() {
 // the sending can be stopped using the channel given
 func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer uint64) {
 
+	err := c.Send(packet)
+	if err != nil {
+		log.Printf("Error while sending request to %s: %s", c.Conn.RemoteAddr().String(), err)
+	}
+
 	// start timer for repeating request to validator
 	repeatTimer := time.NewTicker(time.Duration(timer) * time.Second)
 	defer repeatTimer.Stop()
@@ -93,12 +98,12 @@ func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer 
 	for {
 		select {
 
-		case status := <-closeChannel:
-			// stop because we received the packet from validator
-			if status {
-				c.Close()
-			}
-			return
+		// case status := <-closeChannel:
+		// 	// stop because we received the packet from validator
+		// 	if status {
+		// 		c.Close()
+		// 	}
+		// 	return
 
 		case <-repeatTimer.C:
 			// repeat request

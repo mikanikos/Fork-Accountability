@@ -1,9 +1,10 @@
 package accountability
 
 import (
-	"github.com/mikanikos/Fork-Accountability/common"
 	"strings"
 	"sync"
+
+	"github.com/mikanikos/Fork-Accountability/common"
 )
 
 // Accountability stores all the validators that are faulty and the corresponding faultiness proofs
@@ -94,10 +95,10 @@ func (acc *Accountability) findFaultyProcesses(numProcesses, firstDecisionRound,
 	quorum := numProcesses - (numProcesses-1)/3 // quorum = 2f + 1
 
 	// check for faultiness for each process by analyzing the history of messages and making sure it followed the consensus algorithm
-	for processID, hvs := range acc.HeightLogs.logs {
+	for processID := range acc.HeightLogs.logs {
 		wg.Add(1)
 		// optimize the execution by running the algorithm concurrently for each process
-		go acc.isProcessFaulty(quorum, firstDecisionRound, secondDecisionRound, processID, hvs, &wg)
+		go acc.isProcessFaulty(quorum, firstDecisionRound, secondDecisionRound, processID, &wg)
 	}
 
 	// wait for all the goroutines to complete
@@ -105,9 +106,12 @@ func (acc *Accountability) findFaultyProcesses(numProcesses, firstDecisionRound,
 }
 
 // Check if a process is faulty in every round and detect all the faultiness reasons for it
-func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDecisionRound uint64, processID string, hvs *common.HeightVoteSet, wg *sync.WaitGroup) {
+func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDecisionRound uint64, processID string, wg *sync.WaitGroup) {
 	lockValue := -1        // null value, we assume positive values for messages
 	lockRound := uint64(0) // null round, rounds start from 1
+
+	hvs := acc.HeightLogs.logs[processID]
+	isHvsReceived := acc.HeightLogs.receivedLogsMap[processID]
 
 	// go from the first to the last round (the order is important)
 	for round := firstDecisionRound; round <= secondDecisionRound; round++ {
@@ -118,15 +122,14 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 			continue
 		}
 
-		// check for duplicates prevotes
-		sentPrevotesLength := len(vs.SentPrevoteMessages)
-		if sentPrevotesLength > 1 {
-			acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
-		} else {
+		// check if process equivocated in the round
+		acc.checkForEquivocation(processID, round, vs)
+
+		if isHvsReceived {
 
 			// if only one prevote message has been sent AND
 			// if the process had previously sent precommit for some value, it can only send prevote message for different value if it has received 2f + 1 (quorum) prevote messages for that value
-			if sentPrevotesLength == 1 && lockValue != -1 {
+			if len(vs.SentPrevoteMessages) == 1 && lockValue != -1 {
 				message := vs.SentPrevoteMessages[0]
 
 				// Only if two values are not the same, we should look for 2f + 1 prevote messages
@@ -134,16 +137,9 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 					acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMissingQuorumForPrevote))
 				}
 			}
-		}
-
-		sentPrecommitsLength := len(vs.SentPrecommitMessages)
-		// check for duplicates precommits
-		if sentPrecommitsLength > 1 {
-			acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
-		} else {
 
 			// if only one precommit message has been sent
-			if sentPrecommitsLength == 1 {
+			if len(vs.SentPrecommitMessages) == 1 {
 				message := vs.SentPrecommitMessages[0]
 
 				// we should look for 2f + 1 precommit messages
@@ -159,6 +155,19 @@ func (acc *Accountability) isProcessFaulty(quorum, firstDecisionRound, secondDec
 	}
 
 	wg.Done()
+}
+
+// check if a process equivocated (sent two messages with the same tyoe in the same round but with different values)
+func (acc *Accountability) checkForEquivocation(processID string, round uint64, vs *common.VoteSet) {
+	// check for duplicates prevotes
+	if len(vs.SentPrevoteMessages) > 1 {
+		acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrevotes))
+	}
+
+	// check for duplicates precommits
+	if len(vs.SentPrecommitMessages) > 1 {
+		acc.FaultySet.AddFaultinessReason(NewFaultiness(processID, round, faultinessMultiplePrecommits))
+	}
 }
 
 // check if there are enough prevotes to justify a precommit given a quorum

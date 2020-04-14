@@ -10,17 +10,18 @@ import (
 
 // Validator struct
 type Validator struct {
+	ID       string                           `yaml:"id"`
 	Address  string                           `yaml:"address"`
 	Messages map[uint64]*common.HeightVoteSet `yaml:"messages"`
 
-	Server *connection.Server // server
+	server *connection.Server // server
 }
 
 // NewValidator creates a new validator
 func NewValidator() *Validator {
 	return &Validator{
 		Messages: make(map[uint64]*common.HeightVoteSet),
-		Server:   connection.NewServer(),
+		server:   connection.NewServer(),
 	}
 }
 
@@ -32,7 +33,7 @@ func (validator *Validator) Run(delay uint64) {
 	go validator.handleIncomingClientData(delay)
 
 	// start listening for incoming connection from monitor
-	err := validator.Server.Listen(validator.Address)
+	err := validator.server.Listen(validator.Address)
 	if err != nil {
 		log.Fatalf("Validator %s exiting: cannot listen on given address: %s", validator.Address, err)
 	}
@@ -40,8 +41,9 @@ func (validator *Validator) Run(delay uint64) {
 
 // process packet from client (monitor)
 func (validator *Validator) handleIncomingClientData(delay uint64) {
+
 	// process client data from server channel
-	for clientData := range validator.Server.ReceiveChannel {
+	for clientData := range validator.server.ReceiveChannel {
 
 		time.Sleep(time.Duration(delay) * time.Second)
 
@@ -54,8 +56,15 @@ func (validator *Validator) handleIncomingClientData(delay uint64) {
 			// prepare packet
 			packet.Code = connection.HvsResponse
 			packet.Hvs = validator.Messages[packet.Height]
+			packet.ID = validator.ID
+			packet.Address = validator.Address
 
-			err := clientData.Connection.Send(packet)
+			clientConnection, err := connection.Connect(packet.Address)
+			if err != nil {
+				log.Printf("Error while connecting to monitor: %s", err)
+			}
+
+			err = clientConnection.Send(packet)
 			if err != nil {
 				log.Printf("Error while sending packet back to monitor: %s", err)
 			}

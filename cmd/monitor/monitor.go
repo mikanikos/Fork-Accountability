@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
@@ -13,6 +12,7 @@ import (
 
 // Monitor struct
 type Monitor struct {
+	Address             string   `yaml:"address"`
 	Height              uint64   `yaml:"height"`
 	FirstDecisionRound  uint64   `yaml:"firstDecisionRound"`
 	SecondDecisionRound uint64   `yaml:"secondDecisionRound"`
@@ -20,19 +20,19 @@ type Monitor struct {
 	Validators          []string `yaml:"validators"`
 
 	// connections with all the validators
-	connections    []*connection.Connection
-	receiveChannel chan bool
+	connections []*connection.Connection
 	// create accountability structure
 	accAlgorithm *accountability.Accountability
+	server       *connection.Server
 }
 
 // NewMonitor creates a new monitor
 func NewMonitor() *Monitor {
 	return &Monitor{
-		Validators:     make([]string, 0),
-		connections:    make([]*connection.Connection, 0),
-		receiveChannel: make(chan bool),
-		accAlgorithm:   accountability.NewAccountability(),
+		Validators:   make([]string, 0),
+		connections:  make([]*connection.Connection, 0),
+		accAlgorithm: accountability.NewAccountability(),
+		server:       connection.NewServer(),
 	}
 }
 
@@ -41,10 +41,10 @@ func (monitor *Monitor) Run(writeReport bool) {
 
 	// write logs to file, if desired
 	if writeReport {
-		_ = os.Mkdir(reportDirectory, 0666)
-		f, err := os.Create(reportDirectory+reportFile)
+		_ = os.Mkdir(reportDirectory, 0777)
+		f, err := os.OpenFile(reportDirectory+reportFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
 		if err != nil {
-			log.Fatalf("Monitor exiting: error opening report file: %v", err)
+			log.Fatalf("Monitor exiting: error opening report file: %s", err)
 		}
 		defer f.Close()
 		log.SetOutput(f)
@@ -67,9 +67,7 @@ func (monitor *Monitor) Run(writeReport bool) {
 	output := monitor.runAccountabilityAlgorithm()
 	log.Println(output)
 
-	if output == successfulStatus {
-		log.Println(monitor.accAlgorithm.String())
-	}
+	log.Println(monitor.accAlgorithm.String())
 }
 
 func (monitor *Monitor) runAccountabilityAlgorithm() string {
@@ -91,14 +89,22 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 			// exit because timer expired
 			return timeoutStatus
 
-		case isNewPacket := <-monitor.receiveChannel:
+		case connData := <-monitor.server.ReceiveChannel:
+
+			packet := connData.Packet
+
+			log.Println("got packet")
 
 			// check if new packet has been received
-			if isNewPacket {
+			if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
+				!monitor.accAlgorithm.HeightLogs.Contains(packet.ID) {
 
 				// increments the number of valid packets received
 				monitor.accAlgorithm.MessageLogsReceived++
+				// add hvs for the validator who sent it
+				monitor.accAlgorithm.HeightLogs.AddHvs(packet.ID, packet.Hvs)
 
+				log.Printf("Monitor: received height vote set from process %s\n", packet.ID)
 				log.Printf("Monitor received %d message logs\n", monitor.accAlgorithm.MessageLogsReceived)
 
 				// if we have delivered at least f + 1 message logs, run the monitor algorithm
@@ -150,57 +156,52 @@ func (monitor *Monitor) connectToValidators() error {
 // request async HeightVoteSets from validators
 func (monitor *Monitor) requestHeightLogs() {
 
+	// start listening for incoming packets at the given address
+	go monitor.server.Listen(monitor.Address)
+
 	// prepare packet to send
 	packet := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
 
-	// start goroutines to send message and wait for reply from each validator
+	// start goroutines to send periodically the packet to all validators
 	for _, conn := range monitor.connections {
 
-		// channel used to close connection once hvs has been received and stop to send the request
-		validatorCloseChannel := make(chan bool)
-
 		// receive packets from validator
-		go monitor.receiveHvsFromValidator(conn, validatorCloseChannel)
+		//go monitor.receiveHvsFromValidator(conn, validatorCloseChannel)
 
 		// periodic send request to validator
-		go conn.PeriodicSend(packet, validatorCloseChannel, sendTimer)
+		conn.Send(packet)
 	}
 }
 
-// receive hvs from validator
-func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection, validatorCloseChannel chan bool) {
+// // receive hvs from validator
+// func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection, validatorCloseChannel chan bool) {
 
-	// try receive packet until a valid packet is sent
-	for {
-		packet, err := conn.Receive()
+// 	// try receive packet until a valid packet is sent
+// 	for {
+// 		packet, err := conn.Receive()
 
-		if err != nil {
-			// if connection is closed, exit
-			if err == io.EOF {
-				log.Printf("Connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
-			} else {
-				log.Printf("Error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
-			}
+// 		if err != nil {
+// 			// if connection is closed, exit
+// 			if err == io.EOF {
+// 				log.Printf("Connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
+// 			} else {
+// 				log.Printf("Error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
+// 			}
 
-			// notify that a validator disconnected and will not receive any hvs from it
-			monitor.receiveChannel <- false
-			validatorCloseChannel <- false
-			return
-		}
+// 			// notify that a validator disconnected and will not receive any hvs from it
+// 			monitor.receiveChannel <- nil
+// 			validatorCloseChannel <- false
+// 			return
+// 		}
 
-		// check if packet and its data are valid
-		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
-			!monitor.accAlgorithm.HeightLogs.Contains(conn.Conn.RemoteAddr().String()) {
+// 		// check if packet and its data are valid
+// 		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height &&
+// 			!monitor.accAlgorithm.HeightLogs.Contains(packet.ID) {
 
-			log.Printf("Monitor: received height vote set from %s\n", conn.Conn.RemoteAddr().String())
-
-			// add hvs for the validator who sent it
-			monitor.accAlgorithm.HeightLogs.AddHvs(conn.Conn.RemoteAddr().String(), packet.Hvs)
-
-			// notify the monitor that new hvs has arrived
-			monitor.receiveChannel <- true
-			validatorCloseChannel <- true
-			return
-		}
-	}
-}
+// 			// notify the monitor that new hvs has arrived
+// 			monitor.receiveChannel <- packet
+// 			validatorCloseChannel <- true
+// 			return
+// 		}
+// 	}
+// }

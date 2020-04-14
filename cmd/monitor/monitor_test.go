@@ -20,6 +20,7 @@ func createTestMonitor() *Monitor {
 	monitorTest.Timeout = 30
 	monitorTest.FirstDecisionRound = 3
 	monitorTest.SecondDecisionRound = 4
+	monitorTest.Address = "127.0.0.1:8080"
 
 	addresses, err := utils.GetFreeAddresses(4)
 	if err != nil {
@@ -40,13 +41,13 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 		t.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}
 
-	monitorConfig.receiveChannel = nil
+	monitorConfig.server = nil
 	monitorConfig.accAlgorithm = nil
 
-	monitorTest.receiveChannel = nil
+	monitorTest.server = nil
 	monitorTest.accAlgorithm = nil
 
-	monitorTest.Validators = []string{"127.0.0.1:8080", "127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083"}
+	monitorTest.Validators = []string{"127.0.0.1:8081", "127.0.0.1:8082", "127.0.0.1:8083", "127.0.0.1:8084"}
 
 	// compare the two monitors
 	if !reflect.DeepEqual(monitorTest, monitorConfig) {
@@ -257,11 +258,11 @@ func TestMonitor_WriteReport(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	_ = os.Remove(reportDirectory+reportFile)
+	_ = os.Remove(reportDirectory + reportFile)
 
 	testMonitor.Run(true)
 
-	if _, err := os.Stat(reportDirectory+reportFile); os.IsNotExist(err) {
+	if _, err := os.Stat(reportDirectory + reportFile); os.IsNotExist(err) {
 		t.Fatal("Monitor didn't generate report")
 	}
 }

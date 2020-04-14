@@ -9,22 +9,32 @@ import (
 
 // HeightLogs contains all messages for all the rounds from each process in a specific height
 type HeightLogs struct {
-	logs  map[string]*common.HeightVoteSet
-	mutex sync.RWMutex
+	logs            map[string]*common.HeightVoteSet
+	receivedLogsMap map[string]bool
+	mutex           sync.RWMutex
 }
 
 // NewHeightLogs creates a new HeightLogs structure
 func NewHeightLogs() *HeightLogs {
 	return &HeightLogs{
-		logs: make(map[string]*common.HeightVoteSet),
+		logs:            make(map[string]*common.HeightVoteSet),
+		receivedLogsMap: make(map[string]bool),
 	}
 }
+
+// // ReceiveHvs mark a process that has sent the height vote set
+// func (hl *HeightLogs) ReceiveHvs(processID string) {
+// 	hl.mutex.Lock()
+// 	defer hl.mutex.Unlock()
+// 	hl.receivedLogsMap[processID] = true
+// }
 
 // AddHvs adds a new hvs in the height HeightLogs
 func (hl *HeightLogs) AddHvs(processID string, hvs *common.HeightVoteSet) {
 	hl.mutex.Lock()
 	defer hl.mutex.Unlock()
 	hl.logs[processID] = hvs
+	hl.receivedLogsMap[processID] = true
 }
 
 // string representation of a HeightLogs
