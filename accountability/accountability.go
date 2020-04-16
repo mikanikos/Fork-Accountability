@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// MAIN API
+// MAIN API methods
 
 // Accountability stores main information about the algorithm and offers an API for running the algorithm and getting related data
 type Accountability struct {
@@ -33,7 +33,6 @@ func (acc *Accountability) String() string {
 	sb.WriteString(acc.faultySet.String())
 
 	sb.WriteString("________________________________________________________________________________________________________________________\n")
-
 
 	return sb.String()
 }

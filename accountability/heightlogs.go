@@ -22,7 +22,7 @@ func NewHeightLogs() *HeightLogs {
 	}
 }
 
-// AddHvs adds a new hvs in the height HeightLogs
+// AddHvs adds a new hvs in the height HeightLogs, returns true if the element is new and false otherwise
 func (hl *HeightLogs) AddHvs(processID string, hvs *common.HeightVoteSet) bool {
 	hl.mutex.Lock()
 	defer hl.mutex.Unlock()

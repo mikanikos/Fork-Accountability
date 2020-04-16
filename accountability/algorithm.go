@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+// MAIN ALGORITHM MOVED TO ANOTHER FILE FOR BETTER ORGANIZATION
+
 // Run starts the accountability algorithm to detect which processes caused the fork and finds all processes that had bad behavior
 func (acc *Accountability) Run(firstDecisionRound, secondDecisionRound uint64) {
 

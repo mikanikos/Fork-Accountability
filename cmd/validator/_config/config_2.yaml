@@ -141,7 +141,7 @@ messages:
                 sender: 4
                 round: 3
                 value:
-                    data: 20
+                  data: 20
 
         sent_precommit:
           - type: PRECOMMIT
