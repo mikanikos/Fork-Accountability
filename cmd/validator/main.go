@@ -19,7 +19,7 @@ func main() {
 	flag.Parse()
 
 	// parse file
-	validator, err := parseValidatorConfig(*configFile)
+	validator, err := newValidatorFromConfig(*configFile)
 	if err != nil {
 		log.Fatalf("Validator exiting: config file not parsed correctly: %s", err)
 	}
@@ -28,8 +28,8 @@ func main() {
 	validator.Run(*delay)
 }
 
-// parse config file for the validator
-func parseValidatorConfig(configFile string) (*Validator, error) {
+// create new validator from config file
+func newValidatorFromConfig(configFile string) (*Validator, error) {
 	validator := NewValidator()
 	err := utils.ParseConfigFile(configFile, validator)
 	return validator, err

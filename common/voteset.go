@@ -54,13 +54,13 @@ func contains(messages []*Message, message *Message) bool {
 func (vs *VoteSet) String() string {
 	var sb strings.Builder
 
-	sb.WriteString(messagesToString("*** RECEIVED PREVOTE MESSAGES ***", vs.ReceivedPrevoteMessages))
+	sb.WriteString(messagesToString("[Received prevote messages]", vs.ReceivedPrevoteMessages))
 	sb.WriteString("\n")
-	sb.WriteString(messagesToString("*** RECEIVED PRECOMMIT MESSAGES ***", vs.ReceivedPrecommitMessages))
+	sb.WriteString(messagesToString("[Received precommit messages]", vs.ReceivedPrecommitMessages))
 	sb.WriteString("\n")
-	sb.WriteString(messagesToString("*** SENT PREVOTE MESSAGES ***", vs.SentPrevoteMessages))
+	sb.WriteString(messagesToString("[Sent prevote messages]", vs.SentPrevoteMessages))
 	sb.WriteString("\n")
-	sb.WriteString(messagesToString("*** SENT PRECOMMIT MESSAGES ***", vs.SentPrecommitMessages))
+	sb.WriteString(messagesToString("[Sent precommit messages]", vs.SentPrecommitMessages))
 
 	return sb.String()
 }
@@ -71,7 +71,13 @@ func messagesToString(description string, messageSet []*Message) string {
 
 	sb.WriteString(description)
 	sb.WriteString("\n")
+
+	if len(messageSet) == 0 {
+		sb.WriteString("\tNo data\n")
+	}
+
 	for _, mes := range messageSet {
+		sb.WriteString("\t")
 		sb.WriteString(mes.String())
 		sb.WriteString("\n")
 	}

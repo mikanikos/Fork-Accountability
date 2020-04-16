@@ -2,7 +2,7 @@
 height: 1
 firstDecisionRound: 3
 secondDecisionRound: 4
-timeout: 30
+timeout: 60
 # each validator must have a unique address (it is used as id)
 validators:
   - 127.0.0.1:8080

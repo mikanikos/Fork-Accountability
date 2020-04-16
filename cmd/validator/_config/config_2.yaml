@@ -11,32 +11,38 @@ messages:
           - type: PREVOTE
             sender: 2
             round: 3
-            value: 10
+            value:
+              data: 10
 
           - type: PREVOTE
             sender: 3
             round: 3
-            value: 10
+            value:
+              data: 10
 
           - type: PREVOTE
             sender: 4
             round: 3
-            value: 10
+            value:
+              data: 10
 
           - type: PREVOTE
             sender: 1
             round: 3
-            value: 20
+            value:
+              data: 20
 
           - type: PREVOTE
             sender: 3
             round: 3
-            value: 20
+            value:
+              data: 20
 
           - type: PREVOTE
             sender: 4
             round: 3
-            value: 20
+            value:
+              data: 20
 
         received_precommit: []
 
@@ -44,86 +50,103 @@ messages:
           - type: PREVOTE
             sender: 2
             round: 3
-            value: 10
+            value:
+              data: 10
 
         sent_precommit:
           - type: PRECOMMIT
             sender: 2
             round: 3
-            value: 10
+            value:
+              data: 10
       # round
       4:
         received_prevote:
           - type: PREVOTE
             sender: 2
             round: 4
-            value: 20
+            value:
+              data: 20
+
             justifications:
               - type: PREVOTE
                 sender: 1
                 round: 3
-                value: 20
+                value:
+                  data: 20
 
               - type: PREVOTE
                 sender: 3
                 round: 3
-                value: 20
+                value:
+                  data: 20
 
               - type: PREVOTE
                 sender: 4
                 round: 3
-                value: 20
+                value:
+                  data: 20
 
           - type: PREVOTE
             sender: 3
             round: 4
-            value: 20
+            value:
+              data: 20
 
           - type: PREVOTE
             sender: 4
             round: 4
-            value: 20
+            value:
+              data: 20
 
         received_precommit:
           - type: PRECOMMIT
             sender: 2
             round: 4
-            value: 20
+            value:
+              data: 20
 
           - type: PRECOMMIT
             sender: 3
             round: 4
-            value: 20
+            value:
+              data: 20
 
           - type: PRECOMMIT
             sender: 4
             round: 4
-            value: 20
+            value:
+              data: 20
 
         sent_prevote:
           - type: PREVOTE
             sender: 2
             round: 4
-            value: 20
+            value:
+              data: 20
             justifications:
               - type: PREVOTE
                 sender: 1
                 round: 3
-                value: 20
+                value:
+                  data: 20
 
               - type: PREVOTE
                 sender: 3
                 round: 3
-                value: 20
+                value:
+                  data: 20
 
               - type: PREVOTE
                 sender: 4
                 round: 3
-                value: 20
+                value:
+                    data: 20
 
         sent_precommit:
           - type: PRECOMMIT
             sender: 2
             round: 4
-            value: 20
+            value:
+              data: 20
 

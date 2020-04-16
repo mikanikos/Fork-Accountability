@@ -25,6 +25,11 @@ func (c *Connection) Send(packet *Packet) error {
 		return fmt.Errorf("error while serializing the packet to send: %s", err)
 	}
 
+	err = c.Conn.SetWriteDeadline(time.Now().Add(time.Duration(writeDeadline) * time.Second))
+	if err != nil {
+		return fmt.Errorf("error while setting write deadline: %s", err)
+	}
+
 	// send message
 	_, err = c.Conn.Write(messageEncoded)
 	if err != nil {
@@ -39,6 +44,11 @@ func (c *Connection) Receive() (*Packet, error) {
 
 	packet := &Packet{}
 	packetBytes := make([]byte, maxBufferSize)
+
+	err := c.Conn.SetReadDeadline(time.Now().Add(time.Duration(readDeadline) * time.Second))
+	if err != nil {
+		return nil, fmt.Errorf("error while setting read deadline: %s", err)
+	}
 
 	n, err := c.Conn.Read(packetBytes)
 

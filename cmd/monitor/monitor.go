@@ -19,10 +19,9 @@ type Monitor struct {
 	Timeout             uint64   `yaml:"timeout"`
 	Validators          []string `yaml:"validators"`
 
-	// connections with all the validators
-	connections    []*connection.Connection
+	// receive channel for incoming packets
 	receiveChannel chan *connection.Packet
-	// create accountability structure
+	// accountability structure
 	accAlgorithm *accountability.Accountability
 }
 
@@ -30,7 +29,6 @@ type Monitor struct {
 func NewMonitor() *Monitor {
 	return &Monitor{
 		Validators:     make([]string, 0),
-		connections:    make([]*connection.Connection, 0),
 		receiveChannel: make(chan *connection.Packet, maxChannelSize),
 		accAlgorithm:   accountability.NewAccountability(),
 	}
@@ -49,34 +47,30 @@ func (monitor *Monitor) Run(report string) {
 		log.SetOutput(f)
 	}
 
-	// connect to validators for requesting hvs
+	log.Println("Monitor: started running")
+
+	// connect to validators and make request for hvs
 	err := monitor.connectToValidators()
 	if err != nil {
 		log.Fatalf("Monitor exiting: couldn't connect to all validators: %s", err)
 	}
 
-	log.Println("Monitor successfully connected to all validators")
-
-	// make request for hvs to validators
-	monitor.requestHeightLogs()
-
-	log.Println("Monitor started sending packets to all validators")
+	log.Println("Monitor: successfully connected to all validators and requested message logs")
 
 	// run accountability algorithm
 	output := monitor.runAccountabilityAlgorithm()
 	log.Println(output)
-
-	log.Println(monitor.accAlgorithm.String())
 }
 
+// run monitor algorithm
 func (monitor *Monitor) runAccountabilityAlgorithm() string {
-	numValidators := len(monitor.Validators)
-
-	// lower bound on the number of faulty processes
-	threshold := (numValidators-1)/3 + 1 // f+1
 
 	// count the number of responses (regardless of validity) from different validators
+	numValidators := len(monitor.Validators)
 	responseCount := 0
+
+	// initialize accountability
+	monitor.accAlgorithm.Init(uint64(numValidators))
 
 	// wait until the specified timer expires
 	timer := time.NewTicker(time.Duration(monitor.Timeout) * time.Second)
@@ -90,35 +84,33 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 
 		case packet := <-monitor.receiveChannel:
 
-			// check if new packet has been received
-			if packet != nil {
+			// check if new packet has been received and store it in case
+			if monitor.checkResponseValidity(packet) && monitor.accAlgorithm.StoreHvs(packet.ID, packet.Hvs) {
 
-				// increments the number of valid packets received
-				monitor.accAlgorithm.MessageLogsReceived++
-				// add hvs for the validator who sent it
-				monitor.accAlgorithm.HeightLogs.AddHvs(packet.ID, packet.Hvs)
-
-				log.Printf("Monitor: received height vote set from process %s\n", packet.ID)
-				log.Printf("Monitor received %d message logs\n", monitor.accAlgorithm.MessageLogsReceived)
+				log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
 
 				// if we have delivered at least f + 1 message logs, run the monitor algorithm
-				if monitor.accAlgorithm.CanRun(threshold) {
+				if monitor.accAlgorithm.CanRun() {
 
-					log.Println("Monitor started running the accountability algorithm")
+					log.Println("Monitor: running the accountability algorithm")
 
 					// run monitor and get faulty processes
-					monitor.accAlgorithm.Run(uint64(numValidators), monitor.FirstDecisionRound, monitor.SecondDecisionRound)
+					monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
 
-					log.Printf("Monitor detected %d faulty processes\n", monitor.accAlgorithm.FaultySet.Length())
+					// print result of the execution
+					log.Println(monitor.accAlgorithm.String())
+					log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
 
 					// if we have at least f + 1 faulty processes, the algorithm completed
-					if monitor.accAlgorithm.IsCompleted(threshold) {
+					if monitor.accAlgorithm.IsCompleted() {
 						return successfulStatus
 					}
 				}
+			} else {
+				log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
 			}
 
-			// count the number of responses from validators
+			// increment the number of responses from validators
 			responseCount++
 			if responseCount == numValidators {
 				// exit because no new hvs will arrive and avoid waiting longer
@@ -128,7 +120,7 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 	}
 }
 
-// method to resolve processes addresses and store connection objects
+// request message logs for a specific height to all validators, return error if it can't connect to some validator
 func (monitor *Monitor) connectToValidators() error {
 
 	if monitor.Validators == nil || len(monitor.Validators) == 0 {
@@ -141,60 +133,55 @@ func (monitor *Monitor) connectToValidators() error {
 		if err != nil {
 			return fmt.Errorf("error while connecting to one of the validators given: %s", err)
 		}
-		monitor.connections = append(monitor.connections, conn)
+
+		// start goroutines to send message and wait for reply from each validator
+		go monitor.receiveHvsFromValidator(conn)
 	}
 
 	return nil
 }
 
-// request async HeightVoteSets from validators
-func (monitor *Monitor) requestHeightLogs() {
-
-	// start goroutines to send message and wait for reply from each validator
-	for _, conn := range monitor.connections {
-
-		// receive packets from validator
-		go monitor.receiveHvsFromValidator(conn)
-	}
-}
-
-// receive hvs from validator
+// receive hvs from validator on a given connection
 func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection) {
 
-	packet := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
+	// prepare packet to send
+	packetToSend := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
 
-	// try receive packet until a valid packet is sent
-	for {
+	log.Printf("Monitor: sending packet to %s", conn.Conn.RemoteAddr().String())
 
-		log.Printf("Monitor: sending packet to %s", conn.Conn.RemoteAddr().String())
-
-		// sending packet to validator
-		err := conn.Send(packet)
-		if err != nil {
-			log.Printf("Error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
-		}
-
-		// wait to receive packet from validator
-		packet, err := conn.Receive()
-		if err != nil {
-			// if connection is closed, exit
-			if err == io.EOF {
-				log.Printf("Connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
-			} else {
-				log.Printf("Error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
-			}
-
-			// notify that a validator disconnected and will not receive any hvs from it
-			monitor.receiveChannel <- nil
-			return
-		}
-
-		// check if packet and its data are valid
-		if packet != nil && packet.Code == connection.HvsResponse && packet.Hvs != nil && packet.Height == monitor.Height {
-
-			// notify the monitor that new hvs has arrived
-			monitor.receiveChannel <- packet
-			return
-		}
+	// sending packet to validator
+	err := conn.Send(packetToSend)
+	if err != nil {
+		log.Printf("Monitor: error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
 	}
+
+	// wait to receive packet from validator
+	packet, err := conn.Receive()
+	if err != nil {
+		// if connection is closed or there's an error, exit
+		if err == io.EOF {
+			log.Printf("Monitor: connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
+		} else {
+			log.Printf("Monitor: error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
+		}
+
+		// notify that will not receive any hvs from the validator on this connection
+		packet = &connection.Packet{Code: connection.HvsMissing}
+	}
+
+	// send packet to main thread
+	monitor.receiveChannel <- packet
+
+	// close connection with validator
+	conn.Close()
+}
+
+// check that the packet received is valid and contains correct information
+func (monitor *Monitor) checkResponseValidity(packet *connection.Packet) bool {
+	return packet != nil &&
+		packet.Code == connection.HvsResponse &&
+		packet.Height == monitor.Height &&
+		packet.ID != "" &&
+		packet.Hvs != nil &&
+		packet.Hvs.IsValid(packet.ID)
 }

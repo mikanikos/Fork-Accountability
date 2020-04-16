@@ -14,9 +14,13 @@ type Packet struct {
 const (
 	HvsRequest  = 0
 	HvsResponse = 1
+	HvsMissing  = 3
 
 	// lengths in bytes
 	maxBufferSize = 1024
 
 	maxChannelSize = 100
+
+	readDeadline  = 20
+	writeDeadline = 20
 )

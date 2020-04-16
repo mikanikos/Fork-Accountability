@@ -18,7 +18,7 @@ import (
 func createTestMonitor() *Monitor {
 	monitorTest := NewMonitor()
 	monitorTest.Height = 1
-	monitorTest.Timeout = 30
+	monitorTest.Timeout = 60
 	monitorTest.FirstDecisionRound = 3
 	monitorTest.SecondDecisionRound = 4
 
@@ -35,7 +35,7 @@ func TestMonitor_CorrectConfigParsing(t *testing.T) {
 
 	monitorTest := createTestMonitor()
 
-	monitorConfig, err := parseMonitorConfig(configPath)
+	monitorConfig, err := newMonitorFromConfig(configPath)
 	if err != nil {
 		t.Fatalf("Monitor exiting: config file not parsed correctly: %s", err)
 	}

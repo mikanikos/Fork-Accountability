@@ -1,7 +1,6 @@
 package common
 
 import (
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -22,12 +21,12 @@ type Message struct {
 	Type           MessageType `yaml:"type"`
 	SenderID       string      `yaml:"sender"`
 	Round          uint64      `yaml:"round"`
-	Value          uint64      `yaml:"value"`
+	Value          *Value      `yaml:"value"`
 	Justifications []*Message  `yaml:"justifications"`
 }
 
 // NewMessage creates a new message
-func NewMessage(typeMes MessageType, senderID string, round uint64, value uint64, justifications []*Message) *Message {
+func NewMessage(typeMes MessageType, senderID string, round uint64, value *Value, justifications []*Message) *Message {
 	return &Message{
 		Type:           typeMes,
 		SenderID:       senderID,
@@ -46,13 +45,33 @@ func (mes *Message) Equal(other *Message) bool {
 func (mes *Message) String() string {
 	var sb strings.Builder
 	sb.WriteString(string(mes.Type))
-	sb.WriteString(" - ID: ")
+	sb.WriteString(" - Sender: ")
 	sb.WriteString(mes.SenderID)
 	sb.WriteString(", Round: ")
 	sb.WriteString(strconv.FormatUint(mes.Round, 10))
 	sb.WriteString(", Value: ")
-	sb.WriteString(strconv.FormatUint(mes.Value, 10))
+	sb.WriteString(mes.Value.String())
 	sb.WriteString(", Justifications: ")
-	sb.WriteString(fmt.Sprint(mes.Justifications))
+
+	if len(mes.Justifications) == 0 {
+		sb.WriteString("[]\n")
+	}
+
+	currentLength := sb.Len() + 4
+
+	for i, just := range mes.Justifications {
+		if i != 0 {
+			sb.WriteString(strings.Repeat(" ", currentLength))
+		}
+		sb.WriteString(string(just.Type))
+		sb.WriteString(" - Sender: ")
+		sb.WriteString(just.SenderID)
+		sb.WriteString(", Round: ")
+		sb.WriteString(strconv.FormatUint(just.Round, 10))
+		sb.WriteString(", Value: ")
+		sb.WriteString(just.Value.String())
+		sb.WriteString("\n")
+	}
+
 	return sb.String()
 }

@@ -21,7 +21,7 @@ func Test_CorrectConfigParsing_1(t *testing.T) {
 
 	// parse config file
 	fileName1 := "config_1.yaml"
-	validatorConfig, err := parseValidatorConfig(configDirectory + fileName1)
+	validatorConfig, err := newValidatorFromConfig(configDirectory + fileName1)
 	if err != nil {
 		t.Fatalf("Failed while parsing config file 1: %s", err)
 	}
@@ -45,7 +45,7 @@ func Test_CorrectConfigParsing_2(t *testing.T) {
 
 	// parse config file
 	fileName2 := "config_2.yaml"
-	validatorConfig, err := parseValidatorConfig(configDirectory + fileName2)
+	validatorConfig, err := newValidatorFromConfig(configDirectory + fileName2)
 	if err != nil {
 		t.Fatalf("Failed while parsing config file 2: %s", err)
 	}
@@ -69,7 +69,7 @@ func Test_CorrectConfigParsing_3(t *testing.T) {
 
 	// parse config file
 	fileName3 := "config_3.yaml"
-	validatorConfig, err := parseValidatorConfig(configDirectory + fileName3)
+	validatorConfig, err := newValidatorFromConfig(configDirectory + fileName3)
 	if err != nil {
 		t.Fatalf("Failed while parsing config file 3: %s", err)
 	}
@@ -93,7 +93,7 @@ func Test_CorrectConfigParsing_4(t *testing.T) {
 
 	// parse config file
 	fileName4 := "config_4.yaml"
-	validatorConfig, err := parseValidatorConfig(configDirectory + fileName4)
+	validatorConfig, err := newValidatorFromConfig(configDirectory + fileName4)
 	if err != nil {
 		t.Fatalf("Failed while parsing config file 4: %s", err)
 	}
@@ -109,7 +109,7 @@ func Test_CorrectConfigParsing_4(t *testing.T) {
 
 func Test_WrongConfigFilename(t *testing.T) {
 	fileName3 := "config_not_existing.yaml"
-	_, err := parseValidatorConfig(configDirectory + fileName3)
+	_, err := newValidatorFromConfig(configDirectory + fileName3)
 	if err == nil {
 		t.Fatalf("Should have failed because filename doesn't exist")
 	}
@@ -120,7 +120,7 @@ func Test_BadFormattedConfig(t *testing.T) {
 	badConfig := "bad_config.yaml"
 	_ = ioutil.WriteFile(badConfig, []byte("cjdcjdcjd"), 0644)
 
-	_, err := parseValidatorConfig(badConfig)
+	_, err := newValidatorFromConfig(badConfig)
 
 	_ = os.Remove(badConfig)
 

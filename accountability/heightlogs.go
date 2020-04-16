@@ -9,7 +9,7 @@ import (
 
 // HeightLogs contains all messages for all the rounds from each process in a specific height
 type HeightLogs struct {
-	logs            map[string]*common.HeightVoteSet
+	messageLogs     map[string]*common.HeightVoteSet
 	receivedLogsMap map[string]bool
 	mutex           sync.RWMutex
 }
@@ -17,24 +17,24 @@ type HeightLogs struct {
 // NewHeightLogs creates a new HeightLogs structure
 func NewHeightLogs() *HeightLogs {
 	return &HeightLogs{
-		logs:            make(map[string]*common.HeightVoteSet),
+		messageLogs:     make(map[string]*common.HeightVoteSet),
 		receivedLogsMap: make(map[string]bool),
 	}
 }
 
-// // ReceiveHvs mark a process that has sent the height vote set
-// func (hl *HeightLogs) ReceiveHvs(processID string) {
-// 	hl.mutex.Lock()
-// 	defer hl.mutex.Unlock()
-// 	hl.receivedLogsMap[processID] = true
-// }
-
 // AddHvs adds a new hvs in the height HeightLogs
-func (hl *HeightLogs) AddHvs(processID string, hvs *common.HeightVoteSet) {
+func (hl *HeightLogs) AddHvs(processID string, hvs *common.HeightVoteSet) bool {
 	hl.mutex.Lock()
 	defer hl.mutex.Unlock()
-	hl.logs[processID] = hvs
-	hl.receivedLogsMap[processID] = true
+
+	value, _ := hl.receivedLogsMap[processID]
+	if !value {
+		hl.messageLogs[processID] = hvs
+		hl.receivedLogsMap[processID] = true
+		return true
+	}
+
+	return false
 }
 
 // string representation of a HeightLogs
@@ -44,14 +44,15 @@ func (hl *HeightLogs) String() string {
 
 	var sb strings.Builder
 
-	sb.WriteString("Height logs\n\n")
+	sb.WriteString("HEIGHT LOGS\n\n")
 
-	for processID, hvs := range hl.logs {
-		sb.WriteString("Process ")
+	for processID, hvs := range hl.messageLogs {
+		sb.WriteString("*** Process ")
 		sb.WriteString(processID)
-		sb.WriteString("\n\n")
+		sb.WriteString(" ***\n\n")
 		sb.WriteString(hvs.String())
-		sb.WriteString("\n")
+
+		sb.WriteString("------------------------------------------------------------------------------------------------------------------------\n\n")
 	}
 
 	return sb.String()
@@ -61,13 +62,18 @@ func (hl *HeightLogs) String() string {
 func (hl *HeightLogs) Length() int {
 	hl.mutex.RLock()
 	defer hl.mutex.RUnlock()
-	return len(hl.logs)
+	return len(hl.messageLogs)
 }
 
-// Contains checks if an element in the logs is already present
-func (hl *HeightLogs) Contains(id string) bool {
+// ReceivedLength returns the number of received logs so far
+func (hl *HeightLogs) ReceivedLength() int {
 	hl.mutex.RLock()
 	defer hl.mutex.RUnlock()
-	_, loaded := hl.logs[id]
-	return loaded
+	numReceived := 0
+	for _, val := range hl.receivedLogsMap {
+		if val {
+			numReceived++
+		}
+	}
+	return numReceived
 }
