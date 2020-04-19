@@ -3,60 +3,70 @@ package connection
 import (
 	"fmt"
 	"io"
+	"log"
 	"net"
-
-	"github.com/mikanikos/Fork-Accountability/common"
 )
 
-// Listen starts listening for incoming connections from the client monitor
-func Listen(port string, hvs *common.HeightVoteSet) error {
-	listener, err := net.Listen("tcp", port)
+// Server object to handle requests from clients
+type Server struct {
+	ReceiveChannel chan *ClientData
+}
+
+// NewServer creates a new Server
+func NewServer() *Server {
+	return &Server{ReceiveChannel: make(chan *ClientData, maxChannelSize)}
+}
+
+// ClientData is the data sent by the client to be delivered to the Listener
+type ClientData struct {
+	Packet     *Packet
+	Connection *Connection
+}
+
+// Listen starts listening for incoming connections from the client
+func (server *Server) Listen(address string) error {
+	listener, err := net.Listen("tcp", address)
 
 	if err != nil {
 		return fmt.Errorf("error while trying to listen on given address: %s", err)
 	}
 
+	defer listener.Close()
+
 	for {
 		conn, err := listener.Accept()
 
 		if err != nil {
-			_ = listener.Close()
 			return fmt.Errorf("error while trying to accept incoming connection: %s", err)
 		}
 
 		// handle connection in a separate goroutine
-		go handleConnection(conn, hvs)
+		go server.HandleConnection(&Connection{Conn: conn})
 	}
 }
 
-// handle connection
-func handleConnection(conn net.Conn, hvs *common.HeightVoteSet) {
+// HandleConnection from the given connection
+func (server *Server) HandleConnection(connection *Connection) {
 
-	remoteAddr := conn.RemoteAddr().String()
-	fmt.Println("Handling client connection from " + remoteAddr)
+	log.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())
 
 	for {
-		packet, err := Receive(conn)
+		packet, err := connection.Receive()
 
 		if err != nil {
 			if err == io.EOF {
-				fmt.Println("Monitor closed the connection")
+				log.Printf("Client %s closed the connection", connection.Conn.RemoteAddr())
 			} else {
-				fmt.Printf("error while trying to receive packet: %s", err)
+				log.Printf("error while trying to receive packet from %s: %s", connection.Conn.RemoteAddr(), err)
 			}
-			break
+			return
 		}
 
-		switch packet.Code {
-		case HvsRequest:
-			fmt.Println("Validator on " + conn.LocalAddr().String() + ": sending hvs to monitor")
-			err := Send(conn, &Packet{Code: HvsResponse, Hvs: hvs})
-			if err != nil {
-				fmt.Println("Error while sending packet back to monitor")
-				break
-			}
-		}
+		clientData := &ClientData{Packet: packet, Connection: connection}
+
+		// send data to receiving channel without blocking
+		go func(data *ClientData) {
+			server.ReceiveChannel <- data
+		}(clientData)
 	}
-
-	_ = conn.Close()
 }

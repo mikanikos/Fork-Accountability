@@ -1,0 +1,349 @@
+2020/04/16 13:19:29 Monitor: started running
+2020/04/16 13:19:29 Monitor: sending packet to 127.0.0.1:8080
+2020/04/16 13:19:29 Monitor: sending packet to 127.0.0.1:8081
+2020/04/16 13:19:29 Monitor: sending packet to 127.0.0.1:8082
+2020/04/16 13:19:29 Monitor: successfully connected to all validators and requested message logs
+2020/04/16 13:19:29 Monitor: sending packet to 127.0.0.1:8083
+2020/04/16 13:19:30 Monitor: received height vote set from validator with ID 1. 1 message logs have been delivered so far
+2020/04/16 13:19:30 Monitor: received height vote set from validator with ID 3. 2 message logs have been delivered so far
+2020/04/16 13:19:30 Monitor: running the accountability algorithm
+2020/04/16 13:19:30 Accountability algorithm report generated
+________________________________________________________________________________________________________________________
+
+HEIGHT LOGS
+
+*** Process 3 ***
+
+- ROUND 3
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+
+- ROUND 4
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 4, Value: 20, Justifications: PREVOTE - Sender: 1, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 3, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 4, Round: 3, Value: 20
+
+	PREVOTE - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 4, Value: 20, Justifications: []
+
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+*** Process 2 ***
+
+- ROUND 3
+[Received prevote messages]
+	No data
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+
+- ROUND 4
+[Received prevote messages]
+	No data
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 2, Round: 4, Value: 20, Justifications: PREVOTE - Sender: 1, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 3, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 4, Round: 3, Value: 20
+
+
+[Sent precommit messages]
+	No data
+
+------------------------------------------------------------------------------------------------------------------------
+
+*** Process 4 ***
+
+- ROUND 3
+[Received prevote messages]
+	No data
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Sent precommit messages]
+	No data
+
+- ROUND 4
+[Received prevote messages]
+	No data
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 4, Round: 4, Value: 20, Justifications: []
+
+
+[Sent precommit messages]
+	No data
+
+------------------------------------------------------------------------------------------------------------------------
+
+*** Process 1 ***
+
+- ROUND 3
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Received precommit messages]
+	PRECOMMIT - Sender: 1, Round: 3, Value: 10, Justifications: []
+
+	PRECOMMIT - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PRECOMMIT - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+
+[Sent prevote messages]
+	PREVOTE - Sender: 1, Round: 3, Value: 20, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 1, Round: 3, Value: 10, Justifications: []
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+RESULTS
+
+Faulty processes found: 1
+
+*** Process 3 ***
+
+- ROUND 4
+The process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued
+
+________________________________________________________________________________________________________________________
+
+2020/04/16 13:19:30 Monitor: detected 1 faulty processes
+2020/04/16 13:19:34 Monitor: received height vote set from validator with ID 4. 3 message logs have been delivered so far
+2020/04/16 13:19:34 Monitor: running the accountability algorithm
+2020/04/16 13:19:34 Accountability algorithm report generated
+________________________________________________________________________________________________________________________
+
+HEIGHT LOGS
+
+*** Process 3 ***
+
+- ROUND 3
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+
+- ROUND 4
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 4, Value: 20, Justifications: PREVOTE - Sender: 1, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 3, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 4, Round: 3, Value: 20
+
+	PREVOTE - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 4, Value: 20, Justifications: []
+
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+*** Process 2 ***
+
+- ROUND 3
+[Received prevote messages]
+	No data
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+
+- ROUND 4
+[Received prevote messages]
+	No data
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 2, Round: 4, Value: 20, Justifications: PREVOTE - Sender: 1, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 3, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 4, Round: 3, Value: 20
+
+
+[Sent precommit messages]
+	No data
+
+------------------------------------------------------------------------------------------------------------------------
+
+*** Process 4 ***
+
+- ROUND 3
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+- ROUND 4
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 4, Value: 20, Justifications: PREVOTE - Sender: 1, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 3, Round: 3, Value: 20
+                                                              PREVOTE - Sender: 4, Round: 3, Value: 20
+
+	PREVOTE - Sender: 3, Round: 4, Value: 20, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 4, Value: 20, Justifications: []
+
+
+[Received precommit messages]
+	No data
+
+[Sent prevote messages]
+	PREVOTE - Sender: 4, Round: 4, Value: 20, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 4, Round: 4, Value: 20, Justifications: []
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+*** Process 1 ***
+
+- ROUND 3
+[Received prevote messages]
+	PREVOTE - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+	PREVOTE - Sender: 4, Round: 3, Value: 10, Justifications: []
+
+
+[Received precommit messages]
+	PRECOMMIT - Sender: 1, Round: 3, Value: 10, Justifications: []
+
+	PRECOMMIT - Sender: 2, Round: 3, Value: 10, Justifications: []
+
+	PRECOMMIT - Sender: 3, Round: 3, Value: 10, Justifications: []
+
+
+[Sent prevote messages]
+	PREVOTE - Sender: 1, Round: 3, Value: 20, Justifications: []
+
+
+[Sent precommit messages]
+	PRECOMMIT - Sender: 1, Round: 3, Value: 10, Justifications: []
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+RESULTS
+
+Faulty processes found: 2
+
+*** Process 4 ***
+
+- ROUND 4
+The process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued
+
+*** Process 3 ***
+
+- ROUND 4
+The process had sent PRECOMMIT message, and did not receive 2f + 1 PREVOTE messages for a sent PREVOTE message for another value to be issued
+
+________________________________________________________________________________________________________________________
+
+2020/04/16 13:19:34 Monitor: detected 2 faulty processes
+2020/04/16 13:19:34 Monitor: Algorithm completed
