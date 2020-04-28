@@ -8,20 +8,26 @@ The scope of this project is to implement a simple PoC of a Fork Accountability 
 The repository includes simple libraries and modules that allow to run experiments and benchmark the algorithm implementation in a minimal test environment:
 
 - a simple connection library to provide an high-level API for establishing connections and communicating among processes based on a client-server architecture; 
+
 - an accountability algorithm implementation based on the theoretical specifications given by the research scientists of the DCL lab at EPFL and Interchain Foundation;  
+
 - monitor implementation that represents the independent verification entity used to run the accountability algorithm;  
+
 - validator implementation that represents the processes that participate in the Tendermint Consensus protocol; 
+
 - sample test scripts to easily run experiments and test both the accountability algorithm and the interaction between monitor and validators.
 
 ## Context and overview
-Documentation describing the context and the theoretical background can be found in the docs folder.   
+Documentation describing the context and the theoretical background can be found in the [docs](docs) folder.   
 
 ## Architecture
 
 The project is organized in several files and packages in order to guarantee modularity and extendability and maintain at the same time a clear and simple structure.
 
 The monitor (monitor package) is the entity responsible to run the accountability algorithm. It takes as input parameters:
+
 - a path of a yaml configuration file which are necessary to initialize and configure the algorithm
+
 - an (optional) path of a file that can be generated to provide detailed information about the whole execution and, especially, of the accountability algorithm
 
 The monitor is responsible to open the connection with all the validators and initialize the request of the message logs.
@@ -43,21 +49,28 @@ This library is used by the monitor and the validator to exchange packets for bo
 
 As an overview, this is the current structure of the project:
     
-- .github: Github Actions continuous integration config file
-- accountability: contains the main accountability algorithm algorithm.
-- cmd: contains the binaries for the monitor and the validator. Inside each binary folder, there's a folder with sample config files. 
-- common: contains abstractions used throughout the project to better handle the input of the algorithm;
-- connection: contains the connection library used by monitor and validators to communicate.
-- docs: contains some markdown files to describe and documents the protocol and the accountability algorithm from a slightly more theoretical perspective; 
-- scripts: folder used to group scripts for running experiments in different scenarios; 
-- utils: utilities used for parsing configuration files and for testing the several functionalities of the modules implemented;
+- [.github](.github): contains Github Actions continuous integration config files
 
-Each folder contains tests scripts for the package.
+- [accountability](accountability): contains the main accountability algorithm algorithm
+
+- [cmd](cmd): contains the binaries for the monitor and the validator. Inside each binary folder, there's a folder with sample config files. 
+
+- [common](common): contains abstractions used throughout the project to better handle the input of the algorithm;
+
+- [connection](connection): contains the connection library used by monitor and validators to communicate.
+
+- [docs](docs): contains some markdown files to describe and documents the protocol and the accountability algorithm from a slightly more theoretical perspective; 
+
+- [scripts](scripts): folder used to group scripts for running experiments in different scenarios; 
+
+- [utils](utils): utilities used for parsing configuration files and for testing the several functionalities of the modules implemented;
+
+Each package contains tests in `*_test.go` files.
 
 ## How to run experiments
 
 ### Prerequisites
-Go version 1.13 or higher is required. 
+[Go](https://golang.org/dl/) version 1.13 or higher is required. 
 
 To download the project, run the following command 
 
@@ -67,7 +80,7 @@ go get -v github.com/mikanikos/Fork-Accountability
 
 ### Building project
 
-After this, go to the project base directory.
+After this, go to the project root directory.
 
 To build all the project files, run the following command:
 
@@ -89,11 +102,17 @@ You can then inspect the coverage in your browser by running the following comma
 go tool cover -html=coverage.out
 ``` 
 
+It's also possible to run the tests in a specific package with the following command:
+
+```
+go test -v ./[package_path] -covermode=count -coverprofile=coverage.out
+```
+
 Note that CI/CD is enabled for this project and it's possible to inspect the build status and detailed information about the test coverage directly on Github and Codecov.
 
 ### Running the monitor
 
-Go to the monitor directory inside the cmd directory, compile with the following command:
+Go to the [monitor](cmd/monitor) directory inside the [cmd](cmd) directory, compile with the following command:
 
 ```
 go build
@@ -101,13 +120,29 @@ go build
 
 Then, simply run the generated binary. The monitor accepts the following command-line parameters:
 
-- -config: path (relative to the project root directory) of the configuration file for the monitor (default "cmd/monitor/_config/config.yaml")
-- -delay: time to wait (in seconds) before start running, use for testing
-- -report: path (relative to the project root directory) of the report to generate at the end of the execution instead of printing logs to standard output
+- **-config**: path (relative to the project root directory) of the configuration file for the monitor (default "cmd/monitor/_config/config.yaml")
+
+- **-delay**: time to wait (in seconds) before start running, use for testing
+
+- **-report**: path (relative to the project root directory) of the report to generate at the end of the execution instead of printing logs to standard output
+
+The yaml configuration file must have the following parameters in order to provide the monitor with the required information to run the algorithm:
+
+- `height`: it represents the consensus instance where the fork has been detected or the height where the fork accountability algorithm will be run. This parameter will be used to request messages from the validators.
+
+- `firstDecisionRound`: the round where the first decision was made in the consensus algorithm.
+
+- `secondDecisionRound`: the round where the second decision was made in the consensus algorithm.
+ 
+- `timeout`: timer (in seconds) used to exit the execution after the time is expired. It's not needed by the algorithm but it's just a safety measure to prevent a blocking state in case something goes wrong. It can be set at a very high value and will not affect the execution of the algorithm.
+
+- `validators`: is the list of addresses where the validators are listening for incoming monitor requests 
+
+The [_config](cmd/monitor/_config) folder contains some sample config files for the monitor.
 
 ### Running the validator
 
-Go to the validator directory inside the cmd package, compile with the following command:
+Go to the [validator](cmd/validator) directory inside the [cmd](cmd) package, compile with the following command:
 
 ```
 go build
@@ -115,8 +150,52 @@ go build
 
 Then, simply run the generated binary. The validator accepts the following command-line parameters:
 
-- -config: relative path of the configuration file for the validator respect to the project folder (default "/cmd/validator/_config/config_1.yaml")
-- -delay: time to wait (in seconds) before replying back to the monitor, use for testing
+- **-config**: relative path of the configuration file for the validator respect to the project folder (default "/cmd/validator/_config/config_1.yaml")
+
+- **-delay**: time to wait (in seconds) before replying back to the monitor, use for testing
+
+The yaml configuration file must have the following parameters in order to provide the validator with the required information to run correctly:
+
+- `id`: unique id of the validator 
+- `address`: address used to listen for incoming requests from the monitor
+- `messages`: list of messages organized with the following structure
+  
+      [height]:
+        heightvoteset:
+          [round]:
+            received_prevote:
+              - type: [PREVOTE | PRECOMMIT]
+                sender: [sender_id]
+                round: [round]
+                value:
+                  data: [value]
+            
+            sent_prevote:
+              - type: [PREVOTE | PRECOMMIT]
+                sender: [sender_id]
+                round: [round]
+                value:
+                  data: [value]
+                
+            
+            received_precommit:
+              - type: [PREVOTE | PRECOMMIT]
+                sender: [sender_id]
+                round: [round]
+                value:
+                  data: [value]
+
+            
+            sent_precommit:
+              - type: [PREVOTE | PRECOMMIT]
+                sender: [sender_id]
+                round: [round]
+                value:
+                  data: [value]
+
+The value in square brackets are values and they are positive integers except for `type` (PREVOTE or PRECOMMIT) and the `data` fields (it can be any integer value, the type can be changed).
+
+The [_config](cmd/validator/_config) folder contains some sample config files for the validator.
 
 
 ### Running test scripts
@@ -126,4 +205,6 @@ A sample bash script is present in the scripts folder and gives a very minimal e
 
 ## Acknowledgments
 
-The project is developed as a semester project in collaboration with the Distributed Computing Lab at EPFL.
+The project is developed as a semester project in collaboration with the [Distributed Computing Lab](https://dcl.epfl.ch/site/) at [EPFL](https://www.epfl.ch/en/).
+
+Thank you [Jovan](https://github.com/jovankomatovic5) and [Adi](https://github.com/adizere) for providing all the theoretical background and advice during the development of the project.
