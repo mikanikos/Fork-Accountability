@@ -126,7 +126,7 @@ This would be enough because, intuitively, there will be at least one correct pr
 Therefore, the monitor will be able complete the accountability algorithm as soon as at least f+1 processes will be detected.
 We also know that at least f+1 messages logs will be received by the monitor (we assume correct process will send their logs) and with the message logs of the correct processes will be able to complete the algorithm and respect the completeness and accuracy properties.
 
-### Algorithm high-level design
+## Algorithm design
  
 To summarize the above discussion, these are the high-level steps carried out by the monitor to run the asynchronous accountability algorithm:
 
@@ -143,7 +143,7 @@ To summarize the above discussion, these are the high-level steps carried out by
 Termination is guaranteed by the fact that correct processes will send their messages logs (otherwise, why they shouldn't if they have nothing to hide?) and their message logs will be correct (no sent message will be missing). 
 If this condition doesn't hold, the algorithm would not be able to identify correctly all the faulty processes that led to a fork. However, correct processes have no reason to misbehave and we can rely on this assumption. 
 
-### Notes
+## Notes
 
 - The algorithm can also catch other faulty behaviours that didn't necessarily lead to a fork - that's a positive side effect of the accountability algorithm described above.
 

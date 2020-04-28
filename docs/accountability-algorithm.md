@@ -21,23 +21,23 @@ Tendermint messages have lots of other important information that are used by th
  
 We show the detailed steps of the execution of the monitor and the accountability algorithm: 
  
-- Upon a fork, monitor sends a request for validators' height vote sets (following a specific communication protocol) for a given height. Monitor starts waiting for incoming message logs.
+1. Upon a fork, monitor sends a request for validators' height vote sets (following a specific communication protocol) for a given height. Monitor starts waiting for incoming message logs.
 
-- Validators receives the request from the trusted monitor. If they have the requested height vote set, they send it immediately. 
+2. Validators receives the request from the trusted monitor. If they have the requested height vote set, they send it immediately. 
 If they don't have any logs for the requested height, they can simply ignore the request or, alternatively, send a reply back to the monitor to notify they don't have any logs for that height.
 
-- Monitor runs the accountability algorithm upon receiving a new message logs but only when **the total number of different height vote sets received is at least f + 1**. 
+3. Monitor runs the accountability algorithm upon receiving a new message logs but only when **the total number of different height vote sets received is at least f + 1**. 
 If the threshold is met, the monitor runs the accountability algorithm. Otherwise, the monitor keeps waiting for other packets from the processes that didn't reply back yet. 
       
-- The accountability algorithm itself has two consecutive steps:
+4. The accountability algorithm itself has two consecutive steps:
 
-    - **Pre-processing phase**: given the received message logs so far, we "infer" the missing sent messages and we attached them to the original sender's height vote set.
+    4. **Pre-processing phase**: given the received message logs so far, we "infer" the missing sent messages and we attached them to the original sender's height vote set.
 
-    - **Fault-detection phase**: we scan the height vote set from the first round to the last round and we check if the process is faulty by applying the rules of the Tendermint consensus algorithm. 
+    4. **Fault-detection phase**: we scan the height vote set from the first round to the last round and we check if the process is faulty by applying the rules of the Tendermint consensus algorithm. 
 
   The output of the accountability algorithm is the list of processes that have been detected as faulty and the proof of their faultiness.
   
-- If the monitor detected **at least f + 1 faulty processes** during the last execution of the accountability algorithm, the monitor completes. Otherwise, it keeps waiting for more height vote sets.
+5. If the monitor detected **at least f + 1 faulty processes** during the last execution of the accountability algorithm, the monitor completes. Otherwise, it keeps waiting for more height vote sets.
 
 ## Accountability algorithm steps
 
