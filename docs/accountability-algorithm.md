@@ -39,7 +39,7 @@ If the threshold is met, the monitor runs the accountability algorithm. Otherwis
   
 5. If the monitor detected **at least f + 1 faulty processes** during the last execution of the accountability algorithm, the monitor completes. Otherwise, it keeps waiting for more height vote sets.
 
-## Accountability algorithm steps
+## Accountability algorithm
 
 ### Pre-processing phase
 During this phase, we analyze all the height vote sets received. For each height vote set, we analyze all the received vote sets. For every message m in the received vote set, we check if the message is present in the sent vote set of the sender of m. If it's not present, we add it.   
@@ -56,6 +56,124 @@ For every height vote, we go through all the sent messages in each round r from 
 
 If one or more of these faulty behaviours is found in any of the rounds analyzed, the process is detected as faulty.
 
+### Pseudo-code version
+
+We now present a simple pseudo-code version of the algorithm in order to make the reader better understand some specific details.
+The following algorithm is only a high-level overview of the main steps of the accountability processing, we invite the reader to check out the code for further details.  
+
+The monitor has the following interface:
+
+- **runMonitor(V, h, firstRound, lastRound)**: run the accountability algorithm on the set of validators V for height h from firstRound to lastRound, returns the list of faulty processes in height h
+
+In order to simplify the understanding of the algorithm, we use the following high-level methods to model the communication between monitor and validators:
+
+- **sendRequest(v, h)**: send request for the height vote set of height h to validator v 
+- **deliverHVS()**: deliver the next incoming height vote set sent by some validator, returns the height vote set received
+
+V: set of validators
+h: height where the fork occurred
+
+    # Monitor algorithm
+    runMonitor(V, h, firstRound, lastRound):
+        
+        // compute max number of faulty processes respect to the number of validators  
+        f = (V.length - 1) / 3
+        
+        # send request to validators
+        for v in V:
+            sendRequest(v, h)
+        
+        # store delivered height vote sets
+        hvsDelivered = []
+        
+        # wait to deliver f+1 different height vote sets
+        do:
+            hvs = deliverHVS()
+            hvsDelivered = hvsDelivered + hvs
+        while (hvsDelivered.length < f+1)
+        
+        # run accountability algorithm
+        faultyProcesses = runAccountability(hvsDelivered, firstRound, lastRound)
+        
+        # repeat until we find at least f+1 faultyProcesses
+        while (faultyProcesses.length < f+1):
+        
+            # wait to deliver more HVS
+            hvs = deliverHVS()
+            hvsDelivered = hvsDelivered + hvs
+        
+            # run accountability algorithm 
+            faultyProcesses = runAccountability(hvsDelivered, firstRound, lastRound)    
+           
+            
+        # return the final output of the algorithm that satisfied exit condition
+        return faultyProcesses
+
+
+
+The following is the accountability algorithm used by the monitor to detect faulty processes based on the information given.
+
+The accountability algorithm has the following interface:
+
+- **runAccountability(hvsDelivered, firstRound, lastRound)**: run accountability algorithm on the height vote sets list hvsDelivered from firstRound to lastRound, returns the list of faulty processes detected based on the parameters
+
+It uses the following high-level methods for simplifying the understanding of the algorithm:
+
+- **getHVSFromSender(hvsDelivered, id)**: get the height vote set corresponding to the sender id given, returns nil otherwise 
+- **newHvs(id)**: create new height vote set given an id, returns the newly-created inferred height vote set
+- **getVoteSetFromRound(hvs, r)**: get the vote set from the height vote set given hvs and the round r, returns the vote set relative of the height vote set hvs given
+
+
+    # Accountability algorithm
+    runAccountability(hvsDelivered, firstRound, lastRound):
+    
+        # Pre-processing phase
+                
+        # go through all the height vote sets received
+        for each hvs in hvsDelivered:
+            # go through all the messages received
+            for each m in hvs.received:
+                # get height vote set of the sender of the message m
+                hvsSender = getHVSFromSender(hvsDelivered, m.sender)
+                
+                # if not present in the height vote sets received, create it 
+                if hvsSender == nil:
+                    hvsSender = newHvs(m.sender)
+                    # add inferred flag for later processing
+                    hvsSender.inferred = true
+                    hvsDelivered = hvsDelivered + hvsSender 
+                
+                # if m is not present in the hvs of the sender, add it
+                if m is not in hvsSender:
+                    hvsSender = hvsSender + m
+                    
+        # Fault-detection phase
+        
+        # set of faulty processes detected, duplicates are discarded
+        faultyProcesses = []
+        
+        # go through all the height vote sets received
+        for each hvs in hvsDelivered:
+            # from the first to the last round    
+            for each round r from firstRound to lastRound: 
+                # get vote set from round
+                vs = getVoteSetFromRound(hvs, r)
+                
+                # check for equivocation
+                if vs.sent contains more than one Prevote or Precommit in round r:
+                    faultyProcesses = faultyProcesses + hvs.sender                
+                
+                # if the hvs was not inferred, check for correctness of the execution in round r according to tendermint consenus algorithm rules  
+                if !hvs.inferred:
+                    
+                    # check if process sent a precommit or a prevote without proper justiifcation (prevotes must contain valid justifications) 
+                    if vs.sent contains a precommit or prevote without a valid justification:
+                        faultyProcesses = faultyProcesses + hvs.sender
+                        
+                        
+        return faultyProcesses
+                
+                
 ## Implementation-specific details
 
 - The communication between the monitor and the validators is over TCP and is structured as a normal client-server interaction.  

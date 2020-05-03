@@ -40,9 +40,9 @@ The Tendermint consensus algorithm guarantees the following properties:
 We limit the discussion to the agreement property only because its proof can be useful to better understand the fork accountability problem. 
 We invite interested readers to read the official paper for a more formal, complete and rigorous proof of all the properties listed above.
 
-### Idea behind the proof of the Agreement property
+## Agreement property
 
-In this section we'll give a very intuitive proof of the agreement property for the Tendermint algorithm and show why the majority assumption is important for ensuring this property.
+In this section we'll give a simple proof of the agreement property for the Tendermint algorithm and show why the majority assumption is important for ensuring this property.
 
 The key idea behind the proof of the agreement property is that any two sets of *2f + 1* processes have at least one correct process in common respect to the Tendermint context.
 
@@ -52,13 +52,40 @@ We know that Tendermint assumes that *n > 3f*, for simplicity we can simplify it
 
 We have two sets of *2f + 1* processes, their sum can be written as:
  
-    2(2f + 1) = 4f + 2 = 3f + 1 + f + 1 = n + f + 1.
+    2(2f + 1) = 4f + 2 = 3f + 1 + f + 1 = n + f + 1
      
 That means that the intersection of these two sets contain at least *f + 1* processes, therefore at least one correct process.  
 
-Given this result, it's quite easy to understand that, if there are at most *f* faulty processes, it's not possible to violate the agreement property in the Tendermint consensus algorithm.
+Given this result, it's quite easy to understand that, if there are at most *f* faulty processes, it's not possible to violate the agreement property in the Tendermint consensus algorithm, as we'll show in the next section.
 
-In fact, it can never happen that there are two sets of *2f + 1* Prevote or Precommit messages in the same round *r* for different values. If that would be the case, we'll have at least *f + 1* processes that sent both the messages, which would mean *f + 1* are faulty. But at most *f* processes are faulty, so this is impossible.
+### Proof
+
+Let's assume that a correct process p decides value v in round r of height h. We want to prove that any other correct process p' in some round r' >= r of height h decides v' such that v' = v.
+
+We have two cases:
+
+- if r' = r: 
+
+    p' has decided value v' in round r, so it has received at least 2f + 1 Precommit messages for value v' in round r. 
+    p has decided value v in the same round r, so it has received at least 2f + 1 Precommit messages for value v in round r. 
+    As it has been shown previously, any two sets of 2f + 1 messages intersect in at least one correct process. Since a correct process only sends a single Precommit message, it must be that v = v'.  
+
+- if r ' > r:
+        
+    p has decided value v in the same round r, so it has received at least 2f + 1 Precommit messages for value v in round r.
+    Since the number of faulty processes is at most f, at least f+1 correct processes have locked value v by round r and, by algorithm rules, they will send Prevote messages only for value v in all the next rounds of height h.
+    
+    p' has decided value v' in round r' > r, so it has received at least 2f + 1 Precommit messages for value v' in round r' > r. 
+    Since the number of faulty processes is at most f, at least f+1 correct processes have locked value v' by round r' > r and these processes must have received at least 2f + 1 Prevote messages for value v' by round r'.
+    
+    From the fact that the intersection of 2f + 1 processes has at least one correct process, at least one correct process that locked value v in round r also sent a Prevote message for value v' in a later round r' > r. 
+    Since this is impossible, it can only be that v = v'.   
+
+Since these are the two only possible cases, the above reasoning proves that the agreement property is satisfied.
+
+### Idea behind the proof
+
+Using simpler words, the idea behind the proof is that it can never happen that there are two sets of *2f + 1* Prevote or Precommit messages in the same round *r* for different values. If that would be the case, we'll have at least *f + 1* processes that sent both the messages, which would mean *f + 1* are faulty. But at most *f* processes are faulty, so this is impossible.
 Moreover, at most one value can be locked in a round and if a correct process decided value *v* in round *r*, *v* will be locked for all the next rounds after *r* on that height and correct processes will not send Prevote/Precommit message for values different than *v*. Therefore, it's clear that *v* will be the only value that could be decided from that moment onwards.
 
 In conclusion, when more than 1/3 of processes are faulty, a fork can happen and the agreement property of the consensus algorithm could be violated. Otherwise, the agreement property is always satisfied.
