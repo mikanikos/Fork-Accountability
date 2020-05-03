@@ -5,7 +5,7 @@ What happen if more than *f* processes are faulty?
 
 A well-designed consensus protocol should provide some guarantees when this limit is exceeded. The most important guarantee is **fork accountability**, where the processes that caused the consensus to fail can be identified and punished according to the protocol specifications. 
 
-## The fork accountability problem
+## The problem
 
 We can separate two cases:
 
@@ -21,6 +21,8 @@ A **fork** happens when two correct validators decide on different blocks in the
 In the context of the Tendermint protocol, a fork happens in height h when a quorum of messages (2f + 1 Precommit messages) are sent for different values, i.e. we have two sets of 2f + 1 Precommit messages, A and B, such that A has value v and B has value v' != v in height h.  
 
 We aim to give incentives to validators to behave correctly according to the protocol specifications and detect faulty validators, without mistakenly detecting correct validators. 
+ 
+## Fork reasons
  
 There are multiple reasons that can lead to a fork, all coming from processes that deviate from the protocol specification and not following the behavior of a correct process.
 
@@ -105,9 +107,13 @@ The communication between the monitor and the validators for receiving message l
 
 For example, what happen when the monitor doesn't receive message logs from one of the validators? Should this validator be considered faulty?
 
+#### Synchronous model
+
 If we model the communication with a synchronous model, the only option would be waiting some time to receive all the message logs before running the accountability algorithm.
 After that time, if some process p did not send its message logs, the only thing monitor can do is considering p faulty, even though it doesn't have all the information to determine its faultiness with certainty. 
 On the other hand, if it doesn't consider p faulty, the monitor might not be able to find all the faulty processes that led to a fork.
+
+#### Asynchronous model
 
 This method would work but we want to make no assumptions regarding the communication between the monitor and the validators. 
 If we don't make any assumption regarding the communication, we would realize that it's impossible to design an accountability algorithm where the communication between monitor and validators is completely asynchronous.
@@ -126,8 +132,8 @@ The asynchronous accountability algorithm would work correctly if processes can 
 
 This would be enough because, intuitively, there will be at least one correct process that has received both messages and it would be possible to track down the origin and the justifications and find out if a process is really faulty.
 
-Therefore, the monitor will be able complete the accountability algorithm as soon as at least f+1 processes will be detected.
-We also know that at least f+1 messages logs will be received by the monitor (we assume correct process will send their logs) and with the message logs of the correct processes will be able to complete the algorithm and respect the completeness and accuracy properties.
+Therefore, the monitor will be able to complete the accountability algorithm as soon as at least f+1 processes will be detected.
+We also know that at least f+1 messages logs will be received by the monitor (we assume correct processes will send their logs). The algorithm will be able to complete the algorithm and respect the completeness and accuracy properties with the message logs of the correct processes.
 
 ## Algorithm design
  
