@@ -70,8 +70,7 @@ In order to simplify the understanding of the algorithm, we use the following hi
 - **sendRequest(v, h)**: send request for the height vote set of height h to validator v 
 - **deliverHVS()**: deliver the next incoming height vote set sent by some validator, returns the height vote set received
 
-
-
+    ```
     # Monitor algorithm
     runMonitor(V, h, firstRound, lastRound):
         
@@ -107,7 +106,7 @@ In order to simplify the understanding of the algorithm, we use the following hi
             
         # return the final output of the algorithm that satisfied exit condition
         return faultyProcesses
-
+    ```
 
 
 The following is the accountability algorithm used by the monitor to detect faulty processes based on the information given.
@@ -121,9 +120,8 @@ It uses the following high-level methods for simplifying the understanding of th
 - **getHVSFromSender(hvsDelivered, id)**: get the height vote set corresponding to the sender id given, returns nil otherwise 
 - **newHvs(id)**: create new height vote set given an id, returns the newly-created inferred height vote set
 - **getVoteSetFromRound(hvs, r)**: get the vote set from the height vote set given hvs and the round r, returns the vote set relative of the height vote set hvs given
-
-
-
+    
+    ```
     # Accountability algorithm
     runAccountability(hvsDelivered, firstRound, lastRound):
     
@@ -172,7 +170,7 @@ It uses the following high-level methods for simplifying the understanding of th
                         
                         
         return faultyProcesses
-                
+    ```        
                 
 ## Implementation-specific details
 
