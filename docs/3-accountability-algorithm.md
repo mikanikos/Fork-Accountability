@@ -74,7 +74,7 @@ In order to simplify the understanding of the algorithm, we use the following hi
     # Monitor algorithm
     runMonitor(V, h, firstRound, lastRound):
         
-        // compute max number of faulty processes respect to the number of validators  
+        // compute max number of faulty processes with respect to the number of validators  
         f = (V.length - 1) / 3
         
         # send request to validators

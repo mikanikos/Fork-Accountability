@@ -47,7 +47,7 @@ We invite interested readers to read the official paper for a more formal, compl
 
 In this section we will give a simple proof of the agreement property for the Tendermint algorithm and show why the correct majority assumption we gave before (*n > 3f*, or simply *n = 3f + 1*) is important for ensuring this property.
 
-The key idea behind the proof of the agreement property is that any two sets of *2f + 1* processes have at least one correct process in common respect to the Tendermint context.
+The key idea behind the proof of the agreement property is that any two sets of *2f + 1* processes have at least one correct process in common with respect to the Tendermint context.
 
 We know that Tendermint assumes that *n > 3f*, for simplicity we assumed that *n = 3f + 1*.
 We have two sets of *2f + 1* processes, their sum can be written as:

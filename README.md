@@ -122,9 +122,9 @@ Then, simply run the generated binary. The monitor accepts the following command
 
 - **-config**: path (relative to the project root directory) of the configuration file for the monitor (default "cmd/monitor/_config/config.yaml")
 
-- **-delay**: time to wait (in seconds) before start running, use for testing
+- **-delay**: time to wait (in seconds) before start running, use for testing (default 0)
 
-- **-report**: path (relative to the project root directory) of the report to generate at the end of the execution instead of printing logs to standard output
+- **-report**: path (relative to the project root directory) of the report to generate at the end of the execution instead of printing logs to standard output (default "")
 
 The yaml configuration file must have the following parameters in order to provide the monitor with the required information to run the algorithm:
 
@@ -150,9 +150,9 @@ go build
 
 Then, simply run the generated binary. The validator accepts the following command-line parameters:
 
-- **-config**: relative path of the configuration file for the validator respect to the project folder (default "/cmd/validator/_config/config_1.yaml")
+- **-config**: path (relative to the project root directory) of the configuration file for the validator (default "/cmd/validator/_config/config_1.yaml")
 
-- **-delay**: time to wait (in seconds) before replying back to the monitor, use for testing
+- **-delay**: time to wait (in seconds) before replying back to the monitor, use for testing (default 0)
 
 The yaml configuration file must have the following parameters in order to provide the validator with the required information to run correctly:
 
