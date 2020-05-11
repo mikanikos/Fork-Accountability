@@ -35,14 +35,14 @@ The monitor is responsible for opening connections with all the validators and i
 Validators ([validator package](cmd/validator)) are simple processes that listen on a given port and each one has its own messages logs that are the result of the execution of the Tendermint consensus protocol. Message logs and listening port are initialized through a configuration file (different for every validator) along with a unique validator identifier.
 Every message in the configuration file must be specified with all the corresponding information associated with it (type, round, height, senderId, possible justifications).
 
-The monitor will use the connection library to request message logs from all the addresses given in the config file. It will wait for responses from each validator and, as soon as a packet arrives, it will store it and send it to the main thread for running the algorithm if enough messages have been received until that time.
-The request will be repeated after a timeout is expired and if the message received is not valid. If the validator closes a connection or crashes, the monitor will stop waiting for packets from it and will notify the main thread about the failure in the reception.
+The monitor will use the connection library to request message logs from all the addresses (i.e., validator processes) given in the config file. It will wait for responses from each validator and, as soon as a packet arrives, it will store it and send it to the main thread. The main thread will run the fork accountability algorithm if enough messages have been received until that time.
+The monitor will repeat the request after a timeout expires and if the message received is not valid. If the validator closes a connection or crashes, the monitor will stop waiting for packets from it and will notify the main thread about the failure in the reception.
 
 The validator, after receiving a valid request packet, will response back if it will have the message logs requested. Otherwise, it will just ignore the request and will not answer the monitor. Optionally, it's possible to configure a response to immediately inform the monitor about the missing log in order to save resources.
 
 The main accountability algorithm is implemented in the accountability package and is described in details in documentation files of the docs folders. Please refer to for a theoretical background or for implementation-specific details.
 
-The connection library implemented in this project wraps the well-known golang/conn library and provides some abstractions to establish a TCP connection, send and receive TCP packets, serialize and de-serialize messages and listen to a specific port.
+The connection library implemented in this project wraps the well-known [net library](https://golang.org/pkg/net/) and provides some abstractions to establish a TCP connection, send and receive TCP packets, serialize and de-serialize messages and listen to a specific port.
 This library is used by the monitor and the validator to exchange packets for both the request and the sending of the message logs.
 
 ## Structure
@@ -51,7 +51,7 @@ As an overview, this is the current structure of the project:
     
 - [.github](.github): contains Github Actions continuous integration config files
 
-- [accountability](accountability): contains the main accountability algorithm algorithm
+- [accountability](accountability): contains the main accountability algorithm
 
 - [cmd](cmd): contains the binaries for the monitor and the validator. Inside each binary folder, there's a folder with sample config files. 
 
@@ -59,7 +59,7 @@ As an overview, this is the current structure of the project:
 
 - [connection](connection): contains the connection library used by monitor and validators to communicate.
 
-- [docs](docs): contains some markdown files to describe and documents the protocol and the accountability algorithm from a slightly more theoretical perspective; 
+- [docs](docs): contains markdown files documenting the project and the accountability algorithm from a slightly more theoretical perspective; 
 
 - [scripts](scripts): folder used to group scripts for running experiments in different scenarios; 
 
@@ -205,6 +205,6 @@ A sample bash script is present in the scripts folder and gives a very minimal e
 
 ## Acknowledgments
 
-The project is developed as a semester project in collaboration with the [Distributed Computing Lab](https://dcl.epfl.ch/site/) at [EPFL](https://www.epfl.ch/en/).
+The project is developed as a semester project in collaboration with the [Distributed Computing Lab](https://dcl.epfl.ch/site/) at [EPFL](https://www.epfl.ch/en/) and [Informal Systems](https://informal.systems/).
 
 Thank you [Jovan](https://github.com/jovankomatovic5) and [Adi](https://github.com/adizere) for providing all the theoretical background and advice during the development of the project.

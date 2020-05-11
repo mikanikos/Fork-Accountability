@@ -7,11 +7,11 @@ Please note that this is not an exhaustive and formal discussion. We invite the 
 
 Tendermint is a partially synchronous Byzantine fault tolerant (BFT) consensus protocol. The protocol requires a fixed set of *n* validators that attempt to come to consensus on one value or, more precisely, on a block (a block is a list of transactions) using gossip-based communication. 
 
-Tendermint is notable for its simplicity and performance and is currently one of the best consensus algorithm used in production.
+Tendermint is notable for its simplicity and performance and is currently one of the most mature and widely used implementations of BFT consensus.
 
 ### Properties 
 
-The Tendermint consensus algorithm guarantees the following properties:
+The Tendermint consensus algorithm guarantees the following properties, with respect to a consensus instance:
 
 - **Agreement**: No two correct processes decide on different values
 
@@ -48,7 +48,7 @@ We can summarize the execution in a round in **two voting steps**: PREVOTE and P
 A correct process decides on a value *v* in a round *r* upon receiving a proposal and *2f + 1* quorum of PRECOMMIT messages for *v* in a round *r*. 
 A correct process sends a PRECOMMIT message for a value *v* in a round *r* upon receiving a proposal and *2f + 1* quorum of PREVOTE messages for *v* in a round *r*.
 
-Validators wait some time before sending a PREVOTE for *nil* if they do not receive a valid proposal after a certain time and they send a PRECOMMIT message for *nil* if they do not receive *2f + 1* PREVOTE messages for a value.
+Validators wait some time before sending a PREVOTE for *nil* if they do not receive a valid proposal after a certain time and they send a PRECOMMIT message for *nil* if they do not receive *2f + 1* matching PREVOTE messages for a value.
 If a correct process receives at least *2f + 1* PRECOMMIT messages for *nil* in a round, it moves to the next round.
 
 After a decision has been made, processes continue to agree on other values on another consensus instance (*height*) and they repeat the process described above in order to agree on different transactions.
@@ -59,7 +59,7 @@ In order to ensure that processes will eventually come to a decision, there are 
 
 When a validator *p* sends a PRECOMMIT for a value *v* at round *r*, we say the *p* is *locked* on *v*. Validators can propose and send PREVOTE messages for a value they have locked and they can only change the locked value if they receive a more recent proposal with a quorum of PREVOTE messages. 
 
-These conditions ensure both the safety and liveness properties of the consensus algorithm since a validator cannot send a PRECOMMIT message without sufficient evidence.
+These conditions ensure both the safety and liveness properties of the consensus algorithm since a validator cannot send a PRECOMMIT message without a valid justification.
 
 ## Agreement property
 
@@ -68,7 +68,7 @@ We invite interested readers to read the official paper for a more formal, compl
 
 In this section we will give a simple proof of the agreement property for the Tendermint algorithm and show why the correct majority assumption given before (*n > 3f*, or simply *n = 3f + 1*) is important for ensuring this property.
 
-The key idea behind the proof of the agreement property is that any two sets of *2f + 1* processes have at least one correct process in common with respect to the Tendermint consensus algorithm.
+The key idea behind the proof of the agreement property is that any two sets of *2f + 1* processes have at least one correct process in common.
 
 For simplicity, we assume that *n = 3f + 1*.
 Since there are two sets of *2f + 1* processes, their sum can be written as:

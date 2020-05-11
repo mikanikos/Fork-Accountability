@@ -38,7 +38,7 @@ If the threshold is met, the monitor runs the accountability algorithm. Otherwis
 
     4. **Fault-detection phase**: the monitor scans the height vote set from the first round to the last round and checks that the rules of the Tendermint consensus algorithm are violated. If a process violates any of the Tendermint consensus algorithm rules, it is detected as faulty. 
 
-    The output of the accountability algorithm is the list of processes that have been detected as faulty and the proof of their faultiness.
+    The output of the accountability algorithm is the list of processes that have been detected as faulty and the proof of their misbehavior.
   
 5. If the monitor detected **at least *f + 1* faulty processes** during the last execution of the accountability algorithm, the monitor completes. Otherwise, it keeps waiting for more height vote sets.
 
