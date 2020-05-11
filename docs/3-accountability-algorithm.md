@@ -1,74 +1,84 @@
-# Accountability algorithm
+# Fork accountability solution
 
 ## Main abstractions
 
-In order to simplify the discussion we introduce some abstractions to better identify and classify the message logs received and handled by the monitor.
+In order to simplify the later discussion, here we introduce some abstractions that help to better identify and classify the message logs received and handled by the monitor.
 
 Each **Message** contains the following information:
 
 - **Type** of the message, *type*
+
 - **Unique identifier** of the sender of the message, *id*
+
 - **Round** of the message, *r*
+
 - **Value** of the message, *v*
 
 A **Vote Set** is the set of all Messages that a process sent and received in a specific round *r*.
 
 A **Height Vote Set** is the set of all Vote Set in a specific height *h* or the set of all Messages that a process sent and received in a specific height *h*.
 
-Tendermint messages have lots of other important information that are used by the consensus protocol but we limit our discussion to the necessary data to run the accountability algorithm.       
+Tendermint messages have several other important fields that are used by the consensus protocol for other purposes. However, we limit the scope of our discussion to these information only because they are essential for running the designed accountability algorithm.       
 
-## Execution steps
+## Monitor algorithm
  
-We show the detailed steps of the execution of the monitor and the accountability algorithm: 
+These are the detailed steps of the execution of the monitor and the accountability algorithm: 
  
 1. Upon a fork, monitor sends a request for validators' height vote sets (following a specific communication protocol) for a given height. Monitor starts waiting for incoming message logs.
 
-2. Validators receives the request from the trusted monitor. If they have the requested height vote set, they send it immediately. 
+2. Validators receive the request from the trusted monitor. If they have the requested height vote set, they send it immediately. 
 If they don't have any logs for the requested height, they can simply ignore the request or, alternatively, send a reply to the monitor to notify they do not have any logs for that height.
 
-3. Monitor runs the accountability algorithm upon receiving a new message logs but only when **the total number of different height vote sets received is at least f + 1**. 
+3. Monitor runs the accountability algorithm upon receiving a new message logs but only when **the total number of different height vote sets received is at least *f + 1***. 
 If the threshold is met, the monitor runs the accountability algorithm. Otherwise, the monitor keeps waiting for other packets from the processes that did not reply yet. 
       
-4. The accountability algorithm itself has two consecutive steps:
+4. The accountability algorithm runs in two consecutive phases:
 
-    4. **Pre-processing phase**: given the received message logs so far, we "infer" the missing sent messages and we attached them to the original sender's height vote set.
+    4. **Pre-processing phase**: given the received message logs so far, the monitor "infers" the missing sent messages and attaches them to the original sender's height vote set.
 
-    4. **Fault-detection phase**: we scan the height vote set from the first round to the last round and we check if the process is faulty by applying the rules of the Tendermint consensus algorithm. 
+    4. **Fault-detection phase**: the monitor scans the height vote set from the first round to the last round and checks that the rules of the Tendermint consensus algorithm are violated. If a process violates any of the Tendermint consensus algorithm rules, it is detected as faulty. 
 
-  The output of the accountability algorithm is the list of processes that have been detected as faulty and the proof of their faultiness.
+    The output of the accountability algorithm is the list of processes that have been detected as faulty and the proof of their faultiness.
   
-5. If the monitor detected **at least f + 1 faulty processes** during the last execution of the accountability algorithm, the monitor completes. Otherwise, it keeps waiting for more height vote sets.
+5. If the monitor detected **at least *f + 1* faulty processes** during the last execution of the accountability algorithm, the monitor completes. Otherwise, it keeps waiting for more height vote sets.
 
 ## Accountability algorithm
 
 ### Pre-processing phase
-During this phase, we analyze all the height vote sets received. For each height vote set, we analyze all the received vote sets. For every message m in the received vote set, we check if the message is present in the sent vote set of the sender of m. If it is not present, we add it.   
+During this phase, the monitor analyzes all the height vote sets received. 
+For each height vote set, the monitor scans all the received vote sets. 
+For every message *m* in the received vote set, the monitor checks if the message is present in the set of message sent by the sender of *m*. If it is not present, the monitor adds it to the sender's vote set.   
 
 ### Fault-detection phase
-During this phase we analyze each height vote set after the pre-processing phase and we determine whether the process is faulty or not.
-For every height vote, we go through all the sent messages in each round r from the first round to the last round. We check for the following faulty behaviours:
+During this phase the monitor analyzes each height vote set after the pre-processing phase and determines whether the process is faulty or not.
+For every height vote set received, the monitor goes through all the sent messages in each round r from the first round to the last round. The monitor checks for the following faulty behaviours:
 
-- the process equivocated in round r (sent more than one Prevote or Precommit message) - height vote sets that have not been received will be checked for equivocation only
+- the process equivocated in round r (sent more than one PREVOTE or PRECOMMIT message)
 
-- the process sent a Precommit message but did not receive *2f + 1* valid Prevote messages to justify the sending of the Precommit message
+- the process sent a PRECOMMIT message but did not receive *2f + 1* valid PREVOTE messages to justify the sending of the PRECOMMIT message
 
-- the process sent a Prevote message and did not have *2f + 1* valid Prevote messages as justification inside the Prevote
+- the process sent a PREVOTE message and did not have *2f + 1* valid PREVOTE messages as justification inside the PREVOTE
 
 If one or more of these faulty behaviours is found in any of the rounds analyzed, the process is detected as faulty.
 
-### Pseudo-code version
+Please note that height vote sets that have not been received (therefore, they have been inferred during the pre-processing phase) will be checked for equivocation only.
 
-We now present a simple pseudo-code version of the algorithm in order to make the reader better understand some specific details.
-The following algorithm is only a high-level overview of the main steps of the accountability processing, we invite the reader to check out the code for further details.  
+## Pseudo-code implementation
+
+We now present a simple pseudo-code version of the algorithm in order to make readers better understand some implementation details.
+The following algorithm is only a high-level overview of the main steps of the accountability solution implemented, we invite the reader to check out the code for further details.  
+
+#### Monitor algorithm
 
 The monitor has the following interface:
 
-- **runMonitor(V, h, firstRound, lastRound)**: run the accountability algorithm on the set of validators V for height h from firstRound to lastRound, returns the list of faulty processes in height h
+- **runMonitor(V, h, firstRound, lastRound)**: run the accountability algorithm on the set of validators V for height *h* from *firstRound* to *lastRound*, return the list of faulty processes in height *h*
 
-In order to simplify the understanding of the algorithm, we use the following high-level methods to model the communication between monitor and validators:
+In order to simplify the understanding of the algorithm, the algorithm uses the following high-level methods to model the communication between the monitor and validators:
 
 - **sendRequest(v, h)**: send request for the height vote set of height h to validator v 
-- **deliverHVS()**: deliver the next incoming height vote set sent by some validator, returns the height vote set received
+
+- **deliverHVS()**: deliver the next incoming height vote set sent by some validator, return the next height vote set received
 
     ```
     # Monitor algorithm
@@ -108,18 +118,21 @@ In order to simplify the understanding of the algorithm, we use the following hi
         return faultyProcesses
     ```
 
+#### Accountability algorithm
 
 The following is the accountability algorithm used by the monitor to detect faulty processes based on the information given.
 
 The accountability algorithm has the following interface:
 
-- **runAccountability(hvsDelivered, firstRound, lastRound)**: run accountability algorithm on the height vote sets list hvsDelivered from firstRound to lastRound, returns the list of faulty processes detected based on the parameters
+- **runAccountability(hvsDelivered, firstRound, lastRound)**: run accountability algorithm on the height vote sets list *hvsDelivered* from *firstRound* to *lastRound*, return the list of faulty processes detected based on the parameters
 
-It uses the following high-level methods for simplifying the understanding of the algorithm:
+The algorithm uses the following high-level methods for simplifying the presentation:
 
-- **getHVSFromSender(hvsDelivered, id)**: get the height vote set corresponding to the sender id given, returns nil otherwise 
-- **newHvs(id)**: create new height vote set given an id, returns the newly-created inferred height vote set
-- **getVoteSetFromRound(hvs, r)**: get the vote set from the height vote set given hvs and the round r, returns the vote set relative of the height vote set hvs given
+- **getHVSFromSender(hvsDelivered, id)**: get the height vote set corresponding to the sender *id* given, return *nil* otherwise 
+
+- **newHvs(id)**: create a new height vote set given an *id*, return the newly-created inferred height vote set
+
+- **getVoteSetFromRound(hvs, r)**: get the vote set from the given height vote set *hvs* of round *r*, return the vote set relative to the height vote set *hvs* given
     
     ```
     # Accountability algorithm
@@ -158,14 +171,14 @@ It uses the following high-level methods for simplifying the understanding of th
                 vs = getVoteSetFromRound(hvs, r)
                 
                 # check for equivocation
-                if vs.sent contains more than one Prevote or Precommit in round r:
+                if vs.sent contains more than one PREVOTE or PRECOMMIT in round r:
                     faultyProcesses = faultyProcesses + hvs.sender                
                 
                 # if the hvs was not inferred, check for correctness of the execution in round r according to tendermint consenus algorithm rules  
                 if !hvs.inferred:
                     
-                    # check if process sent a precommit or a prevote without proper justiifcation (prevotes must contain valid justifications) 
-                    if vs.sent contains a precommit or prevote without a valid justification:
+                    # check if process sent a PRECOMMIT or a PREVOTE without proper justiifcation (PREVOTE messages must contain valid justifications) 
+                    if vs.sent contains a PRECOMMIT or PREVOTE without a valid justification:
                         faultyProcesses = faultyProcesses + hvs.sender
                         
                         

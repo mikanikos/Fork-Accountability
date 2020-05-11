@@ -1,53 +1,59 @@
 # Fork accountability
 
-The agreement property of the Tendermint consensus algorithm cannot be violated if there are at most *f* faulty processes in the system.
-What happens if more than *f* processes are faulty?
+The agreement property of the Tendermint consensus algorithm can be violated if there are more than *f* faulty processes in the system.
 
-A well-designed consensus protocol should provide some guarantees when this limit is exceeded. The most important guarantee is **fork accountability**. 
+A well-designed consensus protocol should provide some guarantees when this limit is exceeded in order to allow the system to recover from a possible fault. One of the most important guarantees is **fork accountability**. 
 
 ## The problem
 
-A **fork** happens when two correct validators decide on different blocks in the same height or, by using different words, when there are two commits for different blocks at the same height. 
-In the context of the Tendermint protocol, a fork happens in height h when a quorum of messages (2f + 1 Precommit messages) are sent for different values: there are two sets of 2f + 1 Precommit messages, A and B, such that A has value v and B has value v' != v in height h.  
+A fork is a split in the blockchain network or, with other words, a divergence into different block paths. 
+A **fork** happens when two correct validators decide on different blocks in the same height (i.e., there are two commits for different blocks in the same consensus instance). 
 
-Tendermint conensus algorithm guarantees that a fork (i.e., a violation of the agreement property) cannot happen when the number of faulty processes is less than one third.
-We address the problem of forks when there are more than one third of faulty validators:
+In the context of the Tendermint protocol, a fork happens in height *h* when a quorum of messages (*2f + 1* PRECOMMIT messages) are sent for different values: more formally, there are two sets of *2f + 1* PRECOMMIT messages, A and B, such that A's messages are PRECOMMIT votes for value *v* and B's messages are PRECOMMIT votes for value *v' != v* in height *h*.  
+
+The Tendermint conensus algorithm guarantees that a fork (i.e., a violation of the agreement property) cannot happen when the number of faulty processes is less than one third.
+We want to address and analyze the problem of defining a Tendermint consensus algorithm that provides the same four properties (validity, agreement, termination, integrity) when the number of faulty processes is less than one third and guarantees, in addition, an efficient detection of faulty processes that can potentially make the consensus fail with a fork when there are more than one third of faulty validators.
+
+In particular, we assume there are more than one third of faulty validators such that the following holds:
 
     f < num. faulty processes <= 2f
 
-In the Tendermint protocol, all processes should be accountable for their actions and faulty validators should be identified and punished according to the protocol specifications because they can "cause" the consensus to fail.
-Fork accountability aims to detect these faulty processes that "led" to a fork and punish them, for example by removing them from the validators set.
-
+In the Tendermint protocol, all processes should be accountable for their actions and faulty validators should be identified and punished according to the protocol specifications, for example by removing them from the validators set.
 We aim to give incentives to validators to behave correctly according to the protocol specifications and detect faulty validators, without mistakenly detecting correct validators. 
  
 ## Fork reasons
  
-There are multiple reasons that can lead to a fork, all coming from processes that deviate from the protocol specification and not following the behavior of a correct process.
+In the previous section, we mentioned that a process can make the consensus fail with a fork. There are, indeed, multiple reasons that can make the system fork, all coming from processes that deviate from the protocol specification and do not follow the behavior of a correct process in the consensus algorithm.
 
-We can summarize the most important ones:
+We can summarize the main actions a process can do to misbehave and possibly cause a fork in a specific consensus height according to the Tendermint consensus algorithm rules: 
 
-- A process sends multiple proposals in a round *r* for different values
+- A process sends multiple proposals in a round *r* for different values 
 
-- A process sends a Prevote/Precommit message for an invalid value *v* in a round *r*
+- A process sends a PREVOTE/PRECOMMIT message for an invalid value *v* in a round *r*
 
-- A process sends multiple Prevote/Precommit messages in a round *r* for different values
+- A process sends multiple PREVOTE/PRECOMMIT messages in a round *r* for different values (**equivocation**)
 
-- A process sends a Prevote/Precommit message for a value *v* despite having a lock on a different value *v'*
+- A process sends a PREVOTE/PRECOMMIT message for a value *v* despite having a lock on a different value *v'*
 
-- A process sends a Precommit for a value *v* without having received at least 2/3 Prevote messages for *v* 
+- A process sends a PRECOMMIT for a value *v* without having received at least two thirds PREVOTE messages for *v* 
+
+From now on, the expression "leading to a fork" will be used to define any combination of these misbehaviors carried out by a process that caused a fork. 
+For example, saying  "a process *p* leads to a fork" means that *p* caused a fork by having made one or more of these faulty behaviours in a specific height.
+
+All processes that do not make any of the above-mentioned misbehaviours are considered correct in the later sections.
 
 ## Design of an accountability algorithm
 
 ### Interface and properties
 
-Given the problemas stated above, we want to develop an accountability algorithm that, by analyzing the messages received from validators during the execution of the consensus instance, is able to determine which processes respected the protocol and which ones did not and led to a fork. 
-In order to prove the misbehavior of the processes that did not respect the protocol, we want to show the proof of their faultiness with respect to the Tendermint consensus protocol.
+We aim to develop an accountability algorithm that, by analyzing the messages received by validators during an execution of a consensus instance, is able to determine which processes respected the protocol and which ones did not and led to a fork. 
+In order to prove the misbehavior of the processes that did not respect the protocol, we also want to show the proof of their faultiness with respect to the Tendermint consensus protocol.
 
-The algorithm should expose the following interface:
+The algorithm exposes the following interface:
 
-- **detect(P)**: process P is faulty according the accountability algorithm
+- **detect(P)**: process P is faulty according to the accountability algorithm
 
-The algorithm should guarantee the following properties:
+The algorithm guarantees the following properties:
 
 - **accuracy**: if the accountability algorithm detects a process *p*, then process *p* is faulty
 
@@ -57,107 +63,127 @@ All the processes that are not detected are considered correct.
 
 ## Monitor
 
-We introduce a trusted third-party verification entity which is responsible to run the accountability algorithm - we call it **monitor**.
+We introduce a trusted third-party verification entity which is responsible to run the accountability algorithm called **monitor**.
 
 The monitor is responsible to coordinate and run the accountability algorithm as soon as a fork is detected. 
-The input of the algorithm are the message logs of the validators (i.e., all the information related to the exchanged messages by validators in the consensus instance). 
-The monitor will first request the message logs from each validator and then will run the accountability algorithm.
+Since the input of the algorithm are the **message logs** of the validators (i.e., all the information related to the exchanged messages by processes in the consensus instance), the monitor will first request the message logs from each validator and then will run the accountability algorithm.
 
-We assume that all validators keep track of all the messages they sent and received during the execution of the Tendermint consensus algorithm. 
-The idea is that a correct process would be able to prove that it was not faulty by showing its activity (message logs) to the monitor.
-Indeed, the monitor is able to detect all the faulty processes that caused a fork (and not only) by analyzing the message logs from all the correct processes.
+We assume that all validators keep track of all the messages they sent and received during an execution of the Tendermint consensus algorithm. 
+The idea is that a correct process would be able to prove that it was not faulty by showing its activity (*message logs*) to the monitor.
+Indeed, the monitor should be able to detect all faulty processes that led to a fork by analyzing the message logs from all the correct processes that have no reason for not sending their message logs.
 
 ## Fork scenarios
 
-In order to better understand the problem, we analyze the scenarios when the fork can happen and how the monitor would be able to handle the situation when analyzing the logs for each validator.
+In order to better understand the problem, we analyze the scenarios when the fork can happen and how the monitor would be able to handle the situation when analyzing the log received from each validator.
 
 ### Fork in same round
 
-If a fork happens in a certain round r (two decisions are made in the same round r for value v and v'), we know that at least f+1 processes have sent a Prevote/Precommit message for both v and v'.
-Since at least one correct process will receive both messages, the monitor is able to infer all the "hidden" messages and eventually identify the faulty processes who caused the fork.  
+A fork happens in a certain round *r* when two decisions are made in the same round *r* for different values.
+In other words, this means that a correct process *p* had decided value *v* in round *r* and some other correct process *p'* (*p != p'*) has decided value *v'* (*v != v'*) in round *r*. 
+
+Given the fact that all the messages that led to a fork have been exchanged in round *r*, at least *f + 1* processes must have sent a PREVOTE/PRECOMMIT message for both *v* and *v'*.
+Since at least one correct process will receive the messages for both values, the monitor would be able to eventually identify the faulty processes that led to a fork.  
 
 ### Fork in different rounds
 
-If a fork happens in different rounds (value v is decided in round r1 and value v' is decided in round r2), we know that at least f+1 processes have sent a Precommit message for value v in round r and also sent a Prevote message for value v' in round r2 despite having locked value v when they sent a Precommit.
+A fork happens in different rounds when two decisions for different values are made in different rounds. 
+In other words, this means that a correct process *p* had decided value *v* in round *r* and some other correct process *p'* (*p != p'*) has decided value *v'* (*v != v'*) in round *r'* such that *r' > r*. 
 
-Therefore, unless these processes have a justification (other 2f+1 Prevote messages for value v' in a round r'' s.t. r1 < r'' < r2), they are faulty. If they do have such a justification, then we now have to look for f+1 processes that sent Prevote messages for value v' despite having locked value v.
+Given this scenario, it can be noticed that at least *f + 1* processes have sent a PRECOMMIT message for value *v* in round *r* and also sent a PREVOTE message for value *v'* in round *r'* despite having locked value *v* when they sent a PRECOMMIT.
 
-As we can see, this is a recursive problem and we need to look back until we find f+1 processes that cannot justify the sending of a Prevote/Precommit message for another value despite having locked another one. 
-The method is simple: either a process is faulty because cannot justify the sending of a message or we go back recursively until we find processes that do not have a justification. It is clear that we will eventually find an iteration of the recursive problem where at least f+1 processes sent a Prevote message without a valid justification. 
+These processes are faulty unless they have a valid justification for sending the PREVOTE message for *v'* after being locked on *v* (i.e., other *2f + 1* PREVOTE messages for value *v'* in a round *r''* s.t. *r < r'' < r'*).
+ 
+On the other hand, if they do have such a justification, it means that there are at least *f + 1* processes that sent a PRECOMMIT message for value *v* in round *r* and also sent a PREVOTE message for value *v'* in round *r''* despite having locked value *v* when they sent a PRECOMMIT.
+
+It is clear that this scenario is similar to the one described at the beginning: the processes that sent a PREVOTE message for *v'* in *r''* are faulty unless they have a valid justification for sending the PREVOTE message for *v'* after being locked on *v*.
+
+The monitor would be able to track down the origin of the misbehaviour by checking recursively that all the processes that sent a PREVOTE message for a value different from the one they were locked on have a valid justification.
+Since messages cannot be generated out of nowhere, there must be an iteration of this recursive problem where the monitor would be able to find at least *f + 1* processes that sent a PREVOTE message without a valid justification and led to a fork.
+
+In conclusion, only two possible options remain:
+
+1. at least *f + 1* processes have sent both PREVOTE messages for value *v* and *v'* in the same round *r*
+
+2. at least *f + 1* processes have sent a PRECOMMIT message for value *v* in round *r* and also sent a PREVOTE message for value *v'* in a round *r''* (such that *r < *r'' <= r'*) without having delivered *2f +1* PREVOTE messages for value *v'* in a round *r'''* (where *r <= r''' < r''*)
 
 ## Challenges
 
-It is possible to receive "altered" message logs and the monitor might not have enough information to detect all the faulty processes that led to a fork. 
-However, we rely on the fact that Tendermint messages are signed and it is not possible to forge messages (i.e., some process *p* cannot state that it has received a message from process *p'* if *p'* did not send that message). 
+It is possible that faulty processes send invalid message logs to the monitor. An invalid message log is a message log which contains partial or incomplete information regarding the actual messages sent and received by the owner of the log (this means some messages might have not been reported or listed in the log).
+Indeed, a faulty process is able to alter and modify its message log in order to hide a possible misbehavior. In that case, the monitor might not have enough information to detect all the faulty processes that led to a fork. 
 
-So, excluding the previous problem, the following situations are possible:
+We assume that messages exchanged in the consensus algorithm are signed and it is not possible to forge messages (i.e., some process *p* cannot state that it has received a message from process *p'* if *p'* did not send that message). 
+
+Therefore, the following scenarios are possible:
  
-- A process *p* denies having received a message *m* (*p*'s message logs does not contain *m* as a message received): this does not really affect the monitor's job because it does not contribute to create a fork and we can ignore this scenario  
-- A process *p* denies having sent a message *m* (*p*'s message logs does not contain *m* as a message sent): this can lead to a fork so we need to consider the fact that processes can do this to hide their faultiness. However, if *m* led to a fork, at least one correct process has received that message and we can identify the faulty process. 
+1. A process *p* denies having received a message *m* (*p*'s message log does not contain *m* as a message received)  
 
-Given this overview, it is now clear why the monitor would just need the message logs from the correct processes: if a message *m* from a process *p'* has been received by a process *p* and *p'* denies sending m, we can add this missing message in *p'* 's message logs without needing to take any other action. 
+2. A process *p* denies having sent a message *m* (*p*'s message log does not contain *m* as a message sent) 
 
-Therefore, we know that the monitor can "infer" the valid message logs for each process after receiving the message logs from all the correct processes. The next step would be to simply analyze the logs for each process and determine whether it is faulty or not.
-However, we still need to ensure that we are going to receive the message logs from the correct processes and this depends on how we model the communication between the monitor and validators.
+The first case will be ignored because it does not contribute to the generation of a fork.
+
+The second point is, instead, more important in this discussion because a process can deny having sent a message *m* in order to hide its faultiness. 
+However, if *m* led to a fork, at least one process *p'* (*p != p'*) received *m*: the monitor can add this missing message in *p*'s message log without needing to take any further action, simply correcting the invalid message log received. 
+
+From now on, the expression "inferring a message log" will be used to define the action carried out by the monitor to correct an invalid message log with the missing messages taken from other message logs received by *p*.
+
+To summarize, the monitor can infer the valid message logs for each process after receiving the message logs from all the correct processes, which are guaranteed to arrive and to be correct.
+Once all the message logs received are adjusted and corrected accordingly, the monitor can start analyzing each message log and determine whether the process owner of the message log is faulty or not.
 
 ### Communication between the monitor and validators
 
 The communication between the monitor and the validators for receiving message logs of the Tendermint consensus algorithm is a crucial aspect of the monitor execution.
 
-For example, what happens when the monitor does not receive message logs from one of the validators? Should this validator be considered faulty?
+The monitor needs to make sure it will receive the message logs from the correct processes and, depending on how the communication is modelled, some assumptions must be made in order to design a correct fork accountability algorithm.
 
 #### Synchronous model
 
-If we model the communication with a synchronous model, the only option would be waiting some time to receive all the message logs before running the accountability algorithm.
-After that time, if some process p did not send its message logs, the only thing monitor can do is considering p faulty, even though it does not have all the information to determine its faultiness with certainty. 
-On the other hand, if it does not consider p faulty, the monitor might not be able to find all the faulty processes that led to a fork.
+In the case of a synchronous model, the monitor should wait a certain amount of time (*timeout*) to receive all the message logs before running the accountability algorithm.
+
+After the *timeout*, if some process *p* did not send its message log, the monitor can only consider *p* faulty due to the nature of the communication, even though it does not have all the information to determine its faultiness with certainty. 
+On the other hand, by not considering *p* faulty, the monitor might not be able to find at least *f + 1* faulty processes that led to a fork.
 
 #### Asynchronous model
 
-This method would work but we want to make no assumptions regarding the communication between the monitor and the validators. 
-If we do not make any assumption regarding the communication, we would realize that it is impossible to design an accountability algorithm where the communication between monitor and validators is completely asynchronous.
+The approach given above does not work in an asynchronous case, when there are no assumptions regarding the communication between the monitor and the validators. 
 
-The reason is simple: in an asynchronous setting, the monitor cannot be sure a process P is indeed faulty if it did not receive P's message logs. 
-In this scenario, the accountability algorithm can only determine the faultiness of P by analyzing the messages logs sent by other processes and equivocation is the unique possible faultiness that can be detected for P.
+In fact, the monitor cannot expose some process *p* if it did not receive *p*'s message log: the monitor could mistakenly detect a correct process because it does not have enough information to determine if *p* had a valid reason to send a PREVOTE/PRECOMMIT message (in other words, accuracy property would be violated).
  
-Equivocation is a faulty behavior that happens when a process sent more than one message with the same type in the same round but with different values.
+By receiving the message logs from other processes, the monitor can only determine if *p* equivocated. 
+However, while analyzing the fork scenarios in the previous section, we have shown that faulty processes can lead to a fork by not equivocating (point 2 in the section "Fork in different rounds") and this makes impossible the design of an asynchronous accountability algorithm in the current Tendermint consensus algorithm.  
 
-By receiving messages logs from correct processes, the monitor would be able to determine if some correct process received more than one message with the same type from another process p (i.e., if some process equivocated).  
-However, we have also shown that a process can be faulty in other ways and that would not be enough for designing an asynchronous accountability algorithm that catches all the faulty processes that led to a fork. 
-In fact, it can happen that, by not receiving message logs from one message, we might end up mistakenly detecting correct processes because we do not have enough information to determine if a process has enough justifications to have sent a Prevote/Precommit message (accuracy property violated). 
+In order to design a correct asynchronous accountability algorithm, it is necessary to slightly modify the Tendermint consensus algorithm so that the accuracy property is not violated.
 
-If we want to design a correct accountability algorithm, we need to slightly modify the Tendermint consensus algorithm in order to correctly respect the accuracy property.
-As we said above, we need to catch the case where a fork happens without having any process equivocating.
+The critical case outlined above is when a process sends a PRECOMMIT message for a value *v* and then, in a later round, it sends a PREVOTE message for a different value than *v*. In this way, a faulty process can lead to a fork without making equivocation.
 
-By looking at the other faultiness reasons, we can see that the critical case is when a process sends a Precommit message for a value v and then, in a later round, it sends a Prevote message for a different value than v.
-The asynchronous accountability algorithm would work correctly if processes can justify the sending of a Prevote message: a simple solution is to attach the justifications to the Prevote message itself so that the accountability algorithm can directly check if the message has been correctly sent.
-
-This would be enough because, intuitively, there will be at least one correct process that has received both messages and it would be possible to track down the origin and the justifications and find out if a process is really faulty.
-
-Therefore, the monitor will be able to complete the accountability algorithm as soon as at least f+1 processes will be detected.
-We also know that at least f+1 messages logs will be received by the monitor (we assume correct processes will send their logs). The algorithm will be able to complete the algorithm and respect the completeness and accuracy properties with the message logs of the correct processes.
+An asynchronous accountability algorithm would work correctly if processes can justify the sending of a PREVOTE message directly: a simple solution would be attaching the justifications to the PREVOTE message itself so that the accountability algorithm can directly check if the message has been correctly sent.
+In this case, the monitor would be able to complete the accountability algorithm correctly (respecting both the completeness and accuracy properties) as soon as at least *f + 1* faulty processes will be detected and by relying on the fact that at least *f + 1* correct processes will send correct message logs.
 
 ## Algorithm design
  
-To summarize the above discussion, these are the high-level steps carried out by the monitor to run the asynchronous accountability algorithm:
+Assuming the small modification in the Tendermint consensus algorothm described above, these are the high-level steps carried out by the monitor to run the asynchronous accountability algorithm:
 
 1. Upon a fork, monitor requests message logs from all the validators
 
 2. Monitor runs the accountability algorithm to detect faulty processes upon receiving at least *f + 1* message logs and at every new message logs received when there are at least *f + 1* message logs 
 
-3. While running the accountability algorithm, the monitor analyzes the received logs and build the correct logs for each process: for every message *m* that has been received by some other process but is not present in the sender's message logs, the monitor attaches *m* to the message logs of the sender of *m*. 
+3. While running the accountability algorithm, the monitor analyzes the received logs: for every message *m* that has been received by some other process but is not present in the sender's message log, the monitor attaches *m* to the message log of the sender of *m*
 
-4. For each validator, the monitor scans the received message logs and the "inferred" message logs and determines for each process whether it is faulty or not by analyzing the history of sent messages and transitions
+4. For each validator, the monitor scans the received message logs and the inferred message logs and determines for each process whether it is faulty or not by analyzing the history of sent messages and transitions
 
 5. When the monitor detects at least *f + 1* faulty processes, the algorithm completes
 
 Termination is guaranteed by the fact that correct processes will send their messages logs and their message logs will be correct (no sent message will be missing). 
-If this condition does not hold, the algorithm would not be able to identify correctly all the faulty processes that led to a fork. However, correct processes have no reason to misbehave. 
+If this condition does not hold, the algorithm would not be able to identify correctly all the faulty processes that led to a fork. However, correct processes have no reason to misbehave or send invalid message logs. 
 
 ## Notes
 
-- The algorithm can also catch other faulty behaviours that did not necessarily lead to a fork - that is a positive side effect of the accountability algorithm described above.
+- As some readers might have noticed, the fork accountability problem can be easily solved by simply piggybacking justifications in every single message. 
+However, this solution would be inefficient because it considerably increases the amount of information stored and exchanged by processes. The scope of the discussion is to solve the problem efficiently with a minimal amount of changes required on the Tendermint consensus protocol and that is the reason why we do not consider and analyze this possible solution.   
 
-- The monitor needs to analyze the message logs from the round of the first decision to the round of the second decision. There is no need to send to the monitor or analyze previous message logs. 
+- By excluding the piggybacking solution of the previous point, the fork accountability cannot be solved when the number of faulty proccesses is greater than *2f*: in this case, faulty processes basically control the system and nothing can be done to solve the problem.
 
-- The accountability algorithm runs for a single instance of consensus (i.e., for a single height). There is no need to run the algorithm on multiple heights.  
+- The accountability algorithm is able to also catch other faulty behaviours that did not necessarily lead to a fork - this is a positive side effect of the accountability algorithm described above.
+
+- The monitor needs to analyze the message logs from the round of the first decision to the round of the second decision. Previous message history is not necessary to make the algorithm work. 
+
+- The accountability algorithm runs for a single instance of consensus (i.e., for a single height). However, it can be easily configured to support multiple heights by running the same single-height algorithm on different heights.  
