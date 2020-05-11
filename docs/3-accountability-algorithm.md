@@ -22,12 +22,11 @@ Tendermint messages have several other important fields that are used by the con
 
 ## Monitor algorithm
  
-These are the detailed steps of the execution of the monitor and the accountability algorithm: 
+These are the detailed steps of the execution of the monitor to run the asynchronous accountability algorithm: 
  
 1. Upon a fork, monitor sends a request for validators' height vote sets (following a specific communication protocol) for a given height. Monitor starts waiting for incoming message logs.
 
-2. Validators receive the request from the trusted monitor. If they have the requested height vote set, they send it immediately. 
-If they don't have any logs for the requested height, they can simply ignore the request or, alternatively, send a reply to the monitor to notify they do not have any logs for that height.
+2. Validators receive the request from the trusted monitor and they send whatever they have to the monitor immediately. 
 
 3. Monitor runs the accountability algorithm upon receiving a new message logs but only when **the total number of different height vote sets received is at least *f + 1***. 
 If the threshold is met, the monitor runs the accountability algorithm. Otherwise, the monitor keeps waiting for other packets from the processes that did not reply yet. 
