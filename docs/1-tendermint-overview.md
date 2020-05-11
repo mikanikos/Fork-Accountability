@@ -48,8 +48,8 @@ We can summarize the execution in a round in **two voting steps**: PREVOTE and P
 A correct process decides on a value *v* in a round *r* upon receiving a proposal and *2f + 1* quorum of PRECOMMIT messages for *v* in a round *r*. 
 A correct process sends a PRECOMMIT message for a value *v* in a round *r* upon receiving a proposal and *2f + 1* quorum of PREVOTE messages for *v* in a round *r*.
 
-Validators wait some time before sending a PREVOTE for *nil* if they do not receive a valid proposal after a certain time and they send a PRECOMMIT message for *nil* if they do not receive *2f + 1* matching PREVOTE messages for a value.
-If a correct process receives at least *2f + 1* PRECOMMIT messages for *nil* in a round, it moves to the next round.
+Validators wait some time before sending a PREVOTE for *nil* if they do not receive a valid proposal after a certain time (*proposalTimeout*) and they send a PRECOMMIT message for *nil* if they do not receive *2f + 1* matching PREVOTE messages for a value after a certain time (*prevoteTimeout*).
+If processes do not receive *2f + 1* matching PRECOMMIT messages for a value after a certain time (*precommitTimeout*), they move to the next round.
 
 After a decision has been made, processes continue to agree on other values on another consensus instance (*height*) and they repeat the process described above in order to agree on different transactions.
 
