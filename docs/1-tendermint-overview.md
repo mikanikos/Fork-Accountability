@@ -109,7 +109,7 @@ We have two cases:
 
 Since these are the only two possible cases, the above reasoning proves that the agreement property is satisfied.
 
-## Conclusion
+## Conclusive remarks
 
 The Tendermint consensus protocol is a simple and efficient algorithm that guarantees the four properties mentioned above. These guarantees are valid as long as faulty processes are at most one third of the total number of validators in the system.
 

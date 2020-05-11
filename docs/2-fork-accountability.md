@@ -44,14 +44,16 @@ All processes that do not make any of the above-mentioned misbehaviours are cons
 
 ## Design of an accountability algorithm
 
-### Interface and properties
-
 We aim to develop an accountability algorithm that, by analyzing the messages received by validators during an execution of a consensus instance, is able to determine which processes respected the protocol and which ones did not and led to a fork. 
 In order to prove the misbehavior of the processes that did not respect the protocol, we also want to show the proof of their faultiness with respect to the Tendermint consensus protocol.
+
+### Interface
 
 The algorithm exposes the following interface:
 
 - **detect(P)**: process P is faulty according to the accountability algorithm
+
+### Properties
 
 The algorithm guarantees the following properties:
 

@@ -9,7 +9,7 @@ The repository includes simple libraries and modules that allow to run experimen
 
 - a simple connection library to provide an high-level API for establishing connections and communicating among processes based on a client-server architecture; 
 
-- an accountability algorithm implementation based on the theoretical specifications given by the research scientists of the DCL lab at EPFL and Interchain Foundation;  
+- an accountability algorithm implementation based on the theoretical specifications given by the research scientists of the DCL lab at [EPFL](https://www.epfl.ch/en/) and [Informal Systems](https://informal.systems/);  
 
 - monitor implementation that represents the independent verification entity used to run the accountability algorithm;  
 
@@ -22,17 +22,17 @@ Documentation describing the context and the theoretical background can be found
 
 ## Architecture
 
-The project is organized in several files and packages in order to guarantee modularity and extendability and maintain at the same time a clear and simple structure.
+The project is organized in several files and packages in order to guarantee modularity and extensibility and maintain at the same time a clear and simple structure.
 
-The monitor (monitor package) is the entity responsible to run the accountability algorithm. It takes as input parameters:
+The monitor ([monitor package](cmd/monitor)) is the entity responsible to run the accountability algorithm. It takes as input parameters:
 
 - a path of a yaml configuration file which are necessary to initialize and configure the algorithm
 
 - an (optional) path of a file that can be generated to provide detailed information about the whole execution and, especially, of the accountability algorithm
 
-The monitor is responsible to open the connection with all the validators and initialize the request of the message logs.
+The monitor is responsible for opening connections with all the validators and initialize the request of the message logs (described below).
 
-Validators are simple processes that listen to a given port and each one has its own messages logs that are the result of the execution of the Tendermint consensus protocol. Message logs and listening port are initialized through a configuration file (different for every validator) along with a unique identifier.
+Validators ([validator package](cmd/validator)) are simple processes that listen on a given port and each one has its own messages logs that are the result of the execution of the Tendermint consensus protocol. Message logs and listening port are initialized through a configuration file (different for every validator) along with a unique validator identifier.
 Every message in the configuration file must be specified with all the corresponding information associated with it (type, round, height, senderId, possible justifications).
 
 The monitor will use the connection library to request message logs from all the addresses given in the config file. It will wait for responses from each validator and, as soon as a packet arrives, it will store it and send it to the main thread for running the algorithm if enough messages have been received until that time.
