@@ -11,7 +11,7 @@ import (
 // it uses a complex nested map for efficient additions and for keeping the order of elements during the printing
 type FaultySet struct {
 	faultinessMap map[string]map[uint64]map[Faultiness]struct{}
-	mutex sync.RWMutex
+	mutex         sync.RWMutex
 }
 
 // NewFaultySet creates a new FaultySet structure

@@ -115,6 +115,6 @@ The Tendermint consensus protocol is a simple and efficient algorithm that guara
 
 However, when this assumption is not valid anymore, processes can decide on different values in the same consensus instance and the blockchain can potentially diverge into two potential decision paths, making the entire protocol break.
 
-Although it is not possible to provide all the four properties in this scenario, it can be desirable having some other "safety" guarantees that allow the system to self-recover from the possible fault. 
+Although it is not possible to provide all the four properties in this scenario, it can be desirable having additional "safety" guarantees that allow the system to self-recover from the possible fault. 
 
 The problem of fork accountability deals with this situation and will be addressed in the next section.
