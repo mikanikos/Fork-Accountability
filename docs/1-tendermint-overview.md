@@ -33,7 +33,7 @@ In order to simplify the whole discussion, we assume the following from now on:
 
 ### Overview
 
-The consensus algorithm proceeds in rounds: in each round there is a validator that proposes a value (proposer) and all the validators then vote during the round on whether to accept the proposed value or move on to the next round (proposers are chosen according to their voting power).
+The consensus algorithm proceeds in rounds: in each round there is a validator that proposes a value (proposer) and all the validators then vote during the round on whether to accept the proposed value or move on to the next round.
 
 During a round, processes can exchange different types of messages:
  
@@ -53,7 +53,7 @@ If processes do not receive *2f + 1* matching PRECOMMIT messages for a value aft
 
 After a decision has been made, processes continue to agree on other values on another consensus instance (*height*) and they repeat the process described above in order to agree on different transactions.
 
-### Rules
+### Correct behavior
 
 In order to ensure that processes will eventually come to a decision, there are some constraints that are applied. These rules aim to prevent any malicious attempt to cause more than one block to be committed at a given height. 
 
