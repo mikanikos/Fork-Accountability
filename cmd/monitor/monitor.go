@@ -35,7 +35,7 @@ func NewMonitor() *Monitor {
 }
 
 // Run monitor algorithm
-func (monitor *Monitor) Run(report string) {
+func (monitor *Monitor) Run(report string, asyncMode bool) {
 
 	// write logs to file, if desired
 	if report != "" {
@@ -58,7 +58,13 @@ func (monitor *Monitor) Run(report string) {
 	log.Println("Monitor: successfully connected to all validators and requested message logs")
 
 	// run accountability algorithm
-	output := monitor.runAccountabilityAlgorithm()
+	var output string
+	if asyncMode {
+		output = monitor.runAccountabilityAlgorithmAsync()
+	} else {
+		output = monitor.runAccountabilityAlgorithm()
+	}
+
 	log.Println(output)
 }
 
@@ -67,10 +73,55 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 
 	// count the number of responses (regardless of validity) from different validators
 	numValidators := len(monitor.Validators)
+
+	// initialize accountability
+	monitor.accAlgorithm.Init(uint64(numValidators), false)
+
+	// wait until the specified timer expires
+	timer := time.NewTicker(time.Duration(monitor.Timeout) * time.Second)
+	defer timer.Stop()
+
+	for {
+		select {
+		case <-timer.C:
+			log.Println("Monitor: running the accountability algorithm")
+
+			// run monitor and get faulty processes
+			monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
+
+			// print result of the execution
+			log.Println(monitor.accAlgorithm.String())
+			log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
+
+			// if we have at least f + 1 faulty processes, the algorithm completed
+			if monitor.accAlgorithm.IsCompleted() {
+				return successfulStatus
+			} else {
+				return failStatus
+			}
+
+
+		case packet := <-monitor.receiveChannel:
+
+			// check if new packet has been received and store it in case
+			if monitor.checkResponseValidity(packet) && monitor.accAlgorithm.StoreHvs(packet.ID, packet.Hvs) {
+				log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
+			} else {
+				log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
+			}
+		}
+	}
+}
+
+// run monitor algorithm
+func (monitor *Monitor) runAccountabilityAlgorithmAsync() string {
+
+	// count the number of responses (regardless of validity) from different validators
+	numValidators := len(monitor.Validators)
 	responseCount := 0
 
 	// initialize accountability
-	monitor.accAlgorithm.Init(uint64(numValidators))
+	monitor.accAlgorithm.Init(uint64(numValidators), true)
 
 	// wait until the specified timer expires
 	timer := time.NewTicker(time.Duration(monitor.Timeout) * time.Second)

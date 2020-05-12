@@ -12,6 +12,7 @@ type Accountability struct {
 	numValidators uint64
 	heightLogs    *HeightLogs
 	faultySet     *FaultySet
+	asyncMode     bool
 }
 
 // NewAccountability creates a new Accountability structure
@@ -38,8 +39,9 @@ func (acc *Accountability) String() string {
 }
 
 // Init initializes the variables needed for the execution of the accountability algorithm
-func (acc *Accountability) Init(numValidators uint64) {
+func (acc *Accountability) Init(numValidators uint64, async bool) {
 	acc.numValidators = numValidators
+	acc.asyncMode = async
 
 }
 
