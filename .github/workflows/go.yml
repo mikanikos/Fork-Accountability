@@ -74,13 +74,13 @@ jobs:
           registry: docker.pkg.github.com
           # Use dockerfile to specifiy the Dockerfile to build
           dockerfile: cmd/validator/Dockerfile
-          
-      - name: Fetch releases
+       
+       
+      - name: Get Docker image's GPR ID
         run: |
-          curl -X POST \
-            -s \
-            -H "Accept: application/vnd.github.package-deletes-preview+json" \
-            -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -d '{"query":"query {repository(owner:\"${{ OWNER }}\", name:\"${{ REPOSITORY }}\") {registryPackages(last:1) {edges{node{id, name, versions(last:100){edges {node {id, updatedAt, version}}}}}}}}"}' \
-            -o /tmp/response.json \
-            --url https://api.github.com/graphql
+          echo "::set-env name=VERSION_ID::$(curl -X POST \
+          -H "Accept: application/vnd.github.packages-preview+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -d "{\"query\":\"query {repository(owner:\\\""<org name>"\\\", name:\\\""<repo name>"\\\") {packages(names:[\\\""<package name>"\\\"], first:1) {edges{node{id, name, version(version:\\\""${{ github.event.pull_request.head.ref }}"\\\"){id, version}}}}}}\"}" \
+          https://api.github.com/graphql | jq '.data.repository.packages.edges[].node.version.id')"
+          
