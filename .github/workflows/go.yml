@@ -52,7 +52,7 @@ jobs:
         uses: elgohr/Publish-Docker-Github-Action@2.14
         with:
           # The name of the image you would like to push
-          name: mikanikos/Fork-Accountability/docker-image
+          name: mikanikos/fork-accountability/docker-image
           # The login username for the registry
           username: ${{ github.actor }}
           # The login password for the registry
