@@ -48,11 +48,11 @@ jobs:
           # Specify whether or not CI build should fail if Codecov runs into an error during upload
           fail_ci_if_error: true
 
-      - name: Publish Docker
+      - name: Publish monitor docker image
         uses: elgohr/Publish-Docker-Github-Action@2.14
         with:
           # The name of the image you would like to push
-          name: mikanikos/fork-accountability/docker-image
+          name: mikanikos/fork-accountability/monitor
           # The login username for the registry
           username: ${{ github.actor }}
           # The login password for the registry
@@ -60,3 +60,18 @@ jobs:
           # Use registry for pushing to a custom registry
           registry: docker.pkg.github.com
           dockerfile: cmd/monitor/Dockerfile  
+      
+      - name: Publish validator docker image
+        uses: elgohr/Publish-Docker-Github-Action@2.14
+        with:
+          # The name of the image you would like to push
+          name: mikanikos/fork-accountability/validator
+          # The login username for the registry
+          username: ${{ github.actor }}
+          # The login password for the registry
+          password: ${{ secrets.GITHUB_TOKEN }}
+          # Use registry for pushing to a custom registry
+          registry: docker.pkg.github.com
+          # Use dockerfile to specifiy the Dockerfile to build
+          dockerfile: cmd/validator/Dockerfile
+          
