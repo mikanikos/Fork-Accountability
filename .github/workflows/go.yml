@@ -81,6 +81,6 @@ jobs:
           echo "::set-env name=VERSION_ID::$(curl -X POST \
           -H "Accept: application/vnd.github.packages-preview+json" \
           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          -d '{"query":"query {repository(owner:\"${{ OWNER }}\", name:\"${{ REPOSITORY }}\") {registryPackages(last:1) {edges{node{id, name, versions(last:100){edges {node {id, updatedAt, version}}}}}}}}"}' \ 
+          -d "{\"query\":\"query {repository(owner:\\\""mikanikos"\\\", name:\\\""Fork-Accountability"\\\") {registryPackages(first:10) {edges{node{id, name, versions(first:10){edges {node {id, version}}}}}}}}\"}" \
           https://api.github.com/graphql | jq '.data.repository.packages.edges[].node.version.id')"
           
