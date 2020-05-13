@@ -75,12 +75,16 @@ jobs:
           # Use dockerfile to specifiy the Dockerfile to build
           dockerfile: cmd/validator/Dockerfile
        
-       
-      - name: Get Docker image's GPR ID
-        run: |
-          echo "::set-env name=VERSION_ID::$(curl -X POST \
-          -H "Accept: application/vnd.github.packages-preview+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          -d "{\"query\":\"query {repository(owner:\\\""mikanikos"\\\", name:\\\""Fork-Accountability"\\\") {registryPackages(first:10) {edges{node{id, name, versions(first:10){edges {node {id, version}}}}}}}}\"}" \
-          https://api.github.com/graphql | jq '.data.repository.packages.edges[].node.version.id')"
-          
+      - name: Publish sample test image
+        uses: elgohr/Publish-Docker-Github-Action@2.14
+        with:
+          # The name of the image you would like to push
+          name: mikanikos/fork-accountability/docker-image
+          # The login username for the registry
+          username: ${{ github.actor }}
+          # The login password for the registry
+          password: ${{ secrets.GITHUB_TOKEN }}
+          # Use registry for pushing to a custom registry
+          registry: docker.pkg.github.com
+          # Use dockerfile to specifiy the Dockerfile to build
+          dockerfile: Dockerfile
