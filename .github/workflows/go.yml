@@ -59,3 +59,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           # Use registry for pushing to a custom registry
           registry: docker.pkg.github.com
+          dockerfile: cmd/monitor/Dockerfile  
