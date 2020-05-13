@@ -75,7 +75,7 @@ jobs:
           # Use dockerfile to specifiy the Dockerfile to build
           dockerfile: cmd/validator/Dockerfile
        
-      - name: Publish sample test image
+      - name: Publish sample test docker image
         uses: elgohr/Publish-Docker-Github-Action@2.14
         with:
           # The name of the image you would like to push
