@@ -75,3 +75,12 @@ jobs:
           # Use dockerfile to specifiy the Dockerfile to build
           dockerfile: cmd/validator/Dockerfile
           
+      - name: Fetch releases
+        run: |
+          curl -X POST \
+            -s \
+            -H "Accept: application/vnd.github.package-deletes-preview+json" \
+            -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -d '{"query":"query {repository(owner:\"${{ OWNER }}\", name:\"${{ REPOSITORY }}\") {registryPackages(last:1) {edges{node{id, name, versions(last:100){edges {node {id, updatedAt, version}}}}}}}}"}' \
+            -o /tmp/response.json \
+            --url https://api.github.com/graphql
