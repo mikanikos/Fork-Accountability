@@ -5,18 +5,13 @@ jobs:
 
   run:
     name: run
-    strategy:
-      matrix:
-        go-version: [1.13.x, 1.14.x]
-        platform: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.platform }}
-
+    runs-on: ubuntu-latest
     steps:
 
       - name: Set up Go
         uses: actions/setup-go@v1
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.14.x
         id: go
 
       - name: Check out code into the Go module directory
@@ -52,3 +47,15 @@ jobs:
 
           # Specify whether or not CI build should fail if Codecov runs into an error during upload
           fail_ci_if_error: true
+
+      - name: Publish Docker
+        uses: elgohr/Publish-Docker-Github-Action@2.14
+        with:
+          # The name of the image you would like to push
+          name: mikanikos/Fork-Accountability/docker-image
+          # The login username for the registry
+          username: ${{ github.actor }}
+          # The login password for the registry
+          password: ${{ secrets.GITHUB_TOKEN }}
+          # Use registry for pushing to a custom registry
+          registry: docker.pkg.github.com
