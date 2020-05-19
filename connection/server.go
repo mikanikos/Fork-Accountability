@@ -56,12 +56,11 @@ func (server *Server) HandleConnection(connection *Connection) {
 		packet, err := connection.Receive()
 
 		if err != nil {
-			if err == io.EOF {
-				if debug {
+			if debug {
+				if err == io.EOF {
 					log.Printf("Client %s closed the connection", connection.Conn.RemoteAddr())
-				}
-			} else {
-				if debug {
+				} else {
+
 					log.Printf("error while trying to receive packet from %s: %s", connection.Conn.RemoteAddr(), err)
 				}
 			}

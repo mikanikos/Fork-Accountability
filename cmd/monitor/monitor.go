@@ -237,22 +237,18 @@ func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection) {
 
 	// sending packet to validator
 	err := conn.Send(packetToSend)
-	if err != nil {
-		if debug {
-			log.Printf("Monitor: error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
-		}
+	if err != nil && debug {
+		log.Printf("Monitor: error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
 	}
 
 	// wait to receive packet from validator
 	packet, err := conn.Receive()
 	if err != nil {
 		// if connection is closed or there's an error, exit
-		if err == io.EOF {
-			if debug {
+		if debug {
+			if err == io.EOF {
 				log.Printf("Monitor: connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
-			}
-		} else {
-			if debug {
+			} else {
 				log.Printf("Monitor: error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
 			}
 		}

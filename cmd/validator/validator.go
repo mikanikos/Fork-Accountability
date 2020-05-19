@@ -80,10 +80,8 @@ func (validator *Validator) handleIncomingClientData(delay uint64) {
 
 				// send response
 				err := conn.Send(packet)
-				if err != nil {
-					if debug {
-						log.Printf("Validator %s at %s: error while sending packet back to monitor: %s", validator.ID, validator.Address, err)
-					}
+				if err != nil && debug {
+					log.Printf("Validator %s at %s: error while sending packet back to monitor: %s", validator.ID, validator.Address, err)
 				}
 			} else {
 				if debug {

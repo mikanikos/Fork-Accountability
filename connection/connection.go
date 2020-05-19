@@ -87,10 +87,8 @@ func Connect(address string) (*Connection, error) {
 // Close tries to close a given connection
 func (c *Connection) Close() {
 	err := c.Conn.Close()
-	if err != nil {
-		if debug {
-			log.Printf("Error while closing connection to address %s: %s", c.Conn.RemoteAddr().String(), err)
-		}
+	if err != nil && debug {
+		log.Printf("Error while closing connection to address %s: %s", c.Conn.RemoteAddr().String(), err)
 	}
 }
 
@@ -99,10 +97,8 @@ func (c *Connection) Close() {
 func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer uint64) {
 
 	err := c.Send(packet)
-	if err != nil {
-		if debug {
-			log.Printf("Error while sending request to %s: %s", c.Conn.RemoteAddr().String(), err)
-		}
+	if err != nil && debug {
+		log.Printf("Error while sending request to %s: %s", c.Conn.RemoteAddr().String(), err)
 	}
 
 	// start timer for repeating request to validator
@@ -122,10 +118,8 @@ func (c *Connection) PeriodicSend(packet *Packet, closeChannel chan bool, timer 
 		case <-repeatTimer.C:
 			// repeat request
 			err := c.Send(packet)
-			if err != nil {
-				if debug {
-					log.Printf("Error while repeating request to %s: %s", c.Conn.RemoteAddr().String(), err)
-				}
+			if err != nil && debug {
+				log.Printf("Error while repeating request to %s: %s", c.Conn.RemoteAddr().String(), err)
 			}
 		}
 	}
