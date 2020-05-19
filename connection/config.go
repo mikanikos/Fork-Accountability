@@ -17,7 +17,7 @@ const (
 	HvsMissing  = 3
 
 	// lengths in bytes
-	maxBufferSize = 1024
+	maxBufferSize = 8192
 
 	maxChannelSize = 100
 
