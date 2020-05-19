@@ -47,7 +47,9 @@ func (monitor *Monitor) Run(report string, asyncMode bool) {
 		log.SetOutput(f)
 	}
 
-	log.Println("Monitor: started running")
+	if debug {
+		log.Println("Monitor: started running")
+	}
 
 	// connect to validators and make request for hvs
 	err := monitor.connectToValidators()
@@ -55,7 +57,9 @@ func (monitor *Monitor) Run(report string, asyncMode bool) {
 		log.Fatalf("Monitor exiting: couldn't connect to all validators: %s", err)
 	}
 
-	log.Println("Monitor: successfully connected to all validators and requested message logs")
+	if debug {
+		log.Println("Monitor: successfully connected to all validators and requested message logs")
+	}
 
 	// run accountability algorithm
 	var output string
@@ -65,7 +69,9 @@ func (monitor *Monitor) Run(report string, asyncMode bool) {
 		output = monitor.runAccountabilityAlgorithm()
 	}
 
-	log.Println(output)
+	if debug {
+		log.Println(output)
+	}
 }
 
 // run monitor algorithm
@@ -84,30 +90,43 @@ func (monitor *Monitor) runAccountabilityAlgorithm() string {
 	for {
 		select {
 		case <-timer.C:
-			log.Println("Monitor: running the accountability algorithm")
+			if debug {
+				log.Println("Monitor: running the accountability algorithm")
+			}
+
+			start := time.Now()
 
 			// run monitor and get faulty processes
 			monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
 
+			elapsedTime := time.Since(start)
+
+			log.Println("Monitor: algorithm completed in " + elapsedTime.String())
+
 			// print result of the execution
-			log.Println(monitor.accAlgorithm.String())
-			log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
+			if debug {
+				log.Println(monitor.accAlgorithm.String())
+				log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
+			}
 
 			// if we have at least f + 1 faulty processes, the algorithm completed
 			if monitor.accAlgorithm.IsCompleted() {
 				return successfulStatus
-			} else {
-				return failStatus
 			}
 
+			return failStatus
 
 		case packet := <-monitor.receiveChannel:
 
 			// check if new packet has been received and store it in case
 			if monitor.checkResponseValidity(packet) && monitor.accAlgorithm.StoreHvs(packet.ID, packet.Hvs) {
-				log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
+				if debug {
+					log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
+				}
 			} else {
-				log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
+				if debug {
+					log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
+				}
 			}
 		}
 	}
@@ -138,19 +157,31 @@ func (monitor *Monitor) runAccountabilityAlgorithmAsync() string {
 			// check if new packet has been received and store it in case
 			if monitor.checkResponseValidity(packet) && monitor.accAlgorithm.StoreHvs(packet.ID, packet.Hvs) {
 
-				log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
+				if debug {
+					log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
+				}
 
 				// if we have delivered at least f + 1 message logs, run the monitor algorithm
 				if monitor.accAlgorithm.CanRun() {
 
-					log.Println("Monitor: running the accountability algorithm")
+					if debug {
+						log.Println("Monitor: running the accountability algorithm")
+					}
+
+					start := time.Now()
 
 					// run monitor and get faulty processes
 					monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
 
-					// print result of the execution
-					log.Println(monitor.accAlgorithm.String())
-					log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
+					elapsedTime := time.Since(start)
+
+					log.Println("Monitor: algorithm completed in " + elapsedTime.String())
+
+					if debug {
+						// print result of the execution
+						log.Println(monitor.accAlgorithm.String())
+						log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
+					}
 
 					// if we have at least f + 1 faulty processes, the algorithm completed
 					if monitor.accAlgorithm.IsCompleted() {
@@ -158,7 +189,9 @@ func (monitor *Monitor) runAccountabilityAlgorithmAsync() string {
 					}
 				}
 			} else {
-				log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
+				if debug {
+					log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
+				}
 			}
 
 			// increment the number of responses from validators
@@ -198,12 +231,16 @@ func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection) {
 	// prepare packet to send
 	packetToSend := &connection.Packet{Code: connection.HvsRequest, Height: monitor.Height}
 
-	log.Printf("Monitor: sending packet to %s", conn.Conn.RemoteAddr().String())
+	if debug {
+		log.Printf("Monitor: sending packet to %s", conn.Conn.RemoteAddr().String())
+	}
 
 	// sending packet to validator
 	err := conn.Send(packetToSend)
 	if err != nil {
-		log.Printf("Monitor: error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
+		if debug {
+			log.Printf("Monitor: error while sending request to %s: %s", conn.Conn.RemoteAddr().String(), err)
+		}
 	}
 
 	// wait to receive packet from validator
@@ -211,9 +248,13 @@ func (monitor *Monitor) receiveHvsFromValidator(conn *connection.Connection) {
 	if err != nil {
 		// if connection is closed or there's an error, exit
 		if err == io.EOF {
-			log.Printf("Monitor: connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
+			if debug {
+				log.Printf("Monitor: connection has been closed by validator on address %s", conn.Conn.RemoteAddr())
+			}
 		} else {
-			log.Printf("Monitor: error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
+			if debug {
+				log.Printf("Monitor: error while trying to receive packet from %s: %s", conn.Conn.RemoteAddr(), err)
+			}
 		}
 
 		// notify that will not receive any hvs from the validator on this connection

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-configutations=(15)
+# number of validators
+n_configutations=(4)
+
+# number of rounds
+m_configutations=(3)
 
 cd ..
 
@@ -15,33 +19,53 @@ go build
 cd ../..
 cd scripts
 
-for n in "${configutations[@]}"
+benchmark_report=benchmark_report.out
+
+rm $benchmark_report
+touch $benchmark_report
+
+echo "Starting benchmarks"
+
+for n in "${n_configutations[@]}"
 do
-
-    echo "Configurations generated
-    "
-
-    python config_generator.py -N $n -M 2
-
-    echo "Starting validators
-    "
-    
-    for ((i = 1; i <= n; i++))
+    for m in "${m_configutations[@]}"
     do
-        ./../cmd/validator/validator -config="scripts/config_$i.yaml" &
+
+        echo "Generating config files for $n validators and $m rounds
+" >> $benchmark_report
+
+        python config_generator.py -N $n -M $m
+        
+        for ((i = 1; i <= n; i++))
+        do
+            ./../cmd/validator/validator -config="scripts/config_$i.yaml" &
+        done
+
+        # give some time to validators to start listening
+        sleep 1
+
+        echo "
+Async mode
+" >> $benchmark_report
+
+        /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml" -asyncMode true >> $benchmark_report 2>&1
+
+        echo "
+Sync mode
+" >> $benchmark_report
+
+
+        /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml" -asyncMode false >> $benchmark_report 2>&1
+                
+        echo "
+-------------------------------------------------------------------------------------------------------------------------
+" >> $benchmark_report
+
+        pkill -f validator
+        pkill -f monitor
+
+        rm *.yaml
     done
-
-    # give some time to validators to start listening
-    sleep 1
-
-    echo "
-    Starting monitor
-    "
-
-    /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml"
-
-    pkill -f validator
-    pkill -f monitor
-
-    rm *.yaml
 done
+
+echo "All benchmarks completed"
