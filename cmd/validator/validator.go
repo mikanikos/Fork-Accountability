@@ -8,7 +8,7 @@ import (
 	"github.com/mikanikos/Fork-Accountability/connection"
 )
 
-const debug = false
+const debug = true
 
 // Validator struct
 type Validator struct {
