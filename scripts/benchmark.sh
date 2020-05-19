@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-configutations=(100)
+configutations=(15)
 
 cd ..
 
@@ -21,7 +21,7 @@ do
     echo "Configurations generated
     "
 
-    python config_generator.py -N $n
+    python config_generator.py -N $n -M 2
 
     echo "Starting validators
     "

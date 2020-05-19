@@ -26,17 +26,17 @@ faulty = int((n-1)/3)
 prevote = """
           - type: PREVOTE
             sender: {0}
-            round: 3
+            round: {1}
             value:
-              data: {1}
+              data: {2}
 """
 
 precommit = """
           - type: PRECOMMIT
             sender: {0}
-            round: 3
+            round: {1}
             value:
-              data: {1}
+              data: {2}
 """
 
 monitor_block = """--- # auto-generated config file
@@ -55,57 +55,69 @@ messages:
   # height
   1:
     heightvoteset:
-      # round
-      3:
 """
 
-# writing monitor config file 
-with open("config.yaml", 'w') as f:
-  f.write(monitor_block.format(startRound, endRound)
+round_block = """
+      # round
+      {0}:
+"""
 
-  for j in range(1,n+1):
-    f.write("  - 127.0.0.1:{0}\n".format(port+j))
+# writing monitor config file
+with open("config.yaml", 'w') as f:
+    f.write(monitor_block.format(startRound, endRound))
+
+    for j in range(1, n+1):
+        f.write("  - 127.0.0.1:{0}\n".format(port+j))
 
 
 # writing validator configs
+for i in range(1, n+1):
+    filename = "config_{}.yaml".format(i)
+    with open(filename, 'w') as f:
+        f.write(validator_block.format(i, port+i))
 
+# writing messages for each round
 for r in range(startRound, endRound+1):
-
-
-
-    for i in range(1,n+1):
+    # writing messages for each validator
+    for i in range(1, n+1):
 
         filename = "config_{}.yaml".format(i)
         with open(filename, 'a') as f:
-            f.write(validator_block.format(i, port+i))
+            f.write(round_block.format(r))
 
             # wiriting sent/received prevotes/precommits for simple configuration
             f.write("""
-            received_prevote:""")
+        received_prevote:""")
 
-            for j in range(1,n+1):
-                f.write(prevote.format(j, value1))
-
-            f.write("""
-            sent_prevote:""")
-
-            f.write(prevote.format(i, value1))
+            for j in range(1, n+1):
+                f.write(prevote.format(j, r, value1))
 
             f.write("""
-            received_precommit:""")
+        sent_prevote:""")
 
-            for j in range(1,faulty+2):
-                f.write(precommit.format(j, value1))
-                f.write(precommit.format(j, value2))
-
-            thresh = int((n - (faulty+1))/2)
-            for j in range(faulty+2, faulty+thresh+2):
-                f.write(precommit.format(j, value1))
-
-            for j in range(faulty+2+thresh, n+1):
-                f.write(precommit.format(j, value2))
+            f.write(prevote.format(i, r, value1))
 
             f.write("""
-            sent_precommit:""")
+        received_precommit:""")
 
-            f.write(precommit.format(i, value1))
+
+            thresh = int((n - (2*faulty))/2)
+            if r == startRound:
+                for j in range(1, (2*faulty)+1):
+                    f.write(precommit.format(j, r, value1))
+
+                for j in range((2*faulty)+1, (2*faulty)+thresh+1):
+                    f.write(precommit.format(j, r, value1))
+
+
+            if r == endRound:
+                for j in range(1, (2*faulty)+1):
+                    f.write(precommit.format(j, r, value2))
+
+                for j in range((2*faulty)+thresh+1, n+1):
+                    f.write(precommit.format(j, r, value2))
+
+            f.write("""
+        sent_precommit:""")
+
+            #f.write(precommit.format(i, value1))
