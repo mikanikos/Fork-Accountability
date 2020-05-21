@@ -62,12 +62,7 @@ func (monitor *Monitor) Run(report string, asyncMode bool) {
 	}
 
 	// run accountability algorithm
-	var output string
-	if asyncMode {
-		output = monitor.runAccountabilityAlgorithmAsync()
-	} else {
-		output = monitor.runAccountabilityAlgorithm()
-	}
+	output := monitor.runMonitorAlgorithm(asyncMode)
 
 	if debug {
 		log.Println(output)
@@ -75,119 +70,54 @@ func (monitor *Monitor) Run(report string, asyncMode bool) {
 }
 
 // run monitor algorithm
-func (monitor *Monitor) runAccountabilityAlgorithm() string {
-
-	// count the number of responses (regardless of validity) from different validators
-	numValidators := len(monitor.Validators)
-
-	// initialize accountability
-	monitor.accAlgorithm.Init(uint64(numValidators), false)
-
-	// wait until the specified timer expires
-	timer := time.NewTicker(time.Duration(monitor.Timeout) * time.Second)
-	defer timer.Stop()
-
-	for {
-		select {
-		case <-timer.C:
-			if debug {
-				log.Println("Monitor: running the accountability algorithm")
-			}
-
-			start := time.Now()
-
-			// run monitor and get faulty processes
-			monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
-
-			elapsedTime := time.Since(start)
-
-			log.Println("Monitor: algorithm completed in " + elapsedTime.String())
-
-			// print result of the execution
-			if debug {
-				log.Println(monitor.accAlgorithm.String())
-				log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
-			}
-
-			// if we have at least f + 1 faulty processes, the algorithm completed
-			if monitor.accAlgorithm.IsCompleted() {
-				return successfulStatus
-			}
-
-			return failStatus
-
-		case packet := <-monitor.receiveChannel:
-
-			// check if new packet has been received and store it in case
-			if monitor.checkResponseValidity(packet) && monitor.accAlgorithm.StoreHvs(packet.ID, packet.Hvs) {
-				if debug {
-					log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
-				}
-			} else {
-				if debug {
-					log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
-				}
-			}
-		}
-	}
-}
-
-// run monitor algorithm
-func (monitor *Monitor) runAccountabilityAlgorithmAsync() string {
+func (monitor *Monitor) runMonitorAlgorithm(async bool) string {
 
 	// count the number of responses (regardless of validity) from different validators
 	numValidators := len(monitor.Validators)
 	responseCount := 0
 
 	// initialize accountability
-	monitor.accAlgorithm.Init(uint64(numValidators), true)
+	monitor.accAlgorithm.Init(uint64(numValidators), async)
 
 	// wait until the specified timer expires
 	timer := time.NewTicker(time.Duration(monitor.Timeout) * time.Second)
 	defer timer.Stop()
 
+loop:
 	for {
 		select {
 		case <-timer.C:
-			// exit because timer expired
-			return timeoutStatus
+			if async {
+				// safety timeout
+				return timeoutStatus
+			} else {
+				// timeout for receiving hvs, exit and run the algorithm
+				break loop
+			}
 
 		case packet := <-monitor.receiveChannel:
 
 			// check if new packet has been received and store it in case
 			if monitor.checkResponseValidity(packet) && monitor.accAlgorithm.StoreHvs(packet.ID, packet.Hvs) {
-
 				if debug {
 					log.Printf("Monitor: received height vote set from validator with ID %s. %d message logs have been delivered so far\n", packet.ID, monitor.accAlgorithm.GetNumLogs())
 				}
 
-				// if we have delivered at least f + 1 message logs, run the monitor algorithm
-				if monitor.accAlgorithm.CanRun() {
+				// run the algorithm, if possible, in the asynchronous version
+				if async {
+					// if we have delivered at least f + 1 message logs, run the monitor algorithm
+					if monitor.accAlgorithm.CanRun() {
 
-					if debug {
-						log.Println("Monitor: running the accountability algorithm")
-					}
+						// run algorithm
+						monitor.runAccountabilityAlgorithm()
 
-					start := time.Now()
-
-					// run monitor and get faulty processes
-					monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
-
-					elapsedTime := time.Since(start)
-
-					log.Println("Monitor: algorithm completed in " + elapsedTime.String())
-
-					if debug {
-						// print result of the execution
-						log.Println(monitor.accAlgorithm.String())
-						log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
-					}
-
-					// if we have at least f + 1 faulty processes, the algorithm completed
-					if monitor.accAlgorithm.IsCompleted() {
-						return successfulStatus
+						// if we have at least f + 1 faulty processes, the algorithm completed correctly
+						if monitor.accAlgorithm.IsCompleted() {
+							return successfulStatus
+						}
 					}
 				}
+
 			} else {
 				if debug {
 					log.Printf("Monitor: received invalid packet from validator with ID %s\n", packet.ID)
@@ -197,10 +127,48 @@ func (monitor *Monitor) runAccountabilityAlgorithmAsync() string {
 			// increment the number of responses from validators
 			responseCount++
 			if responseCount == numValidators {
-				// exit because no new hvs will arrive and avoid waiting longer
-				return failStatus
+				if async {
+					// fail because no new hvs will arrive and the success condition was not met
+					return failStatus
+				} else {
+					// exit and run the algorithm because all hvs have been delivered and avoid waiting longer
+					break loop
+				}
 			}
 		}
+	}
+
+	// run algorithm
+	monitor.runAccountabilityAlgorithm()
+
+	// if we have at least f + 1 faulty processes, the algorithm completed correctly
+	if monitor.accAlgorithm.IsCompleted() {
+		return successfulStatus
+	}
+
+	return failStatus
+}
+
+// run accountability algorithm
+func (monitor *Monitor) runAccountabilityAlgorithm() {
+
+	if debug {
+		log.Println("Monitor: running the accountability algorithm")
+	}
+
+	start := time.Now()
+
+	// run monitor and get faulty processes
+	monitor.accAlgorithm.Run(monitor.FirstDecisionRound, monitor.SecondDecisionRound)
+
+	elapsedTime := time.Since(start)
+
+	log.Println("Monitor: algorithm completed in " + elapsedTime.String())
+
+	if debug {
+		// print result of the execution
+		log.Println(monitor.accAlgorithm.String())
+		log.Printf("Monitor: detected %d faulty processes\n", monitor.accAlgorithm.GetNumFaulty())
 	}
 }
 
