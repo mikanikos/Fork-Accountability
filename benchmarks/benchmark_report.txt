@@ -1,0 +1,1677 @@
+Generating config files for 4 validators and 1 rounds
+
+
+Async mode
+
+2020/05/21 19:34:38 Monitor: algorithm completed in 138.041µs
+2020/05/21 19:34:38 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 150%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5956
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 539
+	Voluntary context switches: 81
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:38 Monitor: algorithm completed in 170.109µs
+2020/05/21 19:34:38 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 175%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5900
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 551
+	Voluntary context switches: 66
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 4 validators and 10 rounds
+
+
+Async mode
+
+2020/05/21 19:34:39 Monitor: algorithm completed in 219.183µs
+2020/05/21 19:34:39 Monitor: algorithm completed in 196.574µs
+2020/05/21 19:34:39 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 175%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5944
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 558
+	Voluntary context switches: 58
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:39 Monitor: algorithm completed in 188.947µs
+2020/05/21 19:34:39 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 150%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5684
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 496
+	Voluntary context switches: 51
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 4 validators and 100 rounds
+
+
+Async mode
+
+2020/05/21 19:34:41 Monitor: algorithm completed in 134.258µs
+2020/05/21 19:34:41 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 160%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6036
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 570
+	Voluntary context switches: 59
+	Involuntary context switches: 2
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:41 Monitor: algorithm completed in 156.699µs
+2020/05/21 19:34:41 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 140%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6108
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 607
+	Voluntary context switches: 64
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 4 validators and 1000 rounds
+
+
+Async mode
+
+2020/05/21 19:34:42 Monitor: algorithm completed in 388.155µs
+2020/05/21 19:34:42 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 140%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.01
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 7348
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 969
+	Voluntary context switches: 116
+	Involuntary context switches: 3
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:42 Monitor: algorithm completed in 470.015µs
+2020/05/21 19:34:42 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 127%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.01
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 7304
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 999
+	Voluntary context switches: 118
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 4 validators and 10000 rounds
+
+
+Async mode
+
+2020/05/21 19:34:44 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 18%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.03
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5720
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 487
+	Voluntary context switches: 60
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:44 Monitor: algorithm completed in 1.748µs
+2020/05/21 19:34:44 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 19%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.03
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5832
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 490
+	Voluntary context switches: 54
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 10 validators and 1 rounds
+
+
+Async mode
+
+2020/05/21 19:34:45 Monitor: algorithm completed in 364.371µs
+2020/05/21 19:34:45 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 200%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6632
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 683
+	Voluntary context switches: 77
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:45 Monitor: algorithm completed in 569.353µs
+2020/05/21 19:34:45 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 240%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6748
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 781
+	Voluntary context switches: 122
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 10 validators and 10 rounds
+
+
+Async mode
+
+2020/05/21 19:34:46 Monitor: algorithm completed in 265.725µs
+2020/05/21 19:34:46 Monitor: algorithm completed in 243.742µs
+2020/05/21 19:34:46 Monitor: algorithm completed in 290.198µs
+2020/05/21 19:34:46 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 233%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6940
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 824
+	Voluntary context switches: 125
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:46 Monitor: algorithm completed in 460.885µs
+2020/05/21 19:34:46 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 240%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6840
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 773
+	Voluntary context switches: 124
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 10 validators and 100 rounds
+
+
+Async mode
+
+2020/05/21 19:34:47 Monitor: algorithm completed in 523.63µs
+2020/05/21 19:34:47 Monitor: algorithm completed in 268.593µs
+2020/05/21 19:34:47 Monitor: algorithm completed in 328.804µs
+2020/05/21 19:34:47 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.01
+	Percent of CPU this job got: 228%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6784
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 803
+	Voluntary context switches: 140
+	Involuntary context switches: 3
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:47 Monitor: algorithm completed in 555.809µs
+2020/05/21 19:34:47 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.01
+	Percent of CPU this job got: 228%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 7484
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 947
+	Voluntary context switches: 148
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 10 validators and 1000 rounds
+
+
+Async mode
+
+2020/05/21 19:34:49 Monitor: algorithm completed in 580.797µs
+2020/05/21 19:34:49 Monitor: algorithm completed in 582.472µs
+2020/05/21 19:34:49 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.03
+	System time (seconds): 0.01
+	Percent of CPU this job got: 288%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.01
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 10544
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1789
+	Voluntary context switches: 454
+	Involuntary context switches: 5
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:49 Monitor: algorithm completed in 1.172026ms
+2020/05/21 19:34:49 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.03
+	System time (seconds): 0.02
+	Percent of CPU this job got: 257%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.02
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 10384
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1769
+	Voluntary context switches: 434
+	Involuntary context switches: 3
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 10 validators and 10000 rounds
+
+
+Async mode
+
+2020/05/21 19:34:52 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.01
+	Percent of CPU this job got: 26%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.04
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6452
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 645
+	Voluntary context switches: 114
+	Involuntary context switches: 2
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:52 Monitor: algorithm completed in 2.772µs
+2020/05/21 19:34:52 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 21%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.04
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6452
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 646
+	Voluntary context switches: 106
+	Involuntary context switches: 4
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 100 validators and 1 rounds
+
+
+Async mode
+
+2020/05/21 19:34:53 Monitor: algorithm completed in 22.857633ms
+2020/05/21 19:34:53 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.28
+	System time (seconds): 0.04
+	Percent of CPU this job got: 391%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.08
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 22196
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4668
+	Voluntary context switches: 2559
+	Involuntary context switches: 201
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:53 Monitor: algorithm completed in 52.5669ms
+2020/05/21 19:34:53 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.31
+	System time (seconds): 0.06
+	Percent of CPU this job got: 301%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.12
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23312
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4920
+	Voluntary context switches: 2860
+	Involuntary context switches: 165
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 100 validators and 10 rounds
+
+
+Async mode
+
+2020/05/21 19:34:55 Monitor: algorithm completed in 20.745654ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 14.323188ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 14.584086ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 15.124341ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 15.166669ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 15.837239ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 17.294768ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 16.404169ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 16.904115ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 19.123507ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 17.270698ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 17.866625ms
+2020/05/21 19:34:55 Monitor: algorithm completed in 19.755581ms
+2020/05/21 19:34:55 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.60
+	System time (seconds): 0.07
+	Percent of CPU this job got: 230%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.29
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 27492
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 6035
+	Voluntary context switches: 3125
+	Involuntary context switches: 216
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:55 Monitor: algorithm completed in 40.402337ms
+2020/05/21 19:34:55 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.33
+	System time (seconds): 0.04
+	Percent of CPU this job got: 284%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.13
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23372
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4953
+	Voluntary context switches: 2885
+	Involuntary context switches: 136
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 100 validators and 100 rounds
+
+
+Async mode
+
+2020/05/21 19:34:56 Monitor: algorithm completed in 16.631111ms
+2020/05/21 19:34:56 Monitor: algorithm completed in 13.917819ms
+2020/05/21 19:34:56 Monitor: algorithm completed in 15.152998ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 17.142678ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 15.917694ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 16.431034ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 15.917668ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 17.936704ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 17.57114ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 17.533748ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 18.516501ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 19.930163ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 18.638912ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 18.996281ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 19.259753ms
+2020/05/21 19:34:57 Monitor: algorithm completed in 21.683657ms
+2020/05/21 19:34:57 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.74
+	System time (seconds): 0.06
+	Percent of CPU this job got: 216%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.37
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 30276
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 6737
+	Voluntary context switches: 3690
+	Involuntary context switches: 231
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:34:57 Monitor: algorithm completed in 42.904677ms
+2020/05/21 19:34:57 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.34
+	System time (seconds): 0.09
+	Percent of CPU this job got: 333%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.13
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 25348
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5473
+	Voluntary context switches: 3298
+	Involuntary context switches: 192
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 100 validators and 1000 rounds
+
+
+Async mode
+
+2020/05/21 19:35:00 Monitor: algorithm completed in 31.581645ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 18.086046ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 18.085612ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 17.988632ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 18.147228ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 18.445683ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 19.175364ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 19.632053ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 20.05466ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 20.514727ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 20.979197ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 21.698661ms
+2020/05/21 19:35:00 Monitor: algorithm completed in 22.806565ms
+2020/05/21 19:35:00 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 1.07
+	System time (seconds): 0.17
+	Percent of CPU this job got: 270%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.46
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 51444
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 12827
+	Voluntary context switches: 4165
+	Involuntary context switches: 3070
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:35:01 Monitor: algorithm completed in 51.118226ms
+2020/05/21 19:35:01 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.89
+	System time (seconds): 0.06
+	Percent of CPU this job got: 465%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.20
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 43164
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 10553
+	Voluntary context switches: 5249
+	Involuntary context switches: 472
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 100 validators and 10000 rounds
+
+
+Async mode
+
+2020/05/21 19:35:21 Monitor exiting: couldn't connect to all validators: error while connecting to one of the validators given: failed to connect to address 127.0.0.1:9851: dial tcp 127.0.0.1:9851: connect: connection refused
+Command exited with non-zero status 1
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 4%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.11
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5320
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 411
+	Voluntary context switches: 53
+	Involuntary context switches: 9
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+
+Sync mode
+
+2020/05/21 19:35:21 Monitor exiting: couldn't connect to all validators: error while connecting to one of the validators given: failed to connect to address 127.0.0.1:9851: dial tcp 127.0.0.1:9851: connect: connection refused
+Command exited with non-zero status 1
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 3%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.12
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5312
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 406
+	Voluntary context switches: 9
+	Involuntary context switches: 7
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 500 validators and 1 rounds
+
+
+Async mode
+
+2020/05/21 19:35:26 Monitor: algorithm completed in 503.041641ms
+2020/05/21 19:35:26 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 6.73
+	System time (seconds): 0.45
+	Percent of CPU this job got: 513%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.40
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 226360
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 57483
+	Voluntary context switches: 48484
+	Involuntary context switches: 2500
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:35:28 Monitor: algorithm completed in 1.400938391s
+2020/05/21 19:35:28 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 7.95
+	System time (seconds): 0.51
+	Percent of CPU this job got: 353%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.39
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 228656
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 58447
+	Voluntary context switches: 52877
+	Involuntary context switches: 2990
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 500 validators and 10 rounds
+
+
+Async mode
+
+2020/05/21 19:35:33 Monitor: algorithm completed in 422.181163ms
+2020/05/21 19:35:34 Monitor: algorithm completed in 355.343065ms
+2020/05/21 19:35:34 Monitor: algorithm completed in 361.223417ms
+2020/05/21 19:35:34 Monitor: algorithm completed in 376.970123ms
+2020/05/21 19:35:35 Monitor: algorithm completed in 362.964703ms
+2020/05/21 19:35:35 Monitor: algorithm completed in 351.455274ms
+2020/05/21 19:35:36 Monitor: algorithm completed in 383.143517ms
+2020/05/21 19:35:36 Monitor: algorithm completed in 363.92308ms
+2020/05/21 19:35:36 Monitor: algorithm completed in 360.526274ms
+2020/05/21 19:35:37 Monitor: algorithm completed in 361.273614ms
+2020/05/21 19:35:37 Monitor: algorithm completed in 388.280391ms
+2020/05/21 19:35:37 Monitor: algorithm completed in 374.803648ms
+2020/05/21 19:35:38 Monitor: algorithm completed in 368.631325ms
+2020/05/21 19:35:38 Monitor: algorithm completed in 406.157155ms
+2020/05/21 19:35:39 Monitor: algorithm completed in 384.323779ms
+2020/05/21 19:35:39 Monitor: algorithm completed in 380.703715ms
+2020/05/21 19:35:39 Monitor: algorithm completed in 379.918724ms
+2020/05/21 19:35:40 Monitor: algorithm completed in 408.946832ms
+2020/05/21 19:35:40 Monitor: algorithm completed in 380.170522ms
+2020/05/21 19:35:40 Monitor: algorithm completed in 386.491066ms
+2020/05/21 19:35:41 Monitor: algorithm completed in 414.998716ms
+2020/05/21 19:35:41 Monitor: algorithm completed in 391.997321ms
+2020/05/21 19:35:42 Monitor: algorithm completed in 396.225043ms
+2020/05/21 19:35:42 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 19.37
+	System time (seconds): 0.70
+	Percent of CPU this job got: 207%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:09.66
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 277304
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 71934
+	Voluntary context switches: 45802
+	Involuntary context switches: 2598
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:35:44 Monitor: algorithm completed in 1.095043241s
+2020/05/21 19:35:44 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 8.03
+	System time (seconds): 0.50
+	Percent of CPU this job got: 413%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.06
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 240908
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 61334
+	Voluntary context switches: 50600
+	Involuntary context switches: 2792
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 500 validators and 100 rounds
+
+
+Async mode
+
+2020/05/21 19:35:50 Monitor: algorithm completed in 407.246765ms
+2020/05/21 19:35:50 Monitor: algorithm completed in 366.095702ms
+2020/05/21 19:35:50 Monitor: algorithm completed in 386.077066ms
+2020/05/21 19:35:51 Monitor: algorithm completed in 372.870811ms
+2020/05/21 19:35:51 Monitor: algorithm completed in 361.397405ms
+2020/05/21 19:35:52 Monitor: algorithm completed in 362.562414ms
+2020/05/21 19:35:52 Monitor: algorithm completed in 398.600424ms
+2020/05/21 19:35:52 Monitor: algorithm completed in 368.26584ms
+2020/05/21 19:35:53 Monitor: algorithm completed in 369.261928ms
+2020/05/21 19:35:53 Monitor: algorithm completed in 382.937184ms
+2020/05/21 19:35:53 Monitor: algorithm completed in 382.873724ms
+2020/05/21 19:35:54 Monitor: algorithm completed in 374.037118ms
+2020/05/21 19:35:54 Monitor: algorithm completed in 381.693106ms
+2020/05/21 19:35:55 Monitor: algorithm completed in 409.99892ms
+2020/05/21 19:35:55 Monitor: algorithm completed in 383.525901ms
+2020/05/21 19:35:55 Monitor: algorithm completed in 386.93531ms
+2020/05/21 19:35:56 Monitor: algorithm completed in 388.602991ms
+2020/05/21 19:35:56 Monitor: algorithm completed in 423.30405ms
+2020/05/21 19:35:57 Monitor: algorithm completed in 391.02641ms
+2020/05/21 19:35:57 Monitor: algorithm completed in 391.829478ms
+2020/05/21 19:35:57 Monitor: algorithm completed in 426.69083ms
+2020/05/21 19:35:58 Monitor: algorithm completed in 403.59297ms
+2020/05/21 19:35:58 Monitor: algorithm completed in 401.120047ms
+2020/05/21 19:35:59 Monitor: algorithm completed in 412.054085ms
+2020/05/21 19:35:59 Monitor: algorithm completed in 430.921563ms
+2020/05/21 19:35:59 Monitor: algorithm completed in 411.539597ms
+2020/05/21 19:36:00 Monitor: algorithm completed in 408.741648ms
+2020/05/21 19:36:00 Monitor: algorithm completed in 446.010545ms
+2020/05/21 19:36:01 Monitor: algorithm completed in 415.16615ms
+2020/05/21 19:36:01 Monitor: algorithm completed in 418.502822ms
+2020/05/21 19:36:02 Monitor: algorithm completed in 441.599854ms
+2020/05/21 19:36:02 Monitor: algorithm completed in 436.189024ms
+2020/05/21 19:36:02 Monitor: algorithm completed in 426.499619ms
+2020/05/21 19:36:03 Monitor: algorithm completed in 438.89055ms
+2020/05/21 19:36:03 Monitor: algorithm completed in 457.944775ms
+2020/05/21 19:36:03 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 27.15
+	System time (seconds): 0.65
+	Percent of CPU this job got: 185%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:15.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 276912
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 71933
+	Voluntary context switches: 54049
+	Involuntary context switches: 3542
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 16
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:36:06 Monitor: algorithm completed in 1.191989895s
+2020/05/21 19:36:06 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 8.11
+	System time (seconds): 0.73
+	Percent of CPU this job got: 392%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.25
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 261864
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 66686
+	Voluntary context switches: 49194
+	Involuntary context switches: 4350
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 500 validators and 1000 rounds
+
+
+Async mode
+
+2020/05/21 19:36:22 Monitor: algorithm completed in 476.095525ms
+2020/05/21 19:36:22 Monitor: algorithm completed in 392.128235ms
+2020/05/21 19:36:23 Monitor: algorithm completed in 377.885913ms
+2020/05/21 19:36:23 Monitor: algorithm completed in 374.336389ms
+2020/05/21 19:36:24 Monitor: algorithm completed in 382.463968ms
+2020/05/21 19:36:24 Monitor: algorithm completed in 457.389866ms
+2020/05/21 19:36:24 Monitor: algorithm completed in 432.905225ms
+2020/05/21 19:36:25 Monitor: algorithm completed in 401.347606ms
+2020/05/21 19:36:25 Monitor: algorithm completed in 384.758381ms
+2020/05/21 19:36:26 Monitor: algorithm completed in 394.099307ms
+2020/05/21 19:36:26 Monitor: algorithm completed in 389.499802ms
+2020/05/21 19:36:26 Monitor: algorithm completed in 434.39178ms
+2020/05/21 19:36:27 Monitor: algorithm completed in 417.571981ms
+2020/05/21 19:36:27 Monitor: algorithm completed in 406.130402ms
+2020/05/21 19:36:28 Monitor: algorithm completed in 405.284965ms
+2020/05/21 19:36:28 Monitor: algorithm completed in 403.758444ms
+2020/05/21 19:36:28 Monitor: algorithm completed in 405.639687ms
+2020/05/21 19:36:29 Monitor: algorithm completed in 442.701365ms
+2020/05/21 19:36:29 Monitor: algorithm completed in 410.460573ms
+2020/05/21 19:36:30 Monitor: algorithm completed in 414.567788ms
+2020/05/21 19:36:30 Monitor: algorithm completed in 426.873791ms
+2020/05/21 19:36:31 Monitor: algorithm completed in 417.275105ms
+2020/05/21 19:36:31 Monitor: algorithm completed in 464.308923ms
+2020/05/21 19:36:31 Monitor: algorithm completed in 434.638182ms
+2020/05/21 19:36:32 Monitor: algorithm completed in 428.123022ms
+2020/05/21 19:36:32 Monitor: algorithm completed in 423.58403ms
+2020/05/21 19:36:33 Monitor: algorithm completed in 428.865851ms
+2020/05/21 19:36:33 Monitor: algorithm completed in 460.235958ms
+2020/05/21 19:36:34 Monitor: algorithm completed in 458.075012ms
+2020/05/21 19:36:34 Monitor: algorithm completed in 434.37717ms
+2020/05/21 19:36:35 Monitor: algorithm completed in 440.339439ms
+2020/05/21 19:36:35 Monitor: algorithm completed in 443.162798ms
+2020/05/21 19:36:35 Monitor: algorithm completed in 474.164981ms
+2020/05/21 19:36:36 Monitor: algorithm completed in 460.405396ms
+2020/05/21 19:36:36 Monitor: algorithm completed in 449.31444ms
+2020/05/21 19:36:37 Monitor: algorithm completed in 454.083073ms
+2020/05/21 19:36:37 Monitor: algorithm completed in 448.325011ms
+2020/05/21 19:36:38 Monitor: algorithm completed in 490.021535ms
+2020/05/21 19:36:38 Monitor: algorithm completed in 470.933283ms
+2020/05/21 19:36:39 Monitor: algorithm completed in 468.557798ms
+2020/05/21 19:36:39 Monitor: algorithm completed in 462.315249ms
+2020/05/21 19:36:40 Monitor: algorithm completed in 472.303776ms
+2020/05/21 19:36:40 Monitor: algorithm completed in 522.4314ms
+2020/05/21 19:36:41 Monitor: algorithm completed in 485.728443ms
+2020/05/21 19:36:41 Monitor: algorithm completed in 499.07327ms
+2020/05/21 19:36:42 Monitor: algorithm completed in 480.990653ms
+2020/05/21 19:36:42 Monitor: algorithm completed in 500.743582ms
+2020/05/21 19:36:43 Monitor: algorithm completed in 506.125319ms
+2020/05/21 19:36:43 Monitor: algorithm completed in 485.240531ms
+2020/05/21 19:36:44 Monitor: algorithm completed in 493.210873ms
+2020/05/21 19:36:44 Monitor: algorithm completed in 490.210628ms
+2020/05/21 19:36:45 Monitor: algorithm completed in 545.078151ms
+2020/05/21 19:36:45 Monitor: algorithm completed in 501.546882ms
+2020/05/21 19:36:46 Monitor: algorithm completed in 510.857693ms
+2020/05/21 19:36:46 Monitor: algorithm completed in 507.897175ms
+2020/05/21 19:36:47 Monitor: algorithm completed in 531.566613ms
+2020/05/21 19:36:47 Monitor: algorithm completed in 526.617318ms
+2020/05/21 19:36:48 Monitor: algorithm completed in 515.09876ms
+2020/05/21 19:36:48 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 46.81
+	System time (seconds): 1.56
+	Percent of CPU this job got: 171%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:28.25
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 385064
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 104268
+	Voluntary context switches: 57798
+	Involuntary context switches: 25091
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 16
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:36:51 Monitor: algorithm completed in 1.422294806s
+2020/05/21 19:36:51 Monitor: Algorithm completed
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 10.24
+	System time (seconds): 1.56
+	Percent of CPU this job got: 359%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:03.28
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 357412
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 94944
+	Voluntary context switches: 50448
+	Involuntary context switches: 31670
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 500 validators and 10000 rounds
+
+
+Async mode
+
+2020/05/21 19:38:37 Monitor exiting: couldn't connect to all validators: error while connecting to one of the validators given: failed to connect to address 127.0.0.1:9851: dial tcp 127.0.0.1:9851: connect: connection refused
+Command exited with non-zero status 1
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.01
+	System time (seconds): 0.00
+	Percent of CPU this job got: 2%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.44
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5440
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 436
+	Voluntary context switches: 69
+	Involuntary context switches: 47
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+
+Sync mode
+
+2020/05/21 19:38:38 Monitor exiting: couldn't connect to all validators: error while connecting to one of the validators given: failed to connect to address 127.0.0.1:9851: dial tcp 127.0.0.1:9851: connect: connection refused
+Command exited with non-zero status 1
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.00
+	System time (seconds): 0.00
+	Percent of CPU this job got: 1%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.32
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 5396
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 460
+	Voluntary context switches: 29
+	Involuntary context switches: 11
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 1000 validators and 1 rounds
+
+
+Async mode
+
+2020/05/21 19:38:56 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.27
+	System time (seconds): 0.18
+	Percent of CPU this job got: 20%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.20
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 24440
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5129
+	Voluntary context switches: 7478
+	Involuntary context switches: 2946
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:38:58 Monitor: algorithm completed in 5.693µs
+2020/05/21 19:38:58 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.25
+	System time (seconds): 0.20
+	Percent of CPU this job got: 27%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.65
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 24616
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5154
+	Voluntary context switches: 5871
+	Involuntary context switches: 2611
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 1000 validators and 10 rounds
+
+
+Async mode
+
+2020/05/21 19:39:11 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.19
+	System time (seconds): 0.24
+	Percent of CPU this job got: 18%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 38872
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 8736
+	Voluntary context switches: 5635
+	Involuntary context switches: 2594
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:39:13 Monitor: algorithm completed in 3.533µs
+2020/05/21 19:39:13 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.25
+	System time (seconds): 0.27
+	Percent of CPU this job got: 27%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.95
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 27124
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5814
+	Voluntary context switches: 7030
+	Involuntary context switches: 2891
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 1000 validators and 100 rounds
+
+
+Async mode
+
+2020/05/21 19:39:28 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.23
+	System time (seconds): 0.18
+	Percent of CPU this job got: 18%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.22
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 33220
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 7331
+	Voluntary context switches: 6391
+	Involuntary context switches: 2447
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:39:29 Monitor: algorithm completed in 4.786µs
+2020/05/21 19:39:29 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.24
+	System time (seconds): 0.21
+	Percent of CPU this job got: 26%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.73
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23664
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4927
+	Voluntary context switches: 7062
+	Involuntary context switches: 2314
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 1000 validators and 1000 rounds
+
+
+Async mode
+
+2020/05/21 19:40:04 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.17
+	System time (seconds): 0.28
+	Percent of CPU this job got: 30%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.48
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 33780
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 7481
+	Voluntary context switches: 5187
+	Involuntary context switches: 1026
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+Sync mode
+
+2020/05/21 19:40:08 Monitor: algorithm completed in 2.882µs
+2020/05/21 19:40:08 Monitor: Algorithm failed because not enough message logs have been received or the message logs received were not sufficient to find at least f+1 faulty processes
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.21
+	System time (seconds): 0.42
+	Percent of CPU this job got: 15%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.06
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 56960
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 13241
+	Voluntary context switches: 5967
+	Involuntary context switches: 6196
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Generating config files for 1000 validators and 10000 rounds
+
+
+Async mode
+
+2020/05/21 19:43:58 Monitor exiting: couldn't connect to all validators: error while connecting to one of the validators given: failed to connect to address 127.0.0.1:10097: dial tcp 127.0.0.1:10097: connect: connection refused
+Command exited with non-zero status 1
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=true"
+	User time (seconds): 0.01
+	System time (seconds): 0.09
+	Percent of CPU this job got: 2%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.55
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 10652
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1656
+	Voluntary context switches: 2956
+	Involuntary context switches: 1152
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+
+Sync mode
+
+2020/05/21 19:44:03 Monitor exiting: couldn't connect to all validators: error while connecting to one of the validators given: failed to connect to address 127.0.0.1:10279: dial tcp 127.0.0.1:10279: connect: connection refused
+Command exited with non-zero status 1
+	Command being timed: "./../cmd/monitor/monitor -config=scripts/config.yaml -asyncMode=false"
+	User time (seconds): 0.03
+	System time (seconds): 0.09
+	Percent of CPU this job got: 2%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.72
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 13840
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2496
+	Voluntary context switches: 2284
+	Involuntary context switches: 1351
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+
+-------------------------------------------------------------------------------------------------------------------------
+
