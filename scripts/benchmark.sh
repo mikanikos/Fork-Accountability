@@ -4,7 +4,7 @@
 n_configutations=(4)
 
 # number of rounds
-m_configutations=(3)
+m_configutations=(1 4)
 
 cd ..
 
@@ -48,14 +48,13 @@ do
 Async mode
 " >> $benchmark_report
 
-        /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml" -asyncMode true >> $benchmark_report 2>&1
+        /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml" -asyncMode=true >> $benchmark_report 2>&1
 
         echo "
 Sync mode
 " >> $benchmark_report
 
-
-        /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml" -asyncMode false >> $benchmark_report 2>&1
+        /usr/bin/time -v ./../cmd/monitor/monitor -config="scripts/config.yaml" -asyncMode=false >> $benchmark_report 2>&1
                 
         echo "
 -------------------------------------------------------------------------------------------------------------------------
