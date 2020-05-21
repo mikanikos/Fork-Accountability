@@ -12,7 +12,7 @@ type Packet struct {
 
 // main whisper protocol parameters, from official specs
 const (
-	debug = true
+	debug = false
 
 	HvsRequest  = 0
 	HvsResponse = 1

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 # number of validators
-n_configutations=(4)
+n_configutations=(4 10 100 1000 10000)
 
 # number of rounds
-m_configutations=(1 4)
+m_configutations=(1 10 100 1000 10000)
 
 cd ..
 

@@ -1,7 +1,7 @@
 package main
 
 const (
-	debug = true
+	debug = false
 
 	configPath = "cmd/monitor/_config/config.yaml"
 	reportPath = "cmd/monitor/_report/report.out"
