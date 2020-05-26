@@ -3,7 +3,7 @@
 ![](https://github.com/mikanikos/Fork-Accountability/workflows/Build%20and%20Tests/badge.svg)
 [![codecov](https://codecov.io/gh/mikanikos/Fork-Accountability/branch/master/graph/badge.svg)](https://codecov.io/gh/mikanikos/Fork-Accountability)
 
-The scope of this project is to implement a simple PoC of a Fork Accountability algorithm in the Tendermint Consensus protocol.
+The scope of this project is to implement a simple PoC of a Fork Accountability algorithm in the Tendermint Consensus protocol in the Go language.
 
 The repository includes simple libraries and modules that allow to run experiments and benchmark the algorithm implementation in a minimal test environment:
 
