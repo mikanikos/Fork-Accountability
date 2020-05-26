@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # number of validators
-n_configutations=(4)
+n_configutations=(4 10)
 
 # number of rounds
 m_configutations=(1 4)
@@ -34,7 +34,7 @@ do
         echo "Generating config files for $n validators and $m rounds
 " >> $benchmark_report
 
-        python config_generator.py -N $n -M $m
+        python3 config_generator.py -N $n -M $m
         
         for ((i = 1; i <= n; i++))
         do
