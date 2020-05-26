@@ -12,13 +12,62 @@ import (
 // in some tests I assume there are more than 2f faulty processes just to see how the algorithm catches multiple faulty behaviours
 // I know this is not possible for the accountability specification
 
+func TestBasicScenarioSync(t *testing.T) {
+
+	// create accountability struct
+	acc := NewAccountability()
+	acc.Init(4, false)
+
+	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1WithNoJustifications())
+	acc.StoreHvs("2", utils.GetHvsForDefaultConfig2WithNoJustifications())
+	acc.StoreHvs("3", utils.GetHvsForDefaultConfig3WithNoJustifications())
+	acc.StoreHvs("4", utils.GetHvsForDefaultConfig4WithNoJustifications())
+
+	acc.Run(3, 4)
+
+	expectedFaultySet := NewFaultySet()
+	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+
+	if !acc.faultySet.Equal(expectedFaultySet) {
+		t.Fatal("Monitor failed to detect faulty processes")
+	}
+}
+
+func TestBasicScenarioSyncWithMissingHvs(t *testing.T) {
+
+	// create accountability struct
+	acc := NewAccountability()
+	acc.Init(4, false)
+
+	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1WithNoJustifications())
+	// process 2 hvs missing
+	acc.StoreHvs("3", utils.GetHvsForDefaultConfig3WithNoJustifications())
+	acc.StoreHvs("4", utils.GetHvsForDefaultConfig4WithNoJustifications())
+
+	acc.Run(3, 4)
+
+	expectedFaultySet := NewFaultySet()
+	expectedFaultySet.AddFaultiness("2", 0, faultinessMissingHvs)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+
+	fmt.Println(acc.faultySet.String())
+
+	if !acc.faultySet.Equal(expectedFaultySet) {
+		t.Fatal("Monitor failed to detect faulty processes")
+	}
+}
+
 func TestBasicScenario(t *testing.T) {
 
 	numProcesses := 4
 
 	// create accountability struct
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("2", utils.GetHvsForDefaultConfig2())
@@ -37,9 +86,9 @@ func TestBasicScenario(t *testing.T) {
 
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingJustificationsForPrevote)
 
 	fmt.Println(acc.String())
 
@@ -60,7 +109,7 @@ func TestBasicScenarioWithMissingHVS_CorrectFirst(t *testing.T) {
 
 	// create accountability struct
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("2", utils.GetHvsForDefaultConfig2())
@@ -76,7 +125,7 @@ func TestBasicScenarioWithMissingHVS_FaultyFirst(t *testing.T) {
 
 	// create accountability struct
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("3", utils.GetHvsForDefaultConfig3())
 	acc.StoreHvs("4", utils.GetHvsForDefaultConfig4())
@@ -92,7 +141,7 @@ func TestBasicScenarioWithMissingHVS_NotCompleting(t *testing.T) {
 
 	// create accountability struct
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("3", utils.GetHvsForDefaultConfig3())
@@ -142,7 +191,7 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("2", heightVoteSet2)
@@ -154,9 +203,9 @@ func TestBasicScenarioWithMoreThanOnePrecommit(t *testing.T) {
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultiness("2", 3, faultinessMultiplePrecommits)
 	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingJustificationsForPrevote)
 
 	if !acc.faultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -201,7 +250,7 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("2", heightVoteSet2)
@@ -213,9 +262,9 @@ func TestBasicScenarioWithMoreThanOnePrevote(t *testing.T) {
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultiness("2", 3, faultinessMultiplePrevotes)
 	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingJustificationsForPrevote)
 
 	if !acc.faultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -240,7 +289,7 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	heightVoteSet1.VoteSetMap[3] = voteSet1
 
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", heightVoteSet1)
 	acc.StoreHvs("2", utils.GetHvsForDefaultConfig2())
@@ -252,9 +301,9 @@ func TestBasicScenarioWithNotEnoughPrevoteForPrecommit(t *testing.T) {
 	expectedFaultySet := NewFaultySet()
 	expectedFaultySet.AddFaultiness("1", 3, faultinessMissingQuorumForPrecommit)
 	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingJustificationsForPrevote)
 
 	if !acc.faultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")
@@ -342,7 +391,7 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	heightVoteSet4.VoteSetMap[4] = voteSet44
 
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("2", heightVoteSet2)
@@ -352,11 +401,11 @@ func TestBasicScenario_TestNotEnoughJustifications(t *testing.T) {
 	acc.Run(3, 4)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultiness("2", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("2", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingJustificationsForPrevote)
 
 	fmt.Println(expectedFaultySet)
 	fmt.Println(acc.faultySet)
@@ -403,7 +452,7 @@ func TestBasicScenario_TestFalseJustifications(t *testing.T) {
 	heightVoteSet2.VoteSetMap[4] = voteSet22
 
 	acc := NewAccountability()
-	acc.Init(4)
+	acc.Init(4, true)
 
 	acc.StoreHvs("1", utils.GetHvsForDefaultConfig1())
 	acc.StoreHvs("2", heightVoteSet2)
@@ -413,11 +462,11 @@ func TestBasicScenario_TestFalseJustifications(t *testing.T) {
 	acc.Run(3, 4)
 
 	expectedFaultySet := NewFaultySet()
-	expectedFaultySet.AddFaultiness("2", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("2", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("3", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("3", 4, faultinessMissingJustificationsForPrevote)
 	expectedFaultySet.AddFaultiness("4", 3, faultinessMultiplePrevotes)
-	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingQuorumForPrevote)
+	expectedFaultySet.AddFaultiness("4", 4, faultinessMissingJustificationsForPrevote)
 
 	if !acc.faultySet.Equal(expectedFaultySet) {
 		t.Fatal("Monitor failed to detect faulty processes")

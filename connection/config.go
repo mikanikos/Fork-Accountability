@@ -12,12 +12,14 @@ type Packet struct {
 
 // main whisper protocol parameters, from official specs
 const (
+	debug = true
+
 	HvsRequest  = 0
 	HvsResponse = 1
 	HvsMissing  = 3
 
 	// lengths in bytes
-	maxBufferSize = 1024
+	maxBufferSize = 60000
 
 	maxChannelSize = 100
 

@@ -134,10 +134,10 @@ func TestMonitor_ConnectToValidators_Fail(t *testing.T) {
 	}
 }
 
-func captureOutput(f func(string)) string {
+func captureOutput(f func(string, bool), async bool) string {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	f("")
+	f("", async)
 	log.SetOutput(os.Stderr)
 	return buf.String()
 }
@@ -153,7 +153,7 @@ func TestMonitor_RunFailed(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, failStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
@@ -173,8 +173,47 @@ func TestMonitor_RunTimeout(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, timeoutStatus) {
+		t.Fatal("Output of the algorithm was not expected")
+	}
+}
+
+func TestMonitor_RunSuccessful_SyncVersion(t *testing.T) {
+
+	testMonitor := createTestMonitor()
+
+	testMonitor.Timeout = 3
+
+	go validatorMock("1", testMonitor.Validators[0], 0, utils.GetHvsForDefaultConfig1WithNoJustifications())
+	go validatorMock("2", testMonitor.Validators[1], 0, utils.GetHvsForDefaultConfig2WithNoJustifications())
+	go validatorMock("3", testMonitor.Validators[2], 0, utils.GetHvsForDefaultConfig3WithNoJustifications())
+	go validatorMock("4", testMonitor.Validators[3], 0, utils.GetHvsForDefaultConfig4WithNoJustifications())
+
+	time.Sleep(time.Second * time.Duration(2))
+
+	output := captureOutput(testMonitor.Run, false)
+	if !strings.Contains(output, successfulStatus) {
+		t.Fatal("Output of the algorithm was not expected")
+	}
+}
+
+func TestMonitor_RunFailed_SyncVersion(t *testing.T) {
+
+	testMonitor := createTestMonitor()
+
+	testMonitor.Timeout = 3
+	delay := testMonitor.Timeout + 2
+
+	go validatorMock("1", testMonitor.Validators[0], delay, utils.GetHvsForDefaultConfig1WithNoJustifications())
+	go validatorMock("2", testMonitor.Validators[1], delay, utils.GetHvsForDefaultConfig2WithNoJustifications())
+	go validatorMock("3", testMonitor.Validators[2], delay, utils.GetHvsForDefaultConfig3WithNoJustifications())
+	go validatorMock("4", testMonitor.Validators[3], delay, utils.GetHvsForDefaultConfig4WithNoJustifications())
+
+	time.Sleep(time.Second * time.Duration(2))
+
+	output := captureOutput(testMonitor.Run, false)
+	if !strings.Contains(output, failStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
 }
@@ -190,7 +229,7 @@ func TestMonitor_RunSuccessful(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
@@ -207,7 +246,7 @@ func TestMonitor_RunSuccessfulWithDelays(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
@@ -224,7 +263,7 @@ func TestMonitor_RunSuccessfulWithAllFaultyFirst(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
@@ -241,7 +280,7 @@ func TestMonitor_RunSuccessfulWithAllFaultyLast(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
@@ -258,7 +297,7 @@ func TestMonitor_RunSuccessfulWithLateReply(t *testing.T) {
 
 	time.Sleep(time.Second * time.Duration(2))
 
-	output := captureOutput(testMonitor.Run)
+	output := captureOutput(testMonitor.Run, true)
 	if !strings.Contains(output, successfulStatus) {
 		t.Fatal("Output of the algorithm was not expected")
 	}
@@ -284,7 +323,7 @@ func TestMonitor_WriteReport(t *testing.T) {
 	_ = os.Remove(localPath)
 	_ = os.Mkdir(directory, 0777)
 
-	testMonitor.Run(reportPath)
+	testMonitor.Run(reportPath, true)
 
 	if _, err := os.Stat(localPath); os.IsNotExist(err) {
 		t.Fatal("Monitor didn't generate report")

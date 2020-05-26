@@ -8,6 +8,8 @@ import (
 	"github.com/mikanikos/Fork-Accountability/connection"
 )
 
+const debug = true
+
 // Validator struct
 type Validator struct {
 	ID       string                           `yaml:"id"`
@@ -28,7 +30,9 @@ func NewValidator() *Validator {
 
 // Run validator
 func (validator *Validator) Run(delay uint64) {
-	log.Printf("Validator %s at %s: start listening for incoming requests", validator.ID, validator.Address)
+	if debug {
+		log.Printf("Validator %s at %s: start listening for incoming requests", validator.ID, validator.Address)
+	}
 
 	// handle incoming data from clients
 	go validator.handleIncomingClientData(delay)
@@ -55,7 +59,9 @@ func (validator *Validator) handleIncomingClientData(delay uint64) {
 		// if it's a request packet, send the response back
 		if packet != nil && packet.Code == connection.HvsRequest {
 
-			log.Printf("Validator %s at %s: received request for height vote set for height %d", validator.ID, validator.Address, packet.Height)
+			if debug {
+				log.Printf("Validator %s at %s: received request for height vote set for height %d", validator.ID, validator.Address, packet.Height)
+			}
 
 			// load height vote set
 			hvs, loaded := validator.Messages[packet.Height]
@@ -68,15 +74,19 @@ func (validator *Validator) handleIncomingClientData(delay uint64) {
 				packet.Code = connection.HvsResponse
 				packet.Hvs = hvs
 
-				log.Printf("Validator %s at %s: sending height vote set requested for height %d to monitor", validator.ID, validator.Address, packet.Height)
+				if debug {
+					log.Printf("Validator %s at %s: sending height vote set requested for height %d to monitor", validator.ID, validator.Address, packet.Height)
+				}
 
 				// send response
 				err := conn.Send(packet)
-				if err != nil {
+				if err != nil && debug {
 					log.Printf("Validator %s at %s: error while sending packet back to monitor: %s", validator.ID, validator.Address, err)
 				}
 			} else {
-				log.Printf("Validator %s at %s does not have any message logs for height %d", validator.ID, validator.Address, packet.Height)
+				if debug {
+					log.Printf("Validator %s at %s does not have any message logs for height %d", validator.ID, validator.Address, packet.Height)
+				}
 			}
 		}
 	}

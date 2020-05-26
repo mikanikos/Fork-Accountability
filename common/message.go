@@ -10,6 +10,8 @@ import (
 type MessageType string
 
 const (
+	// Proposal type
+	Proposal MessageType = "PROPOSAL"
 	// Prevote type
 	Prevote MessageType = "PREVOTE"
 	// Precommit type

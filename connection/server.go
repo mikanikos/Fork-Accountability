@@ -48,16 +48,21 @@ func (server *Server) Listen(address string) error {
 // HandleConnection from the given connection
 func (server *Server) HandleConnection(connection *Connection) {
 
-	log.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())
+	if debug {
+		log.Println("Handling client connection from " + connection.Conn.RemoteAddr().String())
+	}
 
 	for {
 		packet, err := connection.Receive()
 
 		if err != nil {
-			if err == io.EOF {
-				log.Printf("Client %s closed the connection", connection.Conn.RemoteAddr())
-			} else {
-				log.Printf("error while trying to receive packet from %s: %s", connection.Conn.RemoteAddr(), err)
+			if debug {
+				if err == io.EOF {
+					log.Printf("Client %s closed the connection", connection.Conn.RemoteAddr())
+				} else {
+
+					log.Printf("error while trying to receive packet from %s: %s", connection.Conn.RemoteAddr(), err)
+				}
 			}
 			return
 		}

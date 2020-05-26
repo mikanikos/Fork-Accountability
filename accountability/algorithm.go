@@ -88,7 +88,7 @@ func (acc *Accountability) isProcessFaulty(firstDecisionRound, secondDecisionRou
 		// check if process equivocated in the round
 		acc.checkForEquivocation(processID, round, vs)
 
-		// if height vote set was not received, we can only check for equivocation
+		// if height vote set was not received, we can only check for equivocation in the async case
 		if isHvsReceived {
 
 			// if only one prevote message has been sent AND the process had previously sent precommit for some value
@@ -98,8 +98,14 @@ func (acc *Accountability) isProcessFaulty(firstDecisionRound, secondDecisionRou
 				if message.Value != nil {
 
 					// Only if two values are not the same, we should look for 2f + 1 prevote messages
-					if !acc.checkQuorumPrevotesForPrevote(hvs, lockedValue, lockedRound, message) {
-						acc.faultySet.AddFaultiness(processID, round, faultinessMissingQuorumForPrevote)
+					if acc.asyncMode {
+						if !acc.checkQuorumJustificationsForPrevote(hvs, lockedValue, lockedRound, message) {
+							acc.faultySet.AddFaultiness(processID, round, faultinessMissingJustificationsForPrevote)
+						}
+					} else {
+						if !acc.checkQuorumPrevotesForPrevote(hvs, lockedValue, lockedRound, message) {
+							acc.faultySet.AddFaultiness(processID, round, faultinessMissingQuorumForPrevote)
+						}
 					}
 				}
 			}
@@ -119,6 +125,11 @@ func (acc *Accountability) isProcessFaulty(firstDecisionRound, secondDecisionRou
 					lockedValue = common.NewValue(message.Value.Data)
 					lockedRound = int64(round)
 				}
+			}
+		} else {
+			if !acc.asyncMode {
+				// hvs was not received
+				acc.faultySet.AddFaultiness(processID, 0, faultinessMissingHvs)
 			}
 		}
 	}
@@ -150,8 +161,8 @@ func (acc *Accountability) checkQuorumPrevotesForPrecommit(vs *common.VoteSet, p
 	return numberOfAppropriateMessages >= acc.getQuorumThreshold()
 }
 
-// check if there are enough prevotes to justify another prevote given a quorum
-func (acc *Accountability) checkQuorumPrevotesForPrevote(hvs *common.HeightVoteSet, lockedValue *common.Value, lockedRound int64, prevote *common.Message) bool {
+// check if there are enough justifications to justify another prevote given a quorum
+func (acc *Accountability) checkQuorumJustificationsForPrevote(hvs *common.HeightVoteSet, lockedValue *common.Value, lockedRound int64, prevote *common.Message) bool {
 	// if not enough justifications, the process is faulty
 	if uint64(len(prevote.Justifications)) < acc.getQuorumThreshold() {
 		return false
@@ -160,7 +171,7 @@ func (acc *Accountability) checkQuorumPrevotesForPrevote(hvs *common.HeightVoteS
 	// go over all justifications provided and check that each one exists and is appropriate
 	for _, justification := range prevote.Justifications {
 		// if it's not between the lockedRound and the current round, it's not valid according to the consensus algorithm
-		if !(prevote.Round >= 0 && justification.Round < prevote.Round &&
+		if !(justification.Round < prevote.Round &&
 			(int64(justification.Round) >= lockedRound || lockedValue.Equal(prevote.Value))) {
 			return false
 		}
@@ -189,4 +200,31 @@ func (acc *Accountability) checkQuorumPrevotesForPrevote(hvs *common.HeightVoteS
 	}
 
 	return true
+}
+
+// check if there are enough prevotes to justify another prevote given a quorum
+func (acc *Accountability) checkQuorumPrevotesForPrevote(hvs *common.HeightVoteSet, lockedValue *common.Value, lockedRound int64, prevote *common.Message) bool {
+
+	// go over all the votes in each round
+	for round, vs := range hvs.VoteSetMap {
+
+		// if vote set not present or it's not between the lockedRound and the current round, it's not valid according to the consensus algorithm
+		if vs == nil || !(round < prevote.Round &&
+			(int64(round) >= lockedRound || lockedValue.Equal(prevote.Value))) {
+			continue
+		}
+
+		numberOfAppropriateMessages := uint64(0)
+		for _, receivedPrevoteMessage := range vs.ReceivedPrevoteMessages {
+			if receivedPrevoteMessage.Value != nil && receivedPrevoteMessage.Value.Equal(prevote.Value) {
+				numberOfAppropriateMessages++
+			}
+		}
+
+		if numberOfAppropriateMessages >= acc.getQuorumThreshold() {
+			return true
+		}
+	}
+
+	return false
 }

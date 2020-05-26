@@ -13,6 +13,7 @@ func main() {
 	// parse arguments
 	configFile := flag.String("config", configPath, "path (relative to the project root directory) of the configuration file for the monitor")
 	report := flag.String("report", "", "path (relative to the project root directory) of the report to generate at the end of the execution instead of printing logs to standard output")
+	asyncMode := flag.Bool("asyncMode", true, "run the accountability algorithm asynchronously")
 	delay := flag.Uint64("delay", 0, "time to wait (in seconds) before start running, use for testing")
 
 	// parse arguments
@@ -27,7 +28,7 @@ func main() {
 	time.Sleep(time.Duration(*delay) * time.Second)
 
 	// start monitor execution
-	monitor.Run(*report)
+	monitor.Run(*report, *asyncMode)
 }
 
 // create a new monitor from config file
