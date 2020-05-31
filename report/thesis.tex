@@ -7,7 +7,7 @@
 % Options: MScThesis, BScThesis, MScProject, BScProject
 \usepackage[MScProject,lablogo]{EPFLreport}
 \usepackage{xspace}
-\usepackage{markdown}
+\usepackage[footnotes]{markdown}
 \usepackage{multirow}
 
 \title{Design, implementation and evaluation of a fork accountability\\solution in the Tendermint consensus protocol}
@@ -19,12 +19,12 @@
 
 \begin{document}
 \maketitle
-% \makededication
-% \makeacks
 
 \begin{abstract}
 
-TODO
+This report presents the fork accountability problem, which concerns with the detection of nodes responsible of a fork in a distributed network of machines running BFT consensus when the system is compromised. We analyze and study such a challenge in the context of the Tendermint protocol, whose consensus algorithm does not currently have any mechanism to make all replicas accountable of their actions in the case of a fork when more than one third of machines in the system are faulty. 
+
+We are going to focus on describing the design of a fork accountability solution in Tendermint that was conceived by researchers from the École Polytechnique Fédérale de Lausanne and Informal Systems and show how this algorithm can guarantee the detection of at least f + 1 faulty processes in a completely asynchronous system. The core part of this work focuses on validating this proposal with a proof-of-concept environment where the algorithm was developed and tested along with several features. Finally, some benchmarks and experiments have been carried out in order to give the idea of the computational complexity of the solution from a performance point of view.
 
 \end{abstract}
 
@@ -34,7 +34,21 @@ TODO
 \chapter{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%
 
-TODO
+Tendermint is a partially synchronous protocol which provides a simple and efficient algorithm to solve the problem of Byzantine fault tolerant (BFT) consensus in a distributed network of processes. As every other BFT consensus protocol, the Tendermint algorithm relies on the assumption that byzantine processes are limited to a certain threshold: this assumption allows correct processes to have enough voting power to approve new blocks and guarantees the correctness and validity of the blockchain throughout the entire execution of the protocol. 
+
+When this assumption cannot be ensured, malicious processes can cause the failure of the algorithm and create deviations from the main chain (better known as forks). In such cases, a valid protocol should provide some reliable guarantees that, under certain constraints, allow the protocol to recover from the fault, detect the faulty processes responsible of a fork and eventually re-store the conditions for the safe execution of the consensus algorithm.     
+
+We define this problem as fork accountability and in this report we present and analyzes the conditions, the challenges and the consequences given by this inconsistency in Tendermint. In order to properly introduce the reader to the topic, an overview of the Tendermint protocol is presented before diving into the fork accountability problem (Chapter 2). 
+
+This work proposes a fork accountability algorithm that solves such a problem without making any assumption on the communication model: we are going to describe its design and details by analyzing the possible attack scenarios and the variety of challenges faced and the trade-offs made during the study of such a solution by the researchers from the École Polytechnique Fédérale de Lausanne and Informal Systems (Chapter 3). 
+
+In order to get a more practical idea of the potential of the designed solution, this project aimed to implement the accountability algorithm in a simplified environment that gives the possibility to run experiments and test the application with different configuration and settings (Chapter 4). 
+
+Thanks to the flexibility and modularity of the developed project, it has also been possible to evaluate the accountability algorithm in terms of computational resources and get a better idea of its performance (Chapter 5). 
+
+We conclude this report with some interesting aspects and topics related to the fork accountability problem which could be further studied and analyzed in future work (Chapter 6). 
+
+The result of this work is a high-level, working implementation of a fork accountability solution, properly validated from a theoretical and practical point of view, The implementation also offers promising results in tests along with good performance overall and can potentially offer a solid and well-founded contribution to the development of a fork accountability algorithm in the actual Tendermint production code.
 
 %%%%%%%%%%%%%%%%%%%%
 \chapter{Tendermint protocol overview and the fork accountability problem}
@@ -42,12 +56,15 @@ TODO
 
 \begin{markdown}
 
-We are going to present a short and simple overview of the [Tendermint](https://github.com/tendermint) consensus algorithm and the main aspects that are required to understand the fork accountability problem. 
-Please note that this is not an exhaustive and formal discussion. We invite the reader to check out the [Tendermint documentation](https://docs.tendermint.com/master/) and the [official paper](https://arxiv.org/abs/1807.04938) that describe the theoretical aspects in more detail.   
+We are going to present a short and simple overview of the [Tendermint protocol](https://tendermint.com/) and the main aspects that are required to understand the fork accountability problem.
+This is not an exhaustive and formal discussion about the Tendermint consensus protocol. We invite the reader to read the [Tendermint documentation](https://docs.tendermint.com/master/) and the official paper.[^5]
+
+
+[^5]: Buchman, E., Kwon, J., & Milosevic, Z. (2018). The latest gossip on BFT consensus. ArXiv, abs/1807.04938.
 
 ## Tendermint consensus algorithm
 
-Tendermint is a partially synchronous Byzantine fault tolerant (BFT) consensus protocol. The protocol requires a fixed set of *n* validators that attempt to come to consensus on one value or, more precisely, on a block (a block is a list of transactions) using gossip-based communication. 
+Tendermint is a partially synchronous Byzantine fault tolerant (BFT) consensus protocol. The protocol requires a fixed set of *n* processes that attempt to come to consensus on one value or, more precisely, on a block (a block is a list of transactions) using gossip-based communication. 
 
 Tendermint is notable for its simplicity and performance and is currently one of the most mature and widely used implementations of BFT consensus.
 
@@ -75,25 +92,34 @@ In order to simplify the whole discussion, we assume the following from now on:
 
 ### Overview
 
-The consensus algorithm proceeds in rounds: in each round there is a validator that proposes a value (proposer) and all the validators then vote during the round on whether to accept the proposed value or move on to the next round.
+As we can see in Figure 2.1, the consensus algorithm proceeds in rounds: in each round there is a validator (i.e., a process participating in the consensus) that proposes a value (proposer) and all the validators then vote during the round on whether to accept the proposed value or move on to the next round.
 
-During a round, processes can exchange different types of messages:
+We can summarize the execution in a round in **two voting steps**: PREVOTE and PRECOMMIT steps. A vote can be for a particular value or for *nil* (null value). During a round, processes can exchange different types of messages, each one with a specific purpose:
  
 - **PROPOSAL message**: sent by the proposer of the round to propose a value in a new round
 
 - **PREVOTE message**: sent by validators to vote for a value during the first voting step
 
 - **PRECOMMIT message**: sent by validators to vote for a value during the second voting step
- 
-We can summarize the execution in a round in **two voting steps**: PREVOTE and PRECOMMIT steps. A vote can be for a particular value or for *nil* (null value).
 
-A correct process decides on a value *v* in a round *r* upon receiving a proposal and *2f + 1* quorum of PRECOMMIT messages for *v* in a round *r*. 
-A correct process sends a PRECOMMIT message for a value *v* in a round *r* upon receiving a proposal and *2f + 1* quorum of PREVOTE messages for *v* in a round *r*.
+A correct process decides on a value *v* in a round *r* upon receiving a proposal and quorum of at least *2f + 1* PRECOMMIT messages for *v* in a round *r*. 
+A correct process sends a PRECOMMIT message for a value *v* in a round *r* upon receiving a proposal and a quorum of at least *2f + 1* PREVOTE messages for *v* in a round *r*.
 
-Validators wait some time before sending a PREVOTE for *nil* if they do not receive a valid proposal after a certain time (*proposalTimeout*) and they send a PRECOMMIT message for *nil* if they do not receive *2f + 1* matching PREVOTE messages for a value after a certain time (*prevoteTimeout*).
-If processes do not receive *2f + 1* matching PRECOMMIT messages for a value after a certain time (*precommitTimeout*), they move to the next round.
+Validators wait some time before sending a PREVOTE for *nil* if they do not receive a valid proposal after a certain time (*proposalTimeout*) and they send a PRECOMMIT message for *nil* if they do not receive at least *2f + 1* matching PREVOTE messages for a value after a certain time (*prevoteTimeout*).
+If processes do not receive at least *2f + 1* matching PRECOMMIT messages for a value after a certain time (*precommitTimeout*), they move to the next round.
 
-After a decision has been made, processes continue to agree on other values on another consensus instance (*height*) and they repeat the process described above in order to agree on different transactions.
+After a decision has been made, processes continue to agree on other values on another consensus instance (*height*) and they repeat the process described above in order to agree on different blocks.
+
+\end{markdown}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.45]{tendermint_schema.png} 
+\caption{Overview of the Tendermint consensus algorithm.}
+\label{fig:subim1}
+\end{figure}
+
+\begin{markdown}
 
 ### Rules
 
@@ -105,10 +131,9 @@ These conditions ensure both the safety and liveness properties of the consensus
 
 ## Agreement property
 
-We limit the discussion to the agreement property only because its proof can be useful to better understand the fork accountability problem. 
-We invite interested readers to read the official paper for a more formal, complete and rigorous proof of all the properties listed above.
+We present the agreement property of the Tendermint protocol because it is important to properly frame the fork accountability problem. In this section we also give a simple proof of the agreement property and show that it is not possible to violate the agreement property in Tendermint if there are at most *f* faulty processes.
 
-In this section we will give a simple proof of the agreement property for the Tendermint algorithm and show why the correct majority assumption given before (*n > 3f*, or simply *n = 3f + 1*) is important for ensuring this property.
+### Idea behind the proof
 
 The key idea behind the proof of the agreement property is that any two sets of *2f + 1* processes have at least one correct process in common.
 
@@ -119,15 +144,13 @@ Since there are two sets of *2f + 1* processes, their sum can be written as:
      
 That means that the intersection of these two sets contains at least *f + 1* processes or, in other words, at least one correct process.  
 
-From this result, we will show in the next sections that it is not possible to violate the agreement property in the Tendermint consensus algorithm if there are at most *f* faulty processes.
+Given this result, we can easily prove the impossibility of having two sets of *2f + 1* PREVOTE or PRECOMMIT messages in the same round *r* for different values. If we assume the opposite by contradiction, then it would be possible to have at least *f + 1* processes that sent both the messages, which would mean *f + 1* are faulty. But at most *f* processes can be faulty in Tendermint, so the contradiction.
 
-### Idea behind the proof
-
-The idea behind the proof is the impossibility of having two sets of *2f + 1* PREVOTE or PRECOMMIT messages in the same round *r* for different values. If we assume the opposite by contradiction, then it would be possible to have at least *f + 1* processes that sent both the messages, which would mean *f + 1* are faulty. But at most *f* processes can be faulty in Tendermint, so the contradiction.
-
-Moreover, at most one value can be locked in a round and, if a correct process decided value *v* in round *r*, *v* will be locked for all the next rounds after *r* on that height. This guarantees it is not possible to have another quorum for committing another value different than *v*.
+Moreover, at most one value can be locked in a round and, if a correct process decided value *v* in round *r*, *v* will be locked for all the next rounds after *r* on that height. This ensures that it is not possible to have another quorum for committing another value different than *v*.
 
 ### Proof
+
+In order to formalize the above idea, we present a simple formal proof of the property,
 
 Assume that a correct process *p* decides value *v* in round *r* and height *h*. We want to prove that any other correct process *p'* in some round *r' >= r* of height *h* decides *v'* such that *v'* = *v*.
 
@@ -154,38 +177,36 @@ Since these are the only two possible cases, the above reasoning proves that the
 
 ### Guarantees 
 
-The Tendermint consensus protocol is a simple and efficient algorithm that guarantees the four properties mentioned above. These guarantees are valid as long as faulty processes are at most one third of the total number of validators in the system.
+As said before, the Tendermint consensus protocol is a simple and efficient algorithm that guarantees the four properties mentioned above. These properties are valid as long as faulty processes are at most one third of the total number of validators in the system.
 
 However, when this assumption is not valid anymore, processes can decide on different values in the same consensus instance and the blockchain can potentially diverge into two potential decision paths, making the entire protocol break.
 
-Although it is not possible to provide all the four properties in this scenario, it can be desirable having additional "safety" guarantees that allow the system to self-recover from the possible fault. 
-
-The problem of fork accountability deals with this situation and will be addressed in the next section.
+Although it is not possible to ensure all the four properties in this scenario, it is necessary to have additional "safety" guarantees that allow the system to self-recover from the possible fault. The problem of fork accountability deals with this situation and will be addressed in the next section.
 
 ## Fork accountability
 
-The agreement property of the Tendermint consensus algorithm can be violated if there are more than *f* faulty processes in the system, as we discussed in [1-tendermint-overview.md](./1-tendermint-overview.md).
-
-A well-designed consensus protocol should provide some guarantees when this limit is exceeded in order to allow the system to recover from a possible fault. An important guarantee is **fork accountability**, which is the topic of this document. 
+The agreement property of the Tendermint consensus algorithm can be violated if there are more than *f* faulty processes in the system, as previously discussed. When this situation occurs, more than one block can be decided in a single height and the protocol rules are violated. Since it is not possible to prevent this situation when the the limit on the number of faulty processes in the system is exceeded, we aim to at least identify faulty processes and ban them from the set of validators in order to re-establish a normal situation. We present such a problem, known as fork accountability, in more detail in this section.  
 
 ### Definition
 
-A fork is a split in the blockchain network or, in other words, a divergence into different block paths. 
-A **fork** happens when two correct validators decide on different blocks in the same height (i.e., there are two commits for different blocks in the same consensus instance). 
+A **fork** is a split in the blockchain network or, in other words, a divergence into different block paths. 
+A fork happens when two correct validators decide on different blocks in the same height (i.e., there are two commits for different blocks in the same consensus instance). 
 
-In the context of the Tendermint protocol, a fork happens in height *h* when a quorum of messages (*2f + 1* PRECOMMIT messages) are sent for different values: more formally, there are two sets of *2f + 1* PRECOMMIT messages, A and B, such that A's messages are PRECOMMIT votes for value *v* and B's messages are PRECOMMIT votes for value *v' != v* in height *h*.  
+In the context of the Tendermint protocol, a fork happens in height *h* when a quorum of messages (at least *2f + 1* PRECOMMIT messages) are sent for different values: more formally, there are two sets of at least *2f + 1* PRECOMMIT messages, A and B, such that A's messages are PRECOMMIT votes for value *v* and B's messages are PRECOMMIT votes for value *v' != v* in height *h*.  
 
-The Tendermint conensus algorithm guarantees that a fork (i.e., a violation of the agreement property) cannot happen when the number of faulty processes is less than one third.
-We want to address and analyze the problem of defining a Tendermint consensus algorithm that provides the same four properties (validity, agreement, termination, integrity) when the number of faulty processes is less than one third and guarantees, in addition, an efficient detection of faulty processes that can potentially make the consensus fail with a fork when there are more than one third of faulty validators.
+The Tendermint consensus algorithm guarantees that a fork (i.e., a violation of the agreement property) cannot happen when the number of faulty processes is less than one third.
+We want to address and analyze the problem of defining a Tendermint consensus algorithm that provides the same four properties (validity, agreement, termination, integrity) when the number of faulty processes is less than one third and guarantees, in addition, an efficient detection of faulty processes responsible of a fork when there are more than one third of faulty validators.
 
-In particular, we assume there are more than one third of faulty validators such that the following holds:
+In particular, we assume there are more than one third of faulty validators such that the following holds:[^1]
 
     f < num. faulty processes <= 2f
+
+[^1]: Fork accountability cannot be solved when the number of faulty proccesses is greater than *2f*: in this case, faulty processes basically control the system and nothing can be done to solve the problem.
 
 In the Tendermint protocol, all processes should be accountable for their actions and faulty validators should be identified and punished according to the protocol specifications, for example by removing them from the validators set.
 We aim to give incentives to validators to behave correctly according to the protocol specifications and detect faulty validators, without mistakenly detecting correct validators. 
  
-### Misbehaviors
+### Attack scenarios
  
 In the previous section, we mentioned that a process can make the consensus fail with a fork. There are, indeed, multiple reasons that can generate a fork in the blockchain, all coming from processes that deviate from the protocol specification in various ways.
 
@@ -197,9 +218,28 @@ We can summarize some of the most important misbehaviors that can possibly cause
 
 - A process sends multiple PREVOTE/PRECOMMIT messages in a round *r* for different values (**equivocation**)
 
-- A process sends a PREVOTE/PRECOMMIT message for a value *v* despite having a lock on a different value *v'*
+- A process sends a PREVOTE/PRECOMMIT message for a value *v* despite having a lock on a different value *v'* (**amnesia**)
 
 - A process sends a PRECOMMIT for a value *v* without having received at least two thirds PREVOTE messages for *v* 
+
+\end{markdown}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.8]{fork_scenario.png} 
+\caption{Schema of an amnesia attack.}
+\label{fig:subim1}
+\end{figure}
+
+\begin{markdown}
+
+Figure 2.2 shows an example of a possible scenario where an amnesia attack can occur.
+C1 and C2 are two blocks of correct validators, F is a set of at least *f + 1* faulty processes.
+
+In the first round, C1 and F send PREVOTE messages for value *v* and C1 only send PRECOMMIT for *v*. 
+In the second round, C2 and F send PREVOTE messages for value *v'* (*v != v'*) 
+and both blocks send also PRECOMMIT messages for value *v'* (so, *v'* is committed).
+Faulty processes then decide to go back and send PRECOMMIT messages for *v* in the first round despite the fact they should be locked on *v'* and this clearly creates a fork in the main chain.
 
 \end{markdown}
 
@@ -209,8 +249,8 @@ We can summarize some of the most important misbehaviors that can possibly cause
 
 \begin{markdown}
 
-We aim to develop an accountability algorithm that, by analyzing the messages received by validators during an execution of a consensus instance, is able to determine which processes respected the protocol and which ones did not and led to a fork. 
-In order to prove the misbehavior of the processes that did not respect the protocol, we also want to show the proof of their misbehavior with respect to the Tendermint consensus protocol.
+We aim to develop an accountability algorithm that, by analyzing the messages received by validators during an execution of a consensus instance, is able to determine which processes respected the protocol and which ones did not and cause a fork. 
+In order to convince all processes of the faultiness of a validator, we also want to show the proof of the misbehavior of malicious processes with respect to the Tendermint consensus protocol.
 
 
 ## Requirements
@@ -221,8 +261,7 @@ The algorithm exposes the following interface (in the event of a fork):
 
 - **detect(P)**: process P is faulty according to the accountability algorithm
 
-All the processes that are detected are considered faulty because, by misbehaving, they are responsible for a fork.
-Please note that some faulty processes could be undetected. 
+All the processes that are detected are considered faulty because, by misbehaving, they are responsible for a fork. Some faulty processes could still be undetected because they were not responsible for a fork, even though they were faulty.
 
 ### Properties
 
@@ -234,14 +273,15 @@ The algorithm guarantees the following properties:
 
 ## Monitor
 
-We introduce a trusted third-party verification entity which is responsible to run the accountability algorithm called **monitor**.
+In order to simplify the design of the algorithm, we introduce a trusted third-party verification entity, called **monitor**, which is responsible to run the accountability algorithm.
 
-The monitor is responsible to coordinate and run the accountability algorithm as soon as a fork is detected. 
-Since the input of the algorithm are the **message logs** of the validators (i.e., all the information related to the exchanged messages by processes in the consensus instance), the monitor will first request the message logs from each validator and then will run the accountability algorithm.
+The monitor is responsible to coordinate and run the accountability algorithm as soon as a fork is detected. Since the input of the algorithm are the **message logs** of the validators (i.e., all the information related to the exchanged messages by processes in the consensus instance), the monitor will first request the message logs from each validator and then will run the accountability algorithm.
 
 We assume that all validators keep track of all the messages they sent and received during an execution of the Tendermint consensus algorithm. 
 The idea is that a correct process would be able to prove that it was not faulty by showing its activity (*message logs*) to the monitor.
-Indeed, the monitor should be able to detect all faulty processes that were responsible to generate a fork by analyzing the message logs from all the correct processes that have no reason for not sending their message logs.
+The monitor should be able to detect all faulty processes[^2] that were responsible to generate a fork by analyzing the message logs from all the correct processes, which have no reason for not sending their message logs.
+
+[^2]: In this case, the accountability algorithm can also catch other faulty behaviours that did not necessarily lead to a fork - this is a positive side effect.
 
 ## Fork scenarios
 
@@ -271,7 +311,7 @@ On the other hand, if they do have such a justification, it means that there are
 
 It is clear that this scenario is similar to the one described at the beginning: the processes that sent a PREVOTE message for *v'* in *r''* are faulty unless they have a valid justification for sending the PREVOTE message for *v'* after being locked on *v*.
 
-The monitor would be able to track down the origin of the misbehaviour by checking recursively that all the processes that sent a PREVOTE message for a value different from the one they were locked on have a valid justification.
+The monitor would be able to track down the origin of the misbehaviour by checking, recursively, that all the processes that sent a PREVOTE message for a value different from the one they were locked on have a valid justification.
 Since messages cannot be generated out of nowhere, there must be an iteration of this recursive problem where the monitor would be able to find at least *f + 1* processes that sent a PREVOTE message without a valid justification and led to a fork.
 
 In conclusion, only two possible options remain:
@@ -282,10 +322,10 @@ In conclusion, only two possible options remain:
 
 ## Challenges
 
-### Misbehavior scenarios
+### Handling invalid logs
 
-It is possible that faulty processes send invalid message logs to the monitor. An invalid message log is a message log which contains partial or incomplete information regarding the actual messages sent and received by the owner of the log (this means some messages might have not been reported or listed in the log).
-Indeed, a faulty process is able to alter and modify its message log in order to hide a possible misbehavior. In that case, the monitor might not have enough information to detect all the faulty processes that led to a fork. 
+Given the fact it deals with faulty processes, It is possible that the monitor received invalid message logs. An invalid message log is a message log which contains partial or incomplete information regarding the actual messages sent and received by the owner of the log (this means some messages might have not been reported or listed in the log).
+Indeed, a faulty process is likely to alter and modify its message log in order to hide a possible misbehavior. In that case, the monitor might not have enough information to detect all the faulty processes that led to a fork. 
 
 We assume that messages exchanged in the consensus algorithm are signed and it is not possible to forge messages (i.e., some process *p* cannot state that it has received a message from process *p'* if p' did not send that message or *p* did not receive it). 
 
@@ -295,10 +335,10 @@ Therefore, the following scenarios are possible:
 
 2. A process *p* denies having sent a message *m* (*p*'s message log does not contain *m* as a message sent) 
 
-The first case will be ignored because it does not contribute to the generation of a fork.
+The first case can be safely ignored because it does not contribute to the generation of a fork.
 
-The second point is, instead, more important in this discussion because a process can deny having sent a message *m* in order to hide its misbehavior. 
-However, if *m* led to a fork, at least one process *p'* (*p != p'*) received *m*: the monitor can add this missing message in *p*'s message log without needing to take any further action, simply correcting the invalid message log received. 
+The second point is instead more important in this discussion because a process can deny having sent a message *m* in order to hide its misbehavior. 
+However, if *m* led to a fork, at least one process *p'* (*p != p'*) received *m*: the monitor can add this missing message in *p*'s message log without needing to take any further action and simply correct the invalid message log received. 
 
 From now on, the expression "inferring a message log" will be used to define the action carried out by the monitor to correct an invalid message log with the missing messages taken from other message logs received by *p*.
 
@@ -351,11 +391,7 @@ Assuming the small modification in the Tendermint consensus algorothm described 
 Termination is guaranteed by the fact that correct processes will send their messages logs and their message logs will be correct (no sent message will be missing). 
 If this condition does not hold, the algorithm would not be able to identify correctly all the faulty processes that led to a fork. However, correct processes have no reason to misbehave or send invalid message logs. 
 
-## Design-specific details
-
-- By excluding the piggybacking solution for every single message, the fork accountability cannot be solved when the number of faulty proccesses is greater than *2f*: in this case, faulty processes basically control the system and nothing can be done to solve the problem.
-
-- The accountability algorithm is able to also catch other faulty behaviours that did not necessarily lead to a fork - this is a positive side effect of the accountability algorithm described above.
+Few final notes regarding the design of this algorithm:
 
 - The monitor needs to analyze the message logs from the round of the first decision to the round of the second decision. However, validators will send their entire message logs because they cannot know when a decision has been taken in the Tendermint consensus algorithm. 
 
@@ -371,9 +407,7 @@ If this condition does not hold, the algorithm would not be able to identify cor
 
 ## Project overview
 
-The project was developed in a Github repository (freely available at the following link https://github.com/mikanikos/Fork-Accountability) and provides a simple Proof of Concept of the Fork Accountability algorithm, as described in the previous chapter, in the Tendermint Consensus protocol in the Go language.
-
-The repository includes simple libraries and modules that allow to run experiments and benchmark the algorithm implementation in a minimal test environment:
+The project is available at the following Github repository: **github.com/mikanikos/Fork-Accountability**. It mainly provides a simple implementation of the Fork Accountability algorithm described in the previous chapter in the Go language but it also offers a modular set of packages and libraries that that allow to run experiments and benchmark the algorithm implementation in a test environment with different fork scenarios:
 
 - a simple connection library to provide an high-level API for establishing connections and communicating among processes based on a client-server architecture; 
 
@@ -383,13 +417,13 @@ The repository includes simple libraries and modules that allow to run experimen
 
 - validator implementation that represents the processes that participate in the Tendermint Consensus protocol; 
 
-- sample test scripts to easily run experiments and test both the accountability algorithm and the interaction between monitor and validators.
+- sample test scripts to easily run experiments and benchmarks and test both the accountability algorithm and the interaction between monitor and validators.
 
 ### Architecture
 
 The project is organized in several files and packages in order to guarantee modularity and extensibility and maintain at the same time a clear and simple structure.
 
-The monitor ([monitor package](cmd/monitor)) is the entity responsible to run the accountability algorithm. It takes as input parameters:
+The monitor (monitor package) is the entity responsible to run the accountability algorithm. It takes as input parameters:
 
 - a path of a yaml configuration file which are necessary to initialize and configure the algorithm
 
@@ -397,7 +431,7 @@ The monitor ([monitor package](cmd/monitor)) is the entity responsible to run th
 
 The monitor is responsible for opening connections with all the validators and initialize the request of the message logs (described below).
 
-Validators ([validator package](cmd/validator)) are simple processes that listen on a given port and each one has its own messages logs that are the result of the execution of the Tendermint consensus protocol. Message logs and listening port are initialized through a configuration file (different for every validator) along with a unique validator identifier.
+Validators (validator package) are simple processes that listen on a given port and each one has its own messages logs that are the result of the execution of the Tendermint consensus protocol. Message logs and listening port are initialized through a configuration file (different for every validator) along with a unique validator identifier.
 Every message in the configuration file must be specified with all the corresponding information associated with it (type, round, height, senderId, possible justifications).
 
 The monitor will use the connection library to request message logs from all the addresses (i.e., validator processes) given in the config file. It will wait for responses from each validator and, as soon as a packet arrives, it will store it and send it to the main thread. The main thread will run the fork accountability algorithm if enough messages have been received until that time.
@@ -412,33 +446,41 @@ This library is used by the monitor and the validator to exchange packets for bo
 
 ### Structure
 
-As an overview, this is the current structure of the project:
+Overall, this is the current structure of the project:
     
-- [.github](.github): contains Github Actions continuous integration config files
+- .github: contains Github Actions continuous integration config files
 
-- [accountability](accountability): contains the main accountability algorithm
+- accountability: contains the main accountability algorithm
 
-- [cmd](cmd): contains the binaries for the monitor and the validator. Inside each binary folder, there's a folder with sample config files. 
+- cmd: contains the binaries for the monitor and the validator. Inside each binary folder, there's a folder with sample config files. 
 
-- [common](common): contains abstractions used throughout the project to better handle the input of the algorithm;
+- common: contains abstractions used throughout the project to better handle the input of the algorithm;
 
-- [connection](connection): contains the connection library used by monitor and validators to communicate.
+- connection: contains the connection library used by monitor and validators to communicate.
 
-- [docs](docs): contains markdown files documenting the project and the accountability algorithm from a slightly more theoretical perspective; 
+- docs: contains markdown files documenting the project and the accountability algorithm from a slightly more theoretical perspective; 
 
-- [scripts](scripts): folder used to group scripts for running experiments in different scenarios; 
+- scripts: folder used to group scripts for running experiments and benchmarks in different scenarios;
 
-- [utils](utils): utilities used for parsing configuration files and for testing the several functionalities of the modules implemented;
+- benchmarks: folder used to save the output of benchmarks experiments;
 
-Each package contains tests in `*_test.go` files.
+- report: folder that contains the latex files of this report;
+
+- utils: utilities used for parsing configuration files and for testing the several functionalities of the modules implemented;
+
+Every package that contains go files also has corresponding tests in `*_test.go` files. The README.md file contains detailed instructions to setup the environment and run both experiments and tests.
+
+The repository provides also Docker images packages available at the Github Package Registry, that allow using the monitor and the validator in a pre-configured environment. 
 
 \end{markdown}
 
 \begin{markdown}
 
-## Main abstractions
+## Monitor algorithm
 
-In order to simplify the later discussion, here we introduce some abstractions that help to better identify and classify the message logs received and handled by the monitor.
+In order to simplify the later discussion, we introduce some abstractions that help to better identify and classify the message logs received and handled by the monitor.
+
+### Main abstractions
 
 Each **Message** contains the following information:
 
@@ -456,7 +498,7 @@ A **Height Vote Set** is the set of all Vote Set in a specific height *h* or the
 
 Tendermint messages have several other important fields that are used by the consensus protocol for other purposes. However, we limit the scope of our discussion to these information only because they are essential for running the designed accountability algorithm.       
 
-## Monitor algorithm
+### Algorithm steps
  
 These are the detailed steps of the execution of the monitor to run the asynchronous accountability algorithm: 
  
@@ -469,9 +511,9 @@ If the threshold is met, the monitor runs the accountability algorithm. Otherwis
       
 4. The accountability algorithm runs in two consecutive phases:
 
-    i. **Pre-processing phase**: given the received message logs so far, the monitor "infers" the missing sent messages and attaches them to the original sender's height vote set.
+    1. **Pre-processing phase**: given the received message logs so far, the monitor "infers" the missing sent messages and attaches them to the original sender's height vote set.
 
-    ii. **Fault-detection phase**: the monitor scans the height vote set from the first round to the last round and checks that the rules of the Tendermint consensus algorithm are violated. If a process violates any of the Tendermint consensus algorithm rules, it is detected as faulty. 
+    2. **Fault-detection phase**: the monitor scans the height vote set from the first round to the last round and checks that the rules of the Tendermint consensus algorithm are violated. If a process violates any of the Tendermint consensus algorithm rules, it is detected as faulty. 
 
     The output of the accountability algorithm is the list of processes that have been detected as faulty and the proof of their misbehavior.
   
@@ -515,11 +557,13 @@ In order to simplify the understanding of the algorithm, the algorithm uses the 
 
 - **deliverHVS()**: deliver the next incoming height vote set sent by some validator, return the next height vote set received
 
-    ```
+We present here below a simplified pseudo-code of the actual  implementation:
+
     // Monitor algorithm
     runMonitor(V, h, firstRound, lastRound):
         
-        // compute max number of faulty processes with respect to the number of validators  
+        // compute max number of faulty processes
+        // with respect to the number of validators  
         f = (V.length - 1) / 3
         
         // send request to validators
@@ -551,7 +595,6 @@ In order to simplify the understanding of the algorithm, the algorithm uses the 
             
         // return the final output of the algorithm that satisfied exit condition
         return faultyProcesses
-    ```
 
 ### Accountability algorithm
 
@@ -568,8 +611,9 @@ The algorithm uses the following high-level methods for simplifying the presenta
 - **newHvs(id)**: create a new height vote set given an *id*, return the newly-created inferred height vote set
 
 - **getVoteSetFromRound(hvs, r)**: get the vote set from the given height vote set *hvs* of round *r*, return the vote set relative to the height vote set *hvs* given
+
+We present here below a simplified pseudo-code of the actual  implementation:
     
-    ```
     // Accountability algorithm
     runAccountability(hvsDelivered, firstRound, lastRound):
     
@@ -609,16 +653,18 @@ The algorithm uses the following high-level methods for simplifying the presenta
                 if vs.sent contains more than one PREVOTE or PRECOMMIT in round r:
                     faultyProcesses = faultyProcesses + hvs.sender                
                 
-                // if the hvs was not inferred, check for correctness of the execution in round r according to tendermint consenus algorithm rules  
+                // if the hvs was not inferred, check for correctness of the execution
+                // in round r according to tendermint consenus algorithm rules  
                 if !hvs.inferred:
                     
-                    // check if process sent a PRECOMMIT or a PREVOTE without proper justiifcation (PREVOTE messages must contain valid justifications) 
-                    if vs.sent contains a PRECOMMIT or PREVOTE without a valid justification:
+                    // check if process sent a PRECOMMIT or a PREVOTE without proper
+                    // justiifcation (PREVOTE messages must contain valid justifications) 
+                    if vs.sent contains a PRECOMMIT/PREVOTE without a valid justification:
                         faultyProcesses = faultyProcesses + hvs.sender
                         
                         
         return faultyProcesses
-    ```        
+        
                 
 ## Implementation-specific details
 
@@ -635,7 +681,7 @@ Therefore, the monitor will stop the execution if a response is not expected fro
 
 
 %%%%%%%%%%%%%%%%%%%%
-\chapter{Evaluation and benchmark}
+\chapter{Evaluation and benchmarks}
 %%%%%%%%%%%%%%%%%%%%
 
 \begin{markdown}
@@ -646,7 +692,7 @@ The machine type is a [n1-standard-16](https://cloud.google.com/compute/docs/mac
 The reported benchmarks consist of several executions of the monitor algorithm, both asynchronous and synchronous version, in different fork scenarios and interacting with different configurations of validators.
 The fork scenarios are always due to validators sending a PRECOMMIT message without enough PREVOTE messages and have been automatically generated with a script that allows creating valid configuration files for both the monitor and the validators with user-defined parameters.
 
-The parameters chosen for the benchamarks are the number of validators and the number of rounds between the first and the second decision in the fork. 
+The parameters chosen for the benchmarks are the number of validators and the number of rounds between the first and the second decision in the fork. 
 The Table summarizes the configurations used for the experiments.
 
 The metrics used to evaluate the performance are the following:
@@ -662,7 +708,7 @@ The metrics used to evaluate the performance are the following:
 The last three metrics have been computed using the [time command](https://en.wikipedia.org/wiki/Time_%28Unix%29) in its [extended version](https://man7.org/linux/man-pages/man1/time.1.html).
 
 The benchamrk experiments have been repeated three times with very similar results, therefore the obtained data can be considered moderately valid and reliable.
-The file containing all the results of the experiments can be found at [benchmark](/benchmarks/benchmark_report_final.txt). 
+The file containing all the results of the experiments can be found at the path */benchmarks/benchmark_report_final.txt* of the Github repository. 
 
 \end{markdown}
 
@@ -884,23 +930,22 @@ Faulty processes are not able to make the algorithm fail because, as said before
 A simple illustrative pseudo-code version of this idea is shown here below:
 
 
-    ```
     // monitor initializes a map int -> bool that allows to keep track
     // whether a decision has already been made in a specific height
     init():
-	    heightCommitMap = init(map: int -> bool)
+	    heightCommitMap = init(map: int -> bool s.t. returns false when no entry is present)
 
     // upon receiving at least 2f+1 precommit for height h from a process 
     deliverCommit(messageSet, height):
    
+        // verify if the message set is a valid commit
 	    if verify(messageSet):
 		    // check if this was the first decision for this height
 		    if heightCommitMap[height]:
 			    // fork has been detected
 			    detect(height)
 		    else:
-			    decisions[height] = true
-    ```
+			    heightCommitMap[height] = true
 
 This is not meant to be a complete solution to the problem because it just provides a basic intuitive idea to handle the fork detection. It also lacks a formal theoretical support which is required for the full refinement of the algorithm.
 The validation and a possible proof of concept of this algorithm is left to future work.
@@ -908,7 +953,7 @@ The validation and a possible proof of concept of this algorithm is left to futu
 ## Fork recovery
 
 A fork recovery mechanism allows validators to agree on the state of the system after a fork occurred. 
-This step should occurr after validators have run the fork accountability algorithm and it includes the ban of faulty processes (detected by a fork accountability algorithm) from the validator set and the possible restart of the blockchain with the new validator set.
+This step should occur after validators have run the fork accountability algorithm and it includes the ban of faulty processes (detected by a fork accountability algorithm) from the validator set and the possible restart of the blockchain with the new validator set.
 
 It is clear that the Tendermint consensus algorithm cannot proceed further without having enough validators, namely 4 validators, in order to make the algorithm work correctly. In fact, there is no quorum of at least *2f + 1* processes that allow to satisfy the Tendermint consensus rules when there are only 4 validators in the system. 
 Therefore, if the number of left processes after the banning phase is lower than 4, the consensus algorithm should block and should be able to restart only when another valid process will join the validator set based on the protocol rules.
@@ -919,7 +964,7 @@ In other words, processes should be able to save the current state of the blockc
 
 A simple illustrative pseudo-code version of this idea is shown here below:
 
-    ```
+
     // each validator initializes a map int -> State, where State is a protocol-specific
     // type, that allows to keep track of the state before starting a new consensus instance
     init():
@@ -927,7 +972,8 @@ A simple illustrative pseudo-code version of this idea is shown here below:
         heightStateMap = init(map: int -> State)
 
     // before starting a consensus instance, 
-    // each validator saves the current system state
+    // each validator saves the current system state and
+    // start the new height as defined the Tendermint consensus algorithm
     startHeight(h):
         heightStateMap[h] = getCurrentSystemState()	
 
@@ -942,7 +988,17 @@ A simple illustrative pseudo-code version of this idea is shown here below:
             startHeight(height)
         else:
             throwError("The new set of validators doesn't have enough participants")
-    ```
+           
+    // external methods and variables
+    - getCurrentValidatorSet(): retrieves the current list of validators in the system
+    
+    - getCurrentSystemState(): retrieves the current state of the validator
+    
+    - restoreState(State): restore the validator state to the state given as parameter
+    
+    - MIN_CONSENSUS_PARTICIPANTS: defines the minimum number of validators
+    allowed by the protocol
+    
 
 Although this solution could be considered valid at first, a future study should be dedicated to the complete validation and study of this algorithm.
 
@@ -977,12 +1033,20 @@ The study and the design of a possible solution to such a problem could be furth
 \chapter{Conclusion}
 %%%%%%%%%%%%%%%%%%%%
 
-TODO
+In this work we have tackled the fork accountability problem from different points of view in order to better show all the theoretical and practical implications this challenge offers. From a high-level perspective, we have concretely defined the problem, analyzed all the scenarios where the problem can occur and analyzed the main misbehaviors a process can do to create the conditions of a fork.
+
+After tackling the problem, we described the design and the implementation of a fork accountability algorithm in Tendermint. We showed how it is possible to implement an algorithm when the communication between the monitor and validators is completely asynchronous, made the different algorithmic parts more concrete and took steps into implementing and getting a sense of the validity of this algorithm. We carefully studied and tested the proposed solution both from a correctness and a performance point of view, thanks to the numerous experiments and benchmarks that have been carried out, and proved that the algorithm is correct and efficient in terms of computational complexity. 
+
+Although the proposed implementation is not a built-in and ready-to-use solution for Tendermint, it offers the high-level components and blocks that are fundamental for an integration of the fork accountability algorithm in production code. We also believe that this work can offer valid results for future work on a possible generalization of the fork accountability problem to different types of replicated services and an important starting point for developments of the related problems that have been outlined in Chapter 6.
+
+\acknowledgments{I would like to thank Jovan Komatovic and Dragos-Adrian Seredinschi for providing all the theoretical background and advice during the development of the project (especially for sharing the design of the fork accountability algorithm they worked on), for all the comments and reviews of both code and documentation and for the assistance given throughout the entire semester.}
+\makeacks
+
 
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Bibliography}
-\printbibliography
+% \printbibliography
 
 % Appendices are optional
 % \appendix
