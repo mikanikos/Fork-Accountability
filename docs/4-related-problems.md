@@ -18,30 +18,33 @@ The fork detection algorithm guarantees the following properties:
 
 As already said regarding the fork accountability algorithm, we can assume that *n = 3f + 1* and that at most *2f* faulty processes are present in the system.
 
-A simple solution for the fork detection problem would require having a trusted entity (we can keep assuming the monitor itself) to be connected to all validators and periodically check for a fork by asking validators for their current state.
-Correct validators will send their state to the monitor as soon as they receive a check request. The monitor would be able to verify the validity of a validator state and will detect a fork as soon as it detects two different commits in the same height.
+Since there are at most *2f* faulty processes in the system and the minimum quorum for a commit is *2f + 1*, when a fork occurs there is at least one correct process that took part in the quorum for the commit (i.e., at least one correct process must have sent a PRECOMMIT message for a value that was committed).
+
+Therefore, a simple solution for the fork detection problem would require having a trusted entity (we can keep assuming the monitor itself) to be connected to all validators in order to receive notifications regarding a possible fork.
+Processes will notify the monitor every time a commit is made and will send the monitor the proof for the commit (i.e., at least 2f+1 valid PRECOMMIT messages). The monitor would be able to verify the validity of the commit and will detect a fork as soon as two valid commit will be received.
+
 Once it has detected the fork, the monitor will start the fork accountability algorithm in order to detect the faulty processes, as described before.
+
+Faulty processes are not able to make the algorithm fail because, as said before, at least one correct process will receive the commit and, consequently, will send it to the monitor. Even sending a fake commit to the monitor would not trick the monitor because it must contain at least 2f+1 valid PRECOMMIT messages that the monitor can verify.
 
 A simple illustrative pseudo-code version of this idea is shown here below:
 
+
 ```
-// monitor initializes a map string -> State, where State is a protocol-specific type, that allows to keep track of the latest states among all validators
+// monitor initializes a map int -> bool that allows to keep track whether a decision has already been made in a specific height
 init():
-	statesPerValidatorID = init(map: string -> bool)
+	heightCommitMap = init(map: int -> bool)
 
-// monitor periodically checks for forks 
-onTimeoutCheck():
-    requestStatesFromValidators()   
-
-// monitor delivers a new state from a validator (with unique ID) as soon as a new one arrives
-onStateReceived(state, ID):
-    
-	if isValid(state):
-        statesPerValidatorID[ID] = state
-
-		// check if there are two decisions for a single height
-		if checkForFork(states):
-            startForkAccountabilityAlgorithm()
+// upon receiving at least 2f+1 precommit for height h from a process 
+deliverCommit(messageSet, height):
+   
+	if verify(messageSet):
+		// check if this was the first decision for this height
+		if heightCommitMap[height]:
+			// fork has been detected
+			detect(height)
+		else:
+			decisions[height] = true
 
 ```
 
